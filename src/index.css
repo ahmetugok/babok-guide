@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Hide horizontal scrollbar on tab nav */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Range input styling */
+input[type="range"] { height: 6px; }
+input[type="range"]::-webkit-slider-thumb { width: 16px; height: 16px; }
