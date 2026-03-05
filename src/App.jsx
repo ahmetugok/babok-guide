@@ -5,7 +5,7 @@ import {
   CheckSquare, Square, Sparkles, Bot, X, Copy, Loader2, FileStack, ClipboardCopy,
   AlertTriangle, Trash2, Pencil, Plus, Download, LayoutDashboard, ListChecks,
   StickyNote, FolderPlus, RotateCcw, MessageSquare, Clock, UserPlus, ChevronUp,
-  Shield, ArrowUpRight, TrendingUp, BookMarked
+  Shield, ArrowUpRight, TrendingUp, BookMarked, CalendarDays
 } from 'lucide-react';
 
 // --- BABOK KNOWLEDGE AREAS AND DETAILED TASKS DATA ---
@@ -395,7 +395,7 @@ const generateId = () => `id_${Date.now()}_${Math.random().toString(36).substr(2
 const DEFAULT_PROJECT = {
   id: 'proj_1', name: 'Ana Proje', projectContext: '',
   completedTasks: [], completedSubTasks: [],
-  risks: [], actions: [], stakeholders: [], requirements: [], meetings: [], reqCounter: 1,
+  risks: [], actions: [], stakeholders: [], requirements: [], meetings: [], ganttTasks: [], reqCounter: 1,
 };
 const PROB_LABELS = ['','Düşük','Orta','Yüksek'];
 const IMPACT_LABELS = ['','Düşük','Orta','Yüksek'];
@@ -527,6 +527,12 @@ export default function App() {
   const [newNoteType, setNewNoteType] = useState('Karar');
   const [newNoteText, setNewNoteText] = useState('');
 
+  // Gantt states
+  const [showGanttModal, setShowGanttModal] = useState(false);
+  const [editingGanttTask, setEditingGanttTask] = useState(null);
+  const [ganttForm, setGanttForm] = useState({ name:'', startDate:'', endDate:'', color:'#3b82f6', category:'' });
+  const [ganttZoom, setGanttZoom] = useState('month');
+
   // Techniques filter
   const [techFilter, setTechFilter] = useState('all');
 
@@ -636,6 +642,28 @@ export default function App() {
     navigator.clipboard.writeText(lines.join('\n')); alert('MoM panoya kopylandı!');
   };
 
+  // --- GANTT ---
+  const GANTT_COLORS = ['#3b82f6','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#6366f1','#14b8a6','#f97316'];
+  const openGanttModal = (task = null) => {
+    setEditingGanttTask(task);
+    const td = new Date().toISOString().split('T')[0];
+    const nw = new Date(Date.now()+7*86400000).toISOString().split('T')[0];
+    setGanttForm(task ? { name:task.name, startDate:task.startDate, endDate:task.endDate, color:task.color, category:task.category } : { name:'', startDate:td, endDate:nw, color:'#3b82f6', category:'' });
+    setShowGanttModal(true);
+  };
+  const saveGanttTask = () => {
+    if (!ganttForm.name.trim() || !ganttForm.startDate || !ganttForm.endDate) return;
+    if (new Date(ganttForm.endDate) < new Date(ganttForm.startDate)) { alert('Bitiş tarihi başlangıç tarihinden önce olamaz!'); return; }
+    updateActive(p => ({
+      ...p,
+      ganttTasks: editingGanttTask
+        ? (p.ganttTasks||[]).map(t => t.id === editingGanttTask.id ? { ...ganttForm, id: editingGanttTask.id } : t)
+        : [...(p.ganttTasks||[]), { ...ganttForm, id: generateId() }]
+    }));
+    setShowGanttModal(false);
+  };
+  const deleteGanttTask = (id) => { if(window.confirm('Görevi silmek istiyor musunuz?')) updateActive(p => ({ ...p, ganttTasks: (p.ganttTasks||[]).filter(t => t.id !== id) })); };
+
   // --- PROJECT MANAGEMENT ---
   const createProject = () => { if(!newProjectName.trim()) return; const np={...DEFAULT_PROJECT,id:generateId(),name:newProjectName}; setProjects(prev=>[...prev,np]); setActiveProjectId(np.id); setNewProjectName(''); setShowProjectModal(false); };
   const deleteProject = (id) => { if(projects.length<=1){alert('En az bir proje olmalıdır!');return;} const rem=projects.filter(p=>p.id!==id); setProjects(rem); if(activeProjectId===id) setActiveProjectId(rem[0].id); };
@@ -643,7 +671,7 @@ export default function App() {
   // --- EXPORT ---
   const exportMarkdown = () => {
     const p=activeProject;
-    const lines=[`# BABOK Proje Raporu: ${p.name}`,`**Tarih:** ${new Date().toLocaleDateString('tr-TR')}`,`**Bağlam:** ${p.projectContext||'-'}`,'',`## İlerleme`,`- Ana: ${p.completedTasks.length}/${totalTasks}`,`- Alt: ${p.completedSubTasks.length}/${totalSubTasks}`,'',`## Riskler`,...p.risks.map(r=>`- [${getRiskLevel(r.probability,r.impact).label}] ${r.title} | ${r.owner}`),'',`## Aksiyonlar`,...p.actions.map(a=>`- [${a.status}] ${a.title} | ${a.owner} | ${a.dueDate}`),'',`## Paydaşlar`,...p.stakeholders.map(s=>`- ${s.name} (${s.role}) | ${RACI_LABELS[s.raci]}`),'',`## Gereksinimler`,...p.requirements.map(r=>`- ${r.reqId}: ${r.name} | ${r.status}`)];
+    const lines=[`# BABOK Proje Raporu: ${p.name}`,`**Tarih:** ${new Date().toLocaleDateString('tr-TR')}`,`**Bağlam:** ${p.projectContext||'-'}`,'',`## İlerleme`,`- Ana: ${p.completedTasks.length}/${totalTasks}`,`- Alt: ${p.completedSubTasks.length}/${totalSubTasks}`,'',`## Riskler`,...p.risks.map(r=>`- [${getRiskLevel(r.probability,r.impact).label}] ${r.title} | ${r.owner}`),'',`## Aksiyonlar`,...p.actions.map(a=>`- [${a.status}] ${a.title} | ${a.owner} | ${a.dueDate}`),'',`## Paydaşlar`,...p.stakeholders.map(s=>`- ${s.name} (${s.role}) | ${RACI_LABELS[s.raci]}`),'',`## Gereksinimler`,...p.requirements.map(r=>`- ${r.reqId}: ${r.name} | ${r.status}`),'',`## Zaman Çizelgesi (Gantt)`,...(p.ganttTasks||[]).map(g=>`- ${g.name} | ${g.startDate} → ${g.endDate} | ${g.category||'Genel'}`)];
     const blob=new Blob([lines.join('\n')],{type:'text/markdown'});
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`${p.name}_BABOK.md`; a.click(); URL.revokeObjectURL(url);
   };
@@ -805,7 +833,7 @@ TALİMATLAR (ÇOK ÖNEMLİ):
         </div>
         {/* TAB NAVIGATION */}
         <div className="max-w-5xl mx-auto px-4 mt-1 flex gap-1 overflow-x-auto pb-px">
-          {[['dashboard','LayoutDashboard','Dashboard'],['knowledge_areas','LayoutGrid','Checklistler'],['risks','AlertTriangle','Riskler'],['actions','ListChecks','Aksiyonlar'],['stakeholders','Users','Paydaşlar'],['requirements','BookMarked','Gereksinimler'],['meetings','MessageSquare','Toplantılar'],['techniques','Wrench','Teknikler'],['templates','FileStack','Dokümanlar'],['competencies','BrainCircuit','Yetkinlikler']].map(([tab,,label]) => (
+          {[['dashboard','LayoutDashboard','Dashboard'],['knowledge_areas','LayoutGrid','Checklistler'],['risks','AlertTriangle','Riskler'],['actions','ListChecks','Aksiyonlar'],['stakeholders','Users','Paydaşlar'],['requirements','BookMarked','Gereksinimler'],['meetings','MessageSquare','Toplantılar'],['gantt','CalendarDays','Gantt'],['techniques','Wrench','Teknikler'],['templates','FileStack','Dokümanlar'],['competencies','BrainCircuit','Yetkinlikler']].map(([tab,,label]) => (
             <button key={tab} onClick={() => setActiveTab(tab)} className={`pb-2.5 px-2.5 font-medium text-xs flex items-center gap-1.5 whitespace-nowrap border-b-2 transition-colors ${
               activeTab === tab ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}>
@@ -816,6 +844,7 @@ TALİMATLAR (ÇOK ÖNEMLİ):
               {tab==='stakeholders' && <Users className="w-3.5 h-3.5" />}
               {tab==='requirements' && <BookMarked className="w-3.5 h-3.5" />}
               {tab==='meetings' && <MessageSquare className="w-3.5 h-3.5" />}
+              {tab==='gantt' && <CalendarDays className="w-3.5 h-3.5" />}
               {tab==='techniques' && <Wrench className="w-3.5 h-3.5" />}
               {tab==='templates' && <FileStack className="w-3.5 h-3.5" />}
               {tab==='competencies' && <BrainCircuit className="w-3.5 h-3.5" />}
@@ -970,23 +999,56 @@ TALİMATLAR (ÇOK ÖNEMLİ):
               {activeProject.stakeholders.length > 0 && (
                 <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                   <h3 className="text-sm font-bold text-slate-700 mb-3">İlgi / Etki Matrisi</h3>
-                  <div className="relative h-48 border border-slate-200 rounded-lg bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden">
+                  <div className="relative border border-slate-200 rounded-lg bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden" style={{ height: Math.max(192, activeProject.stakeholders.length > 6 ? 280 : 220) }}>
                     <div className="absolute inset-0 flex"><div className="flex-1 border-r border-dashed border-slate-300"/><div className="flex-1"/></div>
                     <div className="absolute inset-0 flex flex-col"><div className="flex-1 border-b border-dashed border-slate-300"/><div className="flex-1"/></div>
                     <span className="absolute top-1 left-2 text-[9px] text-slate-400">Yüksek Etki</span>
                     <span className="absolute bottom-1 left-2 text-[9px] text-slate-400">Düşük Etki</span>
                     <span className="absolute bottom-1 left-6 text-[9px] text-slate-400">Düşük İlgi</span>
                     <span className="absolute bottom-1 right-2 text-[9px] text-slate-400">Yüksek İlgi</span>
-                    {activeProject.stakeholders.map(s => {
-                      const x = ((s.interest-1)/2)*85+5;
-                      const y = 100-((s.influence-1)/2)*85-10;
-                      return (
-                        <div key={s.id} className="absolute flex flex-col items-center" style={{left:`${x}%`,top:`${y}%`,transform:'translate(-50%,-50%)'}}>
-                          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-md ${RACI_COLORS[s.raci].replace('bg-','bg-').replace('text-','')}`} style={{background:s.raci==='R'?'#3b82f6':s.raci==='A'?'#8b5cf6':s.raci==='C'?'#f59e0b':'#94a3b8'}} title={s.name}>{s.name.charAt(0)}</div>
-                          <span className="text-[8px] text-slate-600 whitespace-nowrap mt-0.5 bg-white/80 px-1 rounded">{s.name}</span>
-                        </div>
-                      );
-                    })}
+                    {(() => {
+                      const ITEM_W = 52, ITEM_H = 34;
+                      const placed = [];
+                      return activeProject.stakeholders.map(s => {
+                        const baseX = ((s.interest - 1) / 2) * 85 + 5;
+                        const baseY = 100 - ((s.influence - 1) / 2) * 85 - 10;
+                        let finalX = baseX, finalY = baseY;
+                        const collides = (cx, cy) => placed.some(p =>
+                          Math.abs(cx - p.x) < ITEM_W / (placed.length > 12 ? 3.5 : 4) &&
+                          Math.abs(cy - p.y) < ITEM_H / (placed.length > 12 ? 3.5 : 4)
+                        );
+                        if (collides(finalX, finalY)) {
+                          const spiralSteps = [
+                            [1,0],[-1,0],[0,1],[0,-1],
+                            [1,1],[-1,1],[1,-1],[-1,-1],
+                            [2,0],[-2,0],[0,2],[0,-2],
+                            [2,1],[-2,1],[2,-1],[-2,-1],
+                            [1,2],[-1,2],[1,-2],[-1,-2],
+                            [3,0],[-3,0],[0,3],[0,-3],
+                            [2,2],[-2,2],[2,-2],[-2,-2],
+                            [3,1],[-3,1],[3,-1],[-3,-1],
+                            [1,3],[-1,3],[1,-3],[-1,-3],
+                            [3,2],[-3,2],[3,-2],[-3,-2],
+                            [4,0],[-4,0],[0,4],[0,-4],
+                          ];
+                          const stepSize = placed.length > 12 ? 3.5 : 4.5;
+                          for (const [dx, dy] of spiralSteps) {
+                            const nx = baseX + dx * stepSize;
+                            const ny = baseY + dy * stepSize;
+                            if (nx >= 2 && nx <= 98 && ny >= 4 && ny <= 96 && !collides(nx, ny)) {
+                              finalX = nx; finalY = ny; break;
+                            }
+                          }
+                        }
+                        placed.push({ x: finalX, y: finalY });
+                        return (
+                          <div key={s.id} className="absolute flex flex-col items-center z-[1] transition-all duration-200" style={{left:`${finalX}%`,top:`${finalY}%`,transform:'translate(-50%,-50%)'}}>
+                            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-md ring-2 ring-white" style={{background:s.raci==='R'?'#3b82f6':s.raci==='A'?'#8b5cf6':s.raci==='C'?'#f59e0b':'#94a3b8'}} title={`${s.name} — İlgi: ${PROB_LABELS[s.interest]}, Etki: ${PROB_LABELS[s.influence]}`}>{s.name.charAt(0)}</div>
+                            <span className="text-[8px] text-slate-600 whitespace-nowrap mt-0.5 bg-white/90 px-1 rounded shadow-sm">{s.name}</span>
+                          </div>
+                        );
+                      });
+                    })()}
                   </div>
                 </div>
               )}
@@ -1122,6 +1184,228 @@ TALİMATLAR (ÇOK ÖNEMLİ):
               </div>
             </div>
           )}
+
+          {/* GANTT CHART TAB */}
+          {activeTab === 'gantt' && (() => {
+            const tasks = activeProject.ganttTasks || [];
+            const DAY_WIDTHS = { week: 40, month: 16, quarter: 6 };
+            const dayWidth = DAY_WIDTHS[ganttZoom];
+
+            let rangeStart, rangeEnd;
+            if (tasks.length > 0) {
+              const starts = tasks.map(t => new Date(t.startDate).getTime());
+              const ends = tasks.map(t => new Date(t.endDate).getTime());
+              rangeStart = new Date(Math.min(...starts));
+              rangeEnd = new Date(Math.max(...ends));
+              const pad = ganttZoom === 'week' ? 3 : ganttZoom === 'month' ? 7 : 14;
+              rangeStart.setDate(rangeStart.getDate() - pad);
+              rangeEnd.setDate(rangeEnd.getDate() + pad);
+            } else {
+              rangeStart = new Date(); rangeStart.setDate(1);
+              rangeEnd = new Date(); rangeEnd.setMonth(rangeEnd.getMonth() + 3);
+            }
+            const dow = rangeStart.getDay();
+            rangeStart.setDate(rangeStart.getDate() - (dow === 0 ? 6 : dow - 1));
+            rangeStart.setHours(0,0,0,0);
+            rangeEnd.setHours(0,0,0,0);
+
+            const diffDays = (a, b) => Math.round((a - b) / 86400000);
+            const totalDays = diffDays(rangeEnd, rangeStart) + 1;
+            const totalWidth = Math.max(totalDays * dayWidth, 600);
+
+            const today = new Date(); today.setHours(0,0,0,0);
+            const todayPos = diffDays(today, rangeStart) * dayWidth;
+
+            const categories = [...new Set(tasks.map(t => t.category || 'Genel'))];
+            if (categories.length === 0) categories.push('Genel');
+
+            const monthHeaders = [];
+            const mCur = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 1);
+            while (mCur <= rangeEnd) {
+              const mStart = mCur < rangeStart ? new Date(rangeStart) : new Date(mCur);
+              const mLast = new Date(mCur.getFullYear(), mCur.getMonth() + 1, 0);
+              const mEnd = mLast > rangeEnd ? rangeEnd : mLast;
+              monthHeaders.push({
+                label: mCur.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }),
+                left: diffDays(mStart, rangeStart) * dayWidth,
+                width: (diffDays(mEnd, mStart) + 1) * dayWidth,
+              });
+              mCur.setMonth(mCur.getMonth() + 1);
+            }
+
+            const weekMarkers = [];
+            for (let i = 0; i < totalDays; i += 7) { weekMarkers.push(i * dayWidth); }
+
+            const getBarPos = (task) => {
+              const s = new Date(task.startDate); s.setHours(0,0,0,0);
+              const e = new Date(task.endDate); e.setHours(0,0,0,0);
+              return {
+                left: diffDays(s, rangeStart) * dayWidth,
+                width: Math.max((diffDays(e, s) + 1) * dayWidth, dayWidth),
+              };
+            };
+
+            const rows = [];
+            categories.forEach(cat => {
+              rows.push({ type: 'category', label: cat });
+              tasks.filter(t => (t.category || 'Genel') === cat).forEach(t => rows.push({ type: 'task', task: t }));
+            });
+
+            return (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                      <CalendarDays className="text-cyan-500 w-5 h-5"/>Proje Zaman Çizelgesi (Gantt)
+                    </h2>
+                    <p className="text-sm text-slate-500">{tasks.length} görev{categories.length > 1 ? ` · ${categories.length} kategori` : ''}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
+                      {[['week','Hafta'],['month','Ay'],['quarter','Çeyrek']].map(([z,label]) => (
+                        <button key={z} onClick={() => setGanttZoom(z)} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${ganttZoom === z ? 'bg-white text-cyan-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>{label}</button>
+                      ))}
+                    </div>
+                    <button onClick={() => openGanttModal()} className="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm">
+                      <Plus className="w-4 h-4"/>Görev Ekle
+                    </button>
+                  </div>
+                </div>
+
+                {tasks.length === 0 ? (
+                  <div className="text-center py-16 text-slate-400 bg-white rounded-xl border border-slate-200">
+                    <CalendarDays className="w-10 h-10 mx-auto mb-3 opacity-30"/>
+                    <p className="font-medium">Henüz görev eklenmemiş.</p>
+                    <p className="text-xs mt-1">Proje fazlarını ve görevlerini ekleyerek zaman çizelgenizi oluşturun.</p>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="flex max-h-[560px]">
+                      {/* Sidebar */}
+                      <div className="w-56 shrink-0 border-r border-slate-200 bg-slate-50 z-[2] overflow-y-auto">
+                        <div className="h-[52px] border-b border-slate-200 flex items-end px-3 pb-1.5 sticky top-0 bg-slate-50 z-[1]">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Görev Adı</span>
+                        </div>
+                        {rows.map((row, idx) => row.type === 'category' ? (
+                          <div key={`cat-${idx}`} className="h-8 px-3 flex items-center bg-slate-100/80 border-b border-slate-200">
+                            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">{row.label}</span>
+                          </div>
+                        ) : (
+                          <div key={row.task.id} className="h-10 px-3 flex items-center justify-between border-b border-slate-100 group hover:bg-white transition-colors">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: row.task.color }}/>
+                              <span className="text-xs text-slate-700 truncate" title={row.task.name}>{row.task.name}</span>
+                            </div>
+                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
+                              <button onClick={() => openGanttModal(row.task)} className="p-0.5 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-600"><Pencil className="w-3 h-3"/></button>
+                              <button onClick={() => deleteGanttTask(row.task.id)} className="p-0.5 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-600"><Trash2 className="w-3 h-3"/></button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Timeline */}
+                      <div className="flex-1 overflow-x-auto overflow-y-auto">
+                        <div style={{ width: totalWidth, minWidth: '100%' }} className="relative">
+                          {/* Month header */}
+                          <div className="h-[26px] border-b border-slate-200 relative bg-slate-50 sticky top-0 z-[1]">
+                            {monthHeaders.map((m, i) => (
+                              <div key={i} className="absolute top-0 h-full flex items-center border-r border-slate-200 overflow-hidden" style={{ left: m.left, width: m.width }}>
+                                <span className="text-[10px] font-bold text-slate-500 px-2 truncate capitalize">{m.label}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Sub-header */}
+                          <div className="h-[26px] border-b border-slate-200 relative bg-white sticky top-[26px] z-[1]">
+                            {Array.from({ length: totalDays }, (_, i) => {
+                              const d = new Date(rangeStart); d.setDate(d.getDate() + i);
+                              const isMonday = d.getDay() === 1;
+                              const isFirst = d.getDate() === 1;
+                              const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+                              const show = ganttZoom === 'week' || (ganttZoom === 'month' && isMonday) || (ganttZoom === 'quarter' && isFirst);
+                              return show ? (
+                                <div key={i} className="absolute top-0 h-full flex items-center" style={{ left: i * dayWidth }}>
+                                  <span className={`text-[9px] px-0.5 ${isWeekend ? 'text-rose-300' : 'text-slate-400'}`}>
+                                    {ganttZoom === 'week' ? d.getDate() : ganttZoom === 'month' ? `${d.getDate()}/${d.getMonth()+1}` : d.toLocaleDateString('tr-TR',{month:'short'})}
+                                  </span>
+                                </div>
+                              ) : null;
+                            })}
+                          </div>
+
+                          {/* Task rows */}
+                          {rows.map((row, idx) => row.type === 'category' ? (
+                            <div key={`cat-${idx}`} className="h-8 border-b border-slate-200 bg-slate-50/60"/>
+                          ) : (
+                            <div key={row.task.id} className="h-10 border-b border-slate-100 relative">
+                              <div
+                                className="absolute top-1.5 h-7 rounded-md shadow-sm cursor-pointer hover:brightness-110 transition-all flex items-center px-2 overflow-hidden"
+                                style={{ left: getBarPos(row.task).left, width: getBarPos(row.task).width, backgroundColor: row.task.color || '#3b82f6' }}
+                                onClick={() => openGanttModal(row.task)}
+                                title={`${row.task.name}\n${row.task.startDate} → ${row.task.endDate}`}
+                              >
+                                {getBarPos(row.task).width > 70 && <span className="text-[10px] text-white font-medium truncate drop-shadow-sm">{row.task.name}</span>}
+                              </div>
+                            </div>
+                          ))}
+
+                          {/* Weekend columns overlay */}
+                          {ganttZoom !== 'quarter' && (
+                            <div className="absolute inset-0 pointer-events-none" style={{ top: 52 }}>
+                              {Array.from({ length: totalDays }, (_, i) => {
+                                const d = new Date(rangeStart); d.setDate(d.getDate() + i);
+                                return (d.getDay() === 0 || d.getDay() === 6) ? (
+                                  <div key={i} className="absolute top-0 bottom-0 bg-slate-100/40" style={{ left: i * dayWidth, width: dayWidth }}/>
+                                ) : null;
+                              })}
+                            </div>
+                          )}
+
+                          {/* Week separator lines */}
+                          <div className="absolute inset-0 pointer-events-none" style={{ top: 52 }}>
+                            {weekMarkers.map((left, i) => (
+                              <div key={i} className="absolute top-0 bottom-0 border-l border-slate-100/80" style={{ left }}/>
+                            ))}
+                          </div>
+
+                          {/* Today line */}
+                          {todayPos >= 0 && todayPos <= totalWidth && (
+                            <div className="absolute top-0 bottom-0 z-[3] pointer-events-none" style={{ left: todayPos }}>
+                              <div className="w-0.5 h-full bg-rose-500 opacity-80"/>
+                              <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-rose-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-b-md shadow-sm whitespace-nowrap">Bugün</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Summary bar */}
+                    <div className="border-t border-slate-200 bg-slate-50 px-4 py-3">
+                      <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+                        {tasks.map(t => {
+                          const s = new Date(t.startDate);
+                          const e = new Date(t.endDate);
+                          const dur = diffDays(e, s) + 1;
+                          const isPast = e < today;
+                          const isActive = s <= today && today <= e;
+                          return (
+                            <div key={t.id} className="flex items-center gap-1.5 text-xs">
+                              <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: t.color }}/>
+                              <span className={`font-medium ${isPast ? 'text-slate-400 line-through' : isActive ? 'text-cyan-700' : 'text-slate-600'}`}>{t.name}</span>
+                              <span className="text-slate-400">{dur}g</span>
+                              {isActive && <span className="text-[9px] bg-cyan-100 text-cyan-700 px-1.5 py-0.5 rounded-full font-medium">Aktif</span>}
+                              {isPast && <span className="text-[9px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded-full">Bitti</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* TAB 1: KNOWLEDGE AREAS (Proje Kontrol Listesi) */}
           {activeTab === 'knowledge_areas' && (
@@ -1592,6 +1876,48 @@ TALİMATLAR (ÇOK ÖNEMLİ):
             <div className="flex justify-end gap-3 mt-5">
               <button onClick={()=>setShowMeetingModal(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">İptal</button>
               <button onClick={saveMeeting} className="px-4 py-2 text-sm bg-violet-600 hover:bg-violet-700 text-white rounded-md font-medium">Oluştur</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* GANTT TASK MODAL */}
+      {showGanttModal && (
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full">
+            <h3 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2"><CalendarDays className="text-cyan-500 w-5 h-5"/>{editingGanttTask?'Görevi Düzenle':'Yeni Görev / Faz'}</h3>
+            <div className="space-y-3">
+              <input value={ganttForm.name} onChange={e=>setGanttForm({...ganttForm,name:e.target.value})} placeholder="Görev/Faz adı*" className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300" autoFocus/>
+              <input value={ganttForm.category} onChange={e=>setGanttForm({...ganttForm,category:e.target.value})} placeholder="Kategori/Grup (ör. Faz 1, Tasarım, Geliştirme)" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-500 block mb-1">Başlangıç Tarihi*</label>
+                  <input type="date" value={ganttForm.startDate} onChange={e=>setGanttForm({...ganttForm,startDate:e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300"/>
+                </div>
+                <div>
+                  <label className="text-xs text-slate-500 block mb-1">Bitiş Tarihi*</label>
+                  <input type="date" value={ganttForm.endDate} onChange={e=>setGanttForm({...ganttForm,endDate:e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300"/>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-slate-500 block mb-1.5">Renk</label>
+                <div className="flex gap-2 flex-wrap">
+                  {GANTT_COLORS.map(c => (
+                    <button key={c} onClick={() => setGanttForm({...ganttForm, color: c})} className={`w-7 h-7 rounded-lg transition-all ${ganttForm.color === c ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : 'hover:scale-105'}`} style={{ backgroundColor: c }}/>
+                  ))}
+                </div>
+              </div>
+              {ganttForm.startDate && ganttForm.endDate && new Date(ganttForm.endDate) >= new Date(ganttForm.startDate) && (
+                <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-center">
+                  <span className="text-sm font-bold text-cyan-700">
+                    Süre: {Math.round((new Date(ganttForm.endDate) - new Date(ganttForm.startDate)) / 86400000) + 1} gün
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end gap-3 mt-5">
+              <button onClick={()=>setShowGanttModal(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">İptal</button>
+              <button onClick={saveGanttTask} className="px-4 py-2 text-sm bg-cyan-600 hover:bg-cyan-700 text-white rounded-md font-medium">Kaydet</button>
             </div>
           </div>
         </div>

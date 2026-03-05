@@ -5,7 +5,7 @@ import {
   CheckSquare, Square, Sparkles, Bot, X, Copy, Loader2, FileStack, ClipboardCopy,
   AlertTriangle, Trash2, Pencil, Plus, Download, LayoutDashboard, ListChecks,
   StickyNote, FolderPlus, RotateCcw, MessageSquare, Clock, UserPlus, ChevronUp,
-  Shield, ArrowUpRight, TrendingUp, BookMarked
+  Shield, ArrowUpRight, TrendingUp, BookMarked, CalendarDays, GripVertical, ChevronLeft, ChevronRight as ChevronRightIcon
 } from 'lucide-react';
 
 // --- BABOK KNOWLEDGE AREAS AND DETAILED TASKS DATA ---
@@ -395,7 +395,7 @@ const generateId = () => `id_${Date.now()}_${Math.random().toString(36).substr(2
 const DEFAULT_PROJECT = {
   id: 'proj_1', name: 'Ana Proje', projectContext: '',
   completedTasks: [], completedSubTasks: [],
-  risks: [], actions: [], stakeholders: [], requirements: [], meetings: [], reqCounter: 1,
+  risks: [], actions: [], stakeholders: [], requirements: [], meetings: [], timeline: [], reqCounter: 1,
 };
 const PROB_LABELS = ['','Düşük','Orta','Yüksek'];
 const IMPACT_LABELS = ['','Düşük','Orta','Yüksek'];
@@ -403,6 +403,9 @@ const RACI_LABELS = { R:'Sorumlu', A:'Onaylayan', C:'Danışılan', I:'Bilgilend
 const RACI_COLORS = { R:'bg-blue-100 text-blue-800', A:'bg-purple-100 text-purple-800', C:'bg-amber-100 text-amber-800', I:'bg-slate-100 text-slate-700' };
 const REQ_STATUS_COLORS = { 'Taslak':'bg-slate-100 text-slate-700', 'İncelemede':'bg-amber-100 text-amber-800', 'Onaylandı':'bg-blue-100 text-blue-800', 'Geliştiriliyor':'bg-purple-100 text-purple-800', 'Test':'bg-orange-100 text-orange-800', 'Canlıda':'bg-emerald-100 text-emerald-800' };
 const NOTE_TYPE_COLORS = { 'Karar':'bg-blue-100 text-blue-800 border-blue-200', 'Açık Nokta':'bg-rose-100 text-rose-800 border-rose-200', 'Aksiyon':'bg-amber-100 text-amber-800 border-amber-200' };
+const TIMELINE_COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#06b6d4','#f97316','#84cc16','#ec4899','#14b8a6'];
+const PX_PER_DAY = { week: 14, month: 4, quarter: 2 };
+const diffDays = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
 
 // --- BABOK UNDERLYING COMPETENCIES DATA ---
 const competenciesData = [
