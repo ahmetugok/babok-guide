@@ -9,3 +9,135 @@
 /* Range input styling */
 input[type="range"] { height: 6px; }
 input[type="range"]::-webkit-slider-thumb { width: 16px; height: 16px; }
+
+/* ============================================
+   DARK MODE - Comprehensive CSS Overrides
+   ============================================ */
+
+/* Transition for smooth dark mode toggle */
+.dark * { transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease; }
+
+/* --- Backgrounds --- */
+.dark .bg-white { background-color: #1e293b !important; }
+.dark .bg-slate-50 { background-color: #0f172a !important; }
+.dark .bg-slate-100 { background-color: #1e293b !important; }
+.dark .bg-slate-200 { background-color: #334155 !important; }
+
+/* Colored 50-level tints (dashboard cards, alerts, info boxes) */
+.dark .bg-blue-50 { background-color: rgba(30, 58, 138, 0.25) !important; }
+.dark .bg-rose-50 { background-color: rgba(136, 19, 55, 0.2) !important; }
+.dark .bg-amber-50 { background-color: rgba(120, 53, 15, 0.2) !important; }
+.dark .bg-emerald-50 { background-color: rgba(6, 78, 59, 0.2) !important; }
+.dark .bg-green-50 { background-color: rgba(6, 78, 59, 0.15) !important; }
+.dark .bg-indigo-50 { background-color: rgba(49, 46, 129, 0.2) !important; }
+.dark .bg-purple-50 { background-color: rgba(88, 28, 135, 0.2) !important; }
+.dark .bg-cyan-50 { background-color: rgba(8, 51, 68, 0.3) !important; }
+.dark .bg-orange-50 { background-color: rgba(124, 45, 18, 0.2) !important; }
+.dark .bg-violet-50 { background-color: rgba(76, 29, 149, 0.2) !important; }
+
+/* Colored 100-level backgrounds */
+.dark .bg-blue-100 { background-color: rgba(30, 58, 138, 0.35) !important; }
+.dark .bg-rose-100 { background-color: rgba(136, 19, 55, 0.3) !important; }
+.dark .bg-amber-100 { background-color: rgba(120, 53, 15, 0.3) !important; }
+.dark .bg-emerald-100 { background-color: rgba(6, 78, 59, 0.3) !important; }
+.dark .bg-green-100 { background-color: rgba(6, 78, 59, 0.25) !important; }
+.dark .bg-cyan-100 { background-color: rgba(8, 51, 68, 0.4) !important; }
+
+/* Gantt/Chart specific */
+.dark .bg-slate-50\/60,
+.dark .bg-slate-100\/80,
+.dark .bg-slate-100\/40 { background-color: rgba(30, 41, 59, 0.5) !important; }
+
+/* Quadrant backgrounds for stakeholder matrix */
+.dark .bg-amber-50\/40 { background-color: rgba(120, 53, 15, 0.15) !important; }
+.dark .bg-rose-50\/40 { background-color: rgba(136, 19, 55, 0.15) !important; }
+.dark .bg-emerald-50\/30 { background-color: rgba(6, 78, 59, 0.12) !important; }
+.dark .bg-blue-50\/40 { background-color: rgba(30, 58, 138, 0.15) !important; }
+
+/* --- Borders --- */
+.dark .border-slate-200 { border-color: #334155 !important; }
+.dark .border-slate-100 { border-color: #1e293b !important; }
+.dark .border-slate-300 { border-color: #475569 !important; }
+
+/* Colored borders */
+.dark .border-blue-200 { border-color: rgba(59, 130, 246, 0.3) !important; }
+.dark .border-rose-200 { border-color: rgba(244, 63, 94, 0.3) !important; }
+.dark .border-amber-200 { border-color: rgba(245, 158, 11, 0.3) !important; }
+.dark .border-emerald-200 { border-color: rgba(16, 185, 129, 0.3) !important; }
+.dark .border-green-200 { border-color: rgba(34, 197, 94, 0.3) !important; }
+.dark .border-emerald-100 { border-color: rgba(16, 185, 129, 0.2) !important; }
+.dark .border-amber-100 { border-color: rgba(245, 158, 11, 0.2) !important; }
+.dark .border-purple-100 { border-color: rgba(168, 85, 247, 0.2) !important; }
+.dark .border-cyan-200 { border-color: rgba(6, 182, 212, 0.3) !important; }
+
+/* --- Text Colors --- */
+.dark .text-slate-900 { color: #f1f5f9 !important; }
+.dark .text-slate-800 { color: #e2e8f0 !important; }
+.dark .text-slate-700 { color: #cbd5e1 !important; }
+.dark .text-slate-600 { color: #94a3b8 !important; }
+.dark .text-slate-500 { color: #94a3b8 !important; }
+.dark .text-slate-400 { color: #64748b !important; }
+
+/* Colored text — slightly brighter for dark bg */
+.dark .text-blue-700 { color: #93c5fd !important; }
+.dark .text-blue-800 { color: #93c5fd !important; }
+.dark .text-rose-700 { color: #fda4af !important; }
+.dark .text-rose-800 { color: #fda4af !important; }
+.dark .text-amber-700 { color: #fcd34d !important; }
+.dark .text-amber-800 { color: #fcd34d !important; }
+.dark .text-emerald-700 { color: #6ee7b7 !important; }
+.dark .text-emerald-800 { color: #6ee7b7 !important; }
+.dark .text-purple-800 { color: #c4b5fd !important; }
+
+/* --- Form Elements --- */
+.dark input:not([type="range"]):not([type="color"]),
+.dark textarea,
+.dark select {
+  background-color: #1e293b !important;
+  border-color: #475569 !important;
+  color: #e2e8f0 !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b !important;
+}
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #3b82f6 !important;
+}
+
+/* --- Modal overlays --- */
+.dark .bg-slate-900\/50 { background-color: rgba(0, 0, 0, 0.65) !important; }
+
+/* --- Shadows (softer in dark mode) --- */
+.dark .shadow-sm { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important; }
+.dark .shadow-md { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4) !important; }
+.dark .shadow-xl { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important; }
+
+/* --- Gradient text on progress bar --- */
+.dark .from-blue-500 { --tw-gradient-from: #3b82f6; }
+.dark .to-blue-600 { --tw-gradient-to: #2563eb; }
+
+/* --- Scrollbars for dark mode --- */
+.dark ::-webkit-scrollbar { width: 8px; height: 8px; }
+.dark ::-webkit-scrollbar-track { background: #1e293b; }
+.dark ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+/* --- Specific overrides for stakeholder name labels --- */
+.dark .bg-white\/90 { background-color: rgba(30, 41, 59, 0.9) !important; }
+
+/* --- Ring/outline overrides --- */
+.dark .ring-white { --tw-ring-color: #334155 !important; }
+.dark .ring-blue-300 { --tw-ring-color: rgba(59, 130, 246, 0.4) !important; }
+
+/* --- Hover overrides --- */
+.dark .hover\:bg-slate-100:hover { background-color: #334155 !important; }
+.dark .hover\:bg-slate-50:hover { background-color: #1e293b !important; }
+.dark .hover\:bg-white:hover { background-color: #334155 !important; }
+.dark .hover\:bg-rose-50:hover { background-color: rgba(136, 19, 55, 0.2) !important; }
+.dark .hover\:shadow-md:hover { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4) !important; }
+
+/* --- Line-through text in dark mode --- */
+.dark .line-through { color: #64748b !important; }

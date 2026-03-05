@@ -5,7 +5,7 @@ import {
   CheckSquare, Square, Sparkles, Bot, X, Copy, Loader2, FileStack, ClipboardCopy,
   AlertTriangle, Trash2, Pencil, Plus, Download, LayoutDashboard, ListChecks,
   StickyNote, FolderPlus, RotateCcw, MessageSquare, Clock, UserPlus, ChevronUp,
-  Shield, ArrowUpRight, TrendingUp, BookMarked, CalendarDays, Upload
+  Shield, ArrowUpRight, TrendingUp, BookMarked, CalendarDays, Upload, Moon, Sun
 } from 'lucide-react';
 
 // --- BABOK KNOWLEDGE AREAS AND DETAILED TASKS DATA ---
@@ -534,6 +534,10 @@ export default function App() {
   const [showDashboardDetail, setShowDashboardDetail] = useState(null);
   const [ganttZoom, setGanttZoom] = useState('month');
 
+  // Dark mode
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('babok_darkMode') === 'true');
+  useEffect(() => { localStorage.setItem('babok_darkMode', String(darkMode)); }, [darkMode]);
+
   // Techniques filter
   const [techFilter, setTechFilter] = useState('all');
 
@@ -818,50 +822,59 @@ TALİMATLAR (ÇOK ÖNEMLİ):
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-12">
+    <div className={`min-h-screen font-sans pb-12 transition-colors duration-300 ${darkMode ? 'dark bg-slate-900 text-slate-200' : 'bg-slate-50 text-slate-800'}`}>
       {/* HEADER */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+      <header className={`sticky top-0 z-10 shadow-sm border-b transition-colors duration-300 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <Layers className="text-blue-600" /> BABOK v3 Saha Asistanı
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className={`text-xl font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                <Layers className="text-blue-500" /> BABOK v3 Saha Asistanı
+              </h1>
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className={`p-1.5 rounded-lg transition-all duration-300 ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-amber-400' : 'bg-slate-100 hover:bg-slate-200 text-slate-500'}`}
+                title={darkMode ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
+              >
+                {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </button>
+            </div>
             <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
               <select
                 value={activeProjectId}
                 onChange={e => setActiveProjectId(e.target.value)}
-                className="text-xs border border-slate-200 rounded-md px-2 py-1 bg-slate-50 text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-400 max-w-[180px]"
+                className={`text-xs border rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 max-w-[180px] ${darkMode ? 'bg-slate-700 border-slate-600 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'}`}
               >
                 {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
-              <button onClick={() => setShowProjectModal(true)} className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-1 rounded-md flex items-center gap-1 transition-colors" title="Yeni Proje">
+              <button onClick={() => setShowProjectModal(true)} className={`text-xs px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${darkMode ? 'bg-blue-900/40 hover:bg-blue-900/60 text-blue-300' : 'bg-blue-50 hover:bg-blue-100 text-blue-700'}`} title="Yeni Proje">
                 <FolderPlus className="w-3 h-3" /> Yeni
               </button>
-              <button onClick={importProject} className="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md flex items-center gap-1 transition-colors" title="Proje İçe Aktar (.json)">
+              <button onClick={importProject} className={`text-xs px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${darkMode ? 'bg-emerald-900/40 hover:bg-emerald-900/60 text-emerald-300' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700'}`} title="Proje İçe Aktar (.json)">
                 <Upload className="w-3 h-3" /> İçe Aktar
               </button>
-              <button onClick={exportProjectJSON} className="text-xs bg-slate-50 hover:bg-slate-100 text-slate-600 px-2 py-1 rounded-md flex items-center gap-1 transition-colors" title="Projeyi JSON olarak dışa aktar">
+              <button onClick={exportProjectJSON} className={`text-xs px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-slate-300' : 'bg-slate-50 hover:bg-slate-100 text-slate-600'}`} title="Projeyi JSON olarak dışa aktar">
                 <Download className="w-3 h-3" /> Yedekle
               </button>
               {projects.length > 1 && (
-                <button onClick={() => { if(window.confirm(`"${activeProject.name}" projesini silmek istiyor musunuz?`)) deleteProject(activeProjectId); }} className="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 px-2 py-1 rounded-md flex items-center gap-1 transition-colors">
+                <button onClick={() => { if(window.confirm(`"${activeProject.name}" projesini silmek istiyor musunuz?`)) deleteProject(activeProjectId); }} className={`text-xs px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${darkMode ? 'bg-rose-900/40 hover:bg-rose-900/60 text-rose-300' : 'bg-rose-50 hover:bg-rose-100 text-rose-600'}`}>
                   <Trash2 className="w-3 h-3" /> Sil
                 </button>
               )}
-              <button onClick={() => setShowResetConfirm(true)} title="İlerlemeyi sıfırla" className="text-xs text-slate-400 hover:text-rose-500 px-1 py-1 rounded transition-colors">
+              <button onClick={() => setShowResetConfirm(true)} title="İlerlemeyi sıfırla" className={`text-xs px-1 py-1 rounded transition-colors ${darkMode ? 'text-slate-500 hover:text-rose-400' : 'text-slate-400 hover:text-rose-500'}`}>
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
           <div className="flex flex-col items-end w-full md:w-64 shrink-0">
             <div className="flex justify-between w-full mb-1">
-              <span className="text-xs font-medium text-slate-600">Genel İlerleme</span>
-              <span className="text-xs font-bold text-blue-600">{overallProgress}%</span>
+              <span className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Genel İlerleme</span>
+              <span className="text-xs font-bold text-blue-500">{overallProgress}%</span>
             </div>
-            <div className="w-full bg-slate-200 rounded-full h-2.5">
+            <div className={`w-full rounded-full h-2.5 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>
               <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out" style={{ width: `${overallProgress}%` }}></div>
             </div>
-            <span className="text-[10px] text-slate-400 mt-0.5">{completedTasks.length}/{totalTasks} Ana · {completedSubTasks.length}/{totalSubTasks} Alt Görev</span>
+            <span className={`text-[10px] mt-0.5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{completedTasks.length}/{totalTasks} Ana · {completedSubTasks.length}/{totalSubTasks} Alt Görev</span>
           </div>
         </div>
         {/* TAB NAVIGATION — Redesigned */}
@@ -872,7 +885,9 @@ TALİMATLAR (ÇOK ÖNEMLİ):
               const Icon = icons[tab];
               return (
                 <button key={tab} onClick={() => {setActiveTab(tab);setShowDashboardDetail(null);}} className={`pb-2.5 pt-2 px-3 font-medium text-[13px] flex items-center gap-1.5 whitespace-nowrap border-b-2 transition-all rounded-t-md ${
-                  activeTab === tab ? 'border-blue-600 text-blue-700 bg-blue-50/60' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                  activeTab === tab
+                    ? (darkMode ? 'border-blue-400 text-blue-300 bg-blue-900/30' : 'border-blue-600 text-blue-700 bg-blue-50/60')
+                    : (darkMode ? 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700/50' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50')
                 }`}>
                   <Icon className="w-3.5 h-3.5" />
                   {label}
