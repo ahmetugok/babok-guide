@@ -534,6 +534,7 @@ export default function App() {
   const [ganttForm, setGanttForm] = useState({ name: '', startDate: '', endDate: '', color: '#3b82f6', category: '', assignedTo: '', progress: 0, delayReason: '' });
   const [showDashboardDetail, setShowDashboardDetail] = useState(null);
   const [ganttZoom, setGanttZoom] = useState('month');
+  const [showBackupMenu, setShowBackupMenu] = useState(false);
 
   // Dark mode
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('babok_darkMode') === 'true');
@@ -891,10 +892,27 @@ Yanıtın tamamı Türkçe olmalıdır.
           </button>
         ))}
         <div className="w-6 h-px bg-slate-700/50 my-1" />
-        <button onClick={exportProjectJSON} className="aura-dock-item" title="Yedekle">
-          <Download className="w-[18px] h-[18px]" />
-          <span className="dock-label">Yedekle</span>
-        </button>
+        <div className="relative">
+          <button onClick={() => setShowBackupMenu(!showBackupMenu)} className="aura-dock-item" title="Yedekle">
+            <Download className="w-[18px] h-[18px]" />
+            <span className="dock-label">Yedekle</span>
+          </button>
+          {showBackupMenu && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setShowBackupMenu(false)} />
+              <div className="absolute left-full bottom-0 ml-2 glass-card rounded-xl shadow-2xl border border-white/10 py-2 px-1 min-w-[160px] z-50">
+              <button onClick={() => { exportProjectJSON(); setShowBackupMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-white/10 transition-colors">
+                <Download className="w-4 h-4 text-cyan-400" />
+                <span>JSON Yedek</span>
+              </button>
+              <button onClick={() => { exportMarkdown(); setShowBackupMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-white/10 transition-colors">
+                <FileText className="w-4 h-4 text-violet-400" />
+                <span>Markdown (.md)</span>
+              </button>
+              </div>
+            </>
+          )}
+        </div>
       </nav>
 
       {/* ===== MAIN CONTENT AREA ===== */}
