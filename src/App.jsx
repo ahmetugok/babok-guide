@@ -508,7 +508,7 @@ export default function App() {
   // Action states
   const [showActionModal, setShowActionModal] = useState(false);
   const [editingAction, setEditingAction] = useState(null);
-  const [actionForm, setActionForm] = useState({ title: '', owner: '', dueDate: '', status: 'Bekliyor', source: '' });
+  const [actionForm, setActionForm] = useState({ title: '', owner: '', dueDate: '', status: 'Bekliyor', source: '', notes: '' });
 
   // Stakeholder states
   const [showStakeholderModal, setShowStakeholderModal] = useState(false);
@@ -531,7 +531,7 @@ export default function App() {
   // Gantt states
   const [showGanttModal, setShowGanttModal] = useState(false);
   const [editingGanttTask, setEditingGanttTask] = useState(null);
-  const [ganttForm, setGanttForm] = useState({ name: '', startDate: '', endDate: '', color: '#3b82f6', category: '', assignedTo: '', progress: 0 });
+  const [ganttForm, setGanttForm] = useState({ name: '', startDate: '', endDate: '', color: '#3b82f6', category: '', assignedTo: '', progress: 0, delayReason: '' });
   const [showDashboardDetail, setShowDashboardDetail] = useState(null);
   const [ganttZoom, setGanttZoom] = useState('month');
 
@@ -600,7 +600,8 @@ export default function App() {
 
   // --- ACTION ---
   const isOverdue = (a) => a.status !== 'Tamamlandı' && a.dueDate && new Date(a.dueDate) < new Date();
-  const openActionModal = (action = null) => { setEditingAction(action); setActionForm(action || { title: '', owner: '', dueDate: '', status: 'Bekliyor', source: '' }); setShowActionModal(true); };
+  const openActionModal = (action = null) => { setEditingAction(action); setActionForm(action ? { ...action, notes: action.notes || '' } : { title: '', owner: '', dueDate: '', status: 'Bekliyor', source: '', notes: '' }); setShowActionModal(true); };
+  const quickUpdateActionStatus = (actionId, newStatus) => { updateActive(p => ({ ...p, actions: p.actions.map(a => a.id === actionId ? { ...a, status: newStatus } : a) })); };
   const saveAction = () => {
     if (!actionForm.title.trim()) return;
     updateActive(p => ({ ...p, actions: editingAction ? p.actions.map(a => a.id === editingAction.id ? { ...actionForm, id: editingAction.id } : a) : [...p.actions, { ...actionForm, id: generateId() }] }));
@@ -638,7 +639,12 @@ export default function App() {
     if (!newNoteText.trim() || !selectedMeeting) return;
     const note = { id: generateId(), type: newNoteType, text: newNoteText };
     const upd = { ...selectedMeeting, notes: [...selectedMeeting.notes, note] };
-    updateActive(p => ({ ...p, meetings: p.meetings.map(m => m.id === selectedMeeting.id ? upd : m) }));
+    if (newNoteType === 'Aksiyon') {
+      const newAction = { id: generateId(), title: newNoteText, owner: '', dueDate: '', status: 'Bekliyor', source: selectedMeeting.topic, notes: '' };
+      updateActive(p => ({ ...p, meetings: p.meetings.map(m => m.id === selectedMeeting.id ? upd : m), actions: [...p.actions, newAction] }));
+    } else {
+      updateActive(p => ({ ...p, meetings: p.meetings.map(m => m.id === selectedMeeting.id ? upd : m) }));
+    }
     setSelectedMeeting(upd); setNewNoteText('');
   };
   const deleteNote = (nid) => { const upd = { ...selectedMeeting, notes: selectedMeeting.notes.filter(n => n.id !== nid) }; updateActive(p => ({ ...p, meetings: p.meetings.map(m => m.id === selectedMeeting.id ? upd : m) })); setSelectedMeeting(upd); };
@@ -654,7 +660,7 @@ export default function App() {
     setEditingGanttTask(task);
     const td = new Date().toISOString().split('T')[0];
     const nw = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
-    setGanttForm(task ? { name: task.name, startDate: task.startDate, endDate: task.endDate, color: task.color, category: task.category, assignedTo: task.assignedTo || '', progress: task.progress || 0 } : { name: '', startDate: td, endDate: nw, color: '#3b82f6', category: '', assignedTo: '', progress: 0 });
+    setGanttForm(task ? { name: task.name, startDate: task.startDate, endDate: task.endDate, color: task.color, category: task.category, assignedTo: task.assignedTo || '', progress: task.progress || 0, delayReason: task.delayReason || '' } : { name: '', startDate: td, endDate: nw, color: '#3b82f6', category: '', assignedTo: '', progress: 0, delayReason: '' });
     setShowGanttModal(true);
   };
   const saveGanttTask = () => {
@@ -1100,19 +1106,28 @@ Yanıtın tamamı Türkçe olmalıdır.
                                               {activeProject.actions.map(a => {
                                                 const od = isOverdue(a);
                                                 return (
-                                                  <div key={a.id} className={`bg-white rounded-xl border p-4 shadow-sm flex items-start gap-4 ${od ? 'border-l-4 border-l-rose-400 bg-rose-50/20' : ''}`}>
-                                                    <div className="flex-1 min-w-0">
-                                                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                                                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${a.status === 'Tamamlandı' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : a.status === 'Devam Ediyor' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>{a.status}</span>
-                                                        {od && <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 flex items-center gap-1"><Clock className="w-3 h-3" />Gecikmiş</span>}
+                                                  <div key={a.id} className={`bg-white rounded-xl border p-4 shadow-sm ${od ? 'border-l-4 border-l-rose-400 bg-rose-50/20' : ''}`}>
+                                                    <div className="flex items-start gap-4">
+                                                      <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                          <select value={a.status} onChange={e => quickUpdateActionStatus(a.id, e.target.value)} className={`text-xs font-bold px-2 py-1 rounded-full border cursor-pointer appearance-none text-center focus:outline-none focus:ring-2 focus:ring-indigo-300 ${a.status === 'Tamamlandı' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : a.status === 'Devam Ediyor' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-slate-100 text-slate-700 border-slate-200'}`} style={{ minWidth: 110 }}>
+                                                            {['Bekliyor', 'Devam Ediyor', 'Tamamlandı'].map(s => <option key={s} value={s}>{s}</option>)}
+                                                          </select>
+                                                          {od && <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 flex items-center gap-1"><Clock className="w-3 h-3" />Gecikmiş</span>}
+                                                        </div>
+                                                        <p className={`font-semibold ${a.status === 'Tamamlandı' ? 'line-through text-slate-400' : 'text-slate-800'}`}>{a.title}</p>
+                                                        <p className="text-xs text-slate-400 mt-1">Sorumlu: {a.owner || '—'} · Tarih: {a.dueDate || '—'}{a.source ? ` · Kaynak: ${a.source}` : ''}</p>
                                                       </div>
-                                                      <p className={`font-semibold ${a.status === 'Tamamlandı' ? 'line-through text-slate-400' : 'text-slate-800'}`}>{a.title}</p>
-                                                      <p className="text-xs text-slate-400 mt-1">Sorumlu: {a.owner || '—'} · Tarih: {a.dueDate || '—'}{a.source ? ` · Kaynak: ${a.source}` : ''}</p>
+                                                      <div className="flex items-center gap-1 shrink-0">
+                                                        <button onClick={() => openActionModal(a)} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
+                                                        <button onClick={() => deleteAction(a.id)} className="p-1.5 hover:bg-rose-50 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                                      </div>
                                                     </div>
-                                                    <div className="flex items-center gap-1 shrink-0">
-                                                      <button onClick={() => openActionModal(a)} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
-                                                      <button onClick={() => deleteAction(a.id)} className="p-1.5 hover:bg-rose-50 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                                                    </div>
+                                                    {a.notes && (
+                                                      <div className="mt-2 pt-2 border-t border-slate-100">
+                                                        <p className="text-xs text-slate-500"><span className="font-medium text-slate-600">Not:</span> {a.notes}</p>
+                                                      </div>
+                                                    )}
                                                   </div>
                                                 );
                                               })}
@@ -1465,7 +1480,8 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                           <div className="w-8 bg-slate-200 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-cyan-500" style={{ width: `${row.task.progress || 0}%` }} /></div>
                                                           <span className="text-[10px] font-medium text-slate-500">{row.task.progress || 0}%</span>
                                                         </div>
-                                                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+                                                        {(() => { const te = new Date(row.task.endDate); te.setHours(0,0,0,0); const isD = te < new Date(new Date().setHours(0,0,0,0)) && (row.task.progress || 0) < 100; return isD ? <span className="text-[9px] bg-rose-100 text-rose-700 px-1 py-0.5 rounded-full font-bold ml-1 shrink-0" title={row.task.delayReason || 'Gecikmiş'}>⚠️</span> : null; })()}
+                                                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
                                                           <button onClick={() => openGanttModal(row.task)} className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-600"><Pencil className="w-3 h-3" /></button>
                                                           <button onClick={() => deleteGanttTask(row.task.id)} className="p-1 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-600"><Trash2 className="w-3 h-3" /></button>
                                                         </div>
@@ -1506,20 +1522,30 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                       {/* Task rows */}
                                                       {rows.map((row, idx) => row.type === 'category' ? (
                                                         <div key={`cat-${idx}`} className="h-8 border-b border-slate-200 bg-slate-50/60 flex items-center px-2"><span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{row.label}</span></div>
-                                                      ) : (
+                                                      ) : (() => {
+                                                        const taskEnd = new Date(row.task.endDate); taskEnd.setHours(0,0,0,0);
+                                                        const isDelayed = taskEnd < today && (row.task.progress || 0) < 100;
+                                                        const delayDays = isDelayed ? diffDays(today, taskEnd) : 0;
+                                                        return (
                                                         <div key={row.task.id} className="h-14 border-b border-slate-100 relative">
                                                           <div
-                                                            className="absolute top-2 h-10 rounded-md shadow-sm cursor-pointer hover:brightness-110 transition-all flex flex-col justify-center px-2 overflow-hidden"
+                                                            className={`absolute top-2 h-10 rounded-md shadow-sm cursor-pointer hover:brightness-110 transition-all flex flex-col justify-center px-2 overflow-hidden ${isDelayed ? 'ring-2 ring-rose-400 ring-offset-1' : ''}`}
                                                             style={{ left: getBarPos(row.task).left, width: getBarPos(row.task).width, backgroundColor: row.task.color || '#3b82f6' }}
                                                             onClick={() => openGanttModal(row.task)}
-                                                            title={`${row.task.name}\n${row.task.startDate} → ${row.task.endDate}\nİlerleme: %${row.task.progress || 0}${row.task.assignedTo ? '\nSorumlu: ' + row.task.assignedTo : ''}`}
+                                                            title={`${row.task.name}\n${row.task.startDate} → ${row.task.endDate}\nİlerleme: %${row.task.progress || 0}${row.task.assignedTo ? '\nSorumlu: ' + row.task.assignedTo : ''}${isDelayed ? '\n⚠️ ' + delayDays + ' gün gecikme' : ''}${row.task.delayReason ? '\nNeden: ' + row.task.delayReason : ''}`}
                                                           >
                                                             {getBarPos(row.task).width > 70 && <span className="text-[10px] text-white font-medium truncate drop-shadow-sm leading-tight">{row.task.name}</span>}
                                                             {getBarPos(row.task).width > 100 && row.task.assignedTo && <span className="text-[9px] text-white/80 truncate leading-tight">{row.task.assignedTo}</span>}
                                                             {getBarPos(row.task).width > 50 && <div className="w-full bg-white/20 rounded-full h-1.5 mt-0.5"><div className="h-1.5 rounded-full bg-white/60" style={{ width: `${row.task.progress || 0}%` }} /></div>}
                                                           </div>
+                                                          {isDelayed && (
+                                                            <div className="absolute top-0 right-0 flex items-center" style={{ left: getBarPos(row.task).left + getBarPos(row.task).width + 4, top: 8 }}>
+                                                              <span className="text-[9px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded-full font-bold whitespace-nowrap flex items-center gap-0.5" title={row.task.delayReason || ''}><AlertTriangle className="w-3 h-3" />{delayDays}g gecikme</span>
+                                                            </div>
+                                                          )}
                                                         </div>
-                                                      ))}
+                                                        );
+                                                      })())}  
 
                                                       {/* Weekend columns overlay */}
                                                       {ganttZoom !== 'quarter' && (
@@ -1556,6 +1582,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                   <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
                                                     <span className="text-xs font-bold text-slate-500">{tasks.length} görev</span>
                                                     {tasks.length > 0 && (() => { const avg = Math.round(tasks.reduce((a, t) => a + (t.progress || 0), 0) / tasks.length); return <span className="text-xs font-medium text-cyan-600">Ortalama İlerleme: %{avg}</span>; })()}
+                                                    {(() => { const delayed = tasks.filter(t => { const te = new Date(t.endDate); te.setHours(0,0,0,0); return te < today && (t.progress || 0) < 100; }); return delayed.length > 0 ? <span className="text-xs font-medium text-rose-600 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" />{delayed.length} gecikmiş görev</span> : null; })()}
                                                   </div>
                                                   <div className="flex flex-wrap gap-x-5 gap-y-1.5">
                                                     {tasks.map(t => {
@@ -1970,6 +1997,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                             {['Bekliyor', 'Devam Ediyor', 'Tamamlandı'].map(s => <option key={s}>{s}</option>)}
                                           </select>
                                           <input value={actionForm.source} onChange={e => setActionForm({ ...actionForm, source: e.target.value })} placeholder="Kaynak (ör. Toplantı adı)" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                          <textarea value={actionForm.notes || ''} onChange={e => setActionForm({ ...actionForm, notes: e.target.value })} placeholder="Not / Açıklama (opsiyonel)" rows="2" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none" />
                                         </div>
                                         <div className="flex justify-end gap-3 mt-5">
                                           <button onClick={() => setShowActionModal(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">İptal</button>
@@ -2091,6 +2119,10 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                 <button key={c} onClick={() => setGanttForm({ ...ganttForm, color: c })} className={`w-7 h-7 rounded-lg transition-all ${ganttForm.color === c ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : 'hover:scale-105'}`} style={{ backgroundColor: c }} />
                                               ))}
                                             </div>
+                                          </div>
+                                          <div>
+                                            <label className="text-xs text-slate-500 block mb-1">Gecikme Nedeni <span className="text-slate-300">(varsa)</span></label>
+                                            <textarea value={ganttForm.delayReason || ''} onChange={e => setGanttForm({ ...ganttForm, delayReason: e.target.value })} placeholder="Gecikme varsa nedenini yazın..." rows="2" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 resize-none" />
                                           </div>
                                           {ganttForm.startDate && ganttForm.endDate && new Date(ganttForm.endDate) >= new Date(ganttForm.startDate) && (
                                             <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-center">
