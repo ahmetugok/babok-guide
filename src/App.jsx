@@ -935,8 +935,11 @@ Yanıtın tamamı Türkçe olmalıdır.
 
                                           {/* Dashboard detail panels */}
                                           {showDashboardDetail === 'progress' && (
-                                            <div className="bg-white rounded-xl border border-blue-200 p-5 shadow-sm space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-                                              <h3 className="font-bold text-blue-800 flex items-center gap-2"><TrendingUp className="w-5 h-5" />İlerleme Detayları</h3>
+                                            <div ref={el => el && setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)} className="bg-white rounded-xl border-2 border-blue-300 p-5 shadow-md space-y-3">
+                                              <div className="flex items-center justify-between">
+                                                <h3 className="font-bold text-blue-800 flex items-center gap-2"><TrendingUp className="w-5 h-5" />İlerleme Detayları</h3>
+                                                <button onClick={() => setShowDashboardDetail(null)} className="p-1 hover:bg-blue-100 rounded-full text-blue-400 hover:text-blue-600"><X className="w-4 h-4" /></button>
+                                              </div>
                                               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                                 {babokData.map(ka => {
                                                   const done = ka.tasks.filter(t => completedTasks.includes(t.id)).length;
@@ -947,8 +950,11 @@ Yanıtın tamamı Türkçe olmalıdır.
                                             </div>
                                           )}
                                           {showDashboardDetail === 'risks' && (
-                                            <div className="bg-white rounded-xl border border-rose-200 p-5 shadow-sm space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                                              <h3 className="font-bold text-rose-800 flex items-center gap-2"><AlertTriangle className="w-5 h-5" />Açık Riskler</h3>
+                                            <div ref={el => el && setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)} className="bg-white rounded-xl border-2 border-rose-300 p-5 shadow-md space-y-2">
+                                              <div className="flex items-center justify-between">
+                                                <h3 className="font-bold text-rose-800 flex items-center gap-2"><AlertTriangle className="w-5 h-5" />Açık Riskler</h3>
+                                                <button onClick={() => setShowDashboardDetail(null)} className="p-1 hover:bg-rose-100 rounded-full text-rose-400 hover:text-rose-600"><X className="w-4 h-4" /></button>
+                                              </div>
                                               {activeProject.risks.filter(r => r.status === 'Açık').length === 0 ? <p className="text-sm text-slate-400">Açık risk bulunmuyor.</p> : activeProject.risks.filter(r => r.status === 'Açık').map(r => (
                                                 <div key={r.id} className="flex items-center gap-3 text-sm p-2 rounded-lg bg-rose-50">
                                                   <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${getRiskLevel(r.probability, r.impact).cls}`}>{getRiskLevel(r.probability, r.impact).label}</span>
@@ -960,8 +966,11 @@ Yanıtın tamamı Türkçe olmalıdır.
                                             </div>
                                           )}
                                           {showDashboardDetail === 'actions' && (
-                                            <div className="bg-white rounded-xl border border-amber-200 p-5 shadow-sm space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                                              <h3 className="font-bold text-amber-800 flex items-center gap-2"><ListChecks className="w-5 h-5" />Bekleyen Aksiyonlar</h3>
+                                            <div ref={el => el && setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)} className="bg-white rounded-xl border-2 border-amber-300 p-5 shadow-md space-y-2">
+                                              <div className="flex items-center justify-between">
+                                                <h3 className="font-bold text-amber-800 flex items-center gap-2"><ListChecks className="w-5 h-5" />Bekleyen Aksiyonlar</h3>
+                                                <button onClick={() => setShowDashboardDetail(null)} className="p-1 hover:bg-amber-100 rounded-full text-amber-400 hover:text-amber-600"><X className="w-4 h-4" /></button>
+                                              </div>
                                               {activeProject.actions.filter(a => a.status !== 'Tamamlandı').length === 0 ? <p className="text-sm text-slate-400">Bekleyen aksiyon yok.</p> : activeProject.actions.filter(a => a.status !== 'Tamamlandı').map(a => (
                                                 <div key={a.id} className={`flex items-center gap-3 text-sm p-2 rounded-lg ${isOverdue(a) ? 'bg-rose-50' : 'bg-amber-50'}`}>
                                                   {isOverdue(a) && <span className="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded-full font-bold">Gecikmiş</span>}
@@ -974,8 +983,11 @@ Yanıtın tamamı Türkçe olmalıdır.
                                             </div>
                                           )}
                                           {showDashboardDetail === 'requirements' && (
-                                            <div className="bg-white rounded-xl border border-emerald-200 p-5 shadow-sm space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                                              <h3 className="font-bold text-emerald-800 flex items-center gap-2"><BookMarked className="w-5 h-5" />Gereksinim Durumu</h3>
+                                            <div ref={el => el && setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)} className="bg-white rounded-xl border-2 border-emerald-300 p-5 shadow-md space-y-2">
+                                              <div className="flex items-center justify-between">
+                                                <h3 className="font-bold text-emerald-800 flex items-center gap-2"><BookMarked className="w-5 h-5" />Gereksinim Durumu</h3>
+                                                <button onClick={() => setShowDashboardDetail(null)} className="p-1 hover:bg-emerald-100 rounded-full text-emerald-400 hover:text-emerald-600"><X className="w-4 h-4" /></button>
+                                              </div>
                                               {activeProject.requirements.length === 0 ? <p className="text-sm text-slate-400">Henüz gereksinim eklenmemiş.</p> : (
                                                 <div className="flex flex-wrap gap-2">
                                                   {Object.keys(REQ_STATUS_COLORS).map(st => {
@@ -1424,29 +1436,38 @@ Yanıtın tamamı Türkçe olmalıdır.
                                               <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                                                 <div className="flex" style={{ maxHeight: 'calc(100vh - 260px)', minHeight: 200 }}>
                                                   {/* Sidebar */}
-                                                  <div className="w-60 shrink-0 border-r border-slate-200 bg-slate-50 z-[2] overflow-y-auto">
+                                                  <div className="w-80 shrink-0 border-r border-slate-200 bg-slate-50 z-[2] overflow-y-auto">
                                                     <div className="h-[52px] border-b border-slate-200 flex items-end px-3 pb-1.5 sticky top-0 bg-slate-50 z-[1]">
-                                                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Görev Adı</span>
+                                                      <div className="flex items-center w-full">
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex-1">Görev Adı</span>
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 text-center">Sorumlu</span>
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14 text-right pr-8">%</span>
+                                                      </div>
                                                     </div>
                                                     {rows.map((row, idx) => row.type === 'category' ? (
                                                       <div key={`cat-${idx}`} className="h-8 px-3 flex items-center bg-slate-100/80 border-b border-slate-200">
                                                         <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">{row.label}</span>
                                                       </div>
                                                     ) : (
-                                                      <div key={row.task.id} className="h-12 px-3 flex items-center justify-between border-b border-slate-100 group hover:bg-white transition-colors">
+                                                      <div key={row.task.id} className="h-14 px-3 flex items-center border-b border-slate-100 group hover:bg-white transition-colors">
                                                         <div className="flex items-center gap-2 min-w-0 flex-1">
                                                           <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: row.task.color }} />
-                                                          <div className="min-w-0">
-                                                            <span className="text-xs text-slate-700 truncate block" title={row.task.name}>{row.task.name}</span>
-                                                            <div className="flex items-center gap-1.5">
-                                                              {row.task.assignedTo && <span className="text-[9px] text-slate-400 truncate">{row.task.assignedTo}</span>}
-                                                              <div className="flex items-center gap-1 w-14"><div className="w-full bg-slate-200 rounded-full h-1"><div className="h-1 rounded-full bg-cyan-500" style={{ width: `${row.task.progress || 0}%` }} /></div><span className="text-[8px] text-slate-400">{row.task.progress || 0}%</span></div>
-                                                            </div>
-                                                          </div>
+                                                          <span className="text-xs font-medium text-slate-700 truncate" title={row.task.name}>{row.task.name}</span>
                                                         </div>
-                                                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
-                                                          <button onClick={() => openGanttModal(row.task)} className="p-0.5 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-600"><Pencil className="w-3 h-3" /></button>
-                                                          <button onClick={() => deleteGanttTask(row.task.id)} className="p-0.5 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-600"><Trash2 className="w-3 h-3" /></button>
+                                                        <div className="w-24 text-center shrink-0 px-1">
+                                                          {row.task.assignedTo ? (
+                                                            <span className="text-[11px] text-slate-600 font-medium truncate block" title={row.task.assignedTo}>{row.task.assignedTo}</span>
+                                                          ) : (
+                                                            <span className="text-[10px] text-slate-300">—</span>
+                                                          )}
+                                                        </div>
+                                                        <div className="flex items-center gap-1 w-14 shrink-0 justify-end">
+                                                          <div className="w-8 bg-slate-200 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-cyan-500" style={{ width: `${row.task.progress || 0}%` }} /></div>
+                                                          <span className="text-[10px] font-medium text-slate-500">{row.task.progress || 0}%</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+                                                          <button onClick={() => openGanttModal(row.task)} className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-600"><Pencil className="w-3 h-3" /></button>
+                                                          <button onClick={() => deleteGanttTask(row.task.id)} className="p-1 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-600"><Trash2 className="w-3 h-3" /></button>
                                                         </div>
                                                       </div>
                                                     ))}
@@ -1486,14 +1507,15 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                       {rows.map((row, idx) => row.type === 'category' ? (
                                                         <div key={`cat-${idx}`} className="h-8 border-b border-slate-200 bg-slate-50/60 flex items-center px-2"><span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{row.label}</span></div>
                                                       ) : (
-                                                        <div key={row.task.id} className="h-12 border-b border-slate-100 relative">
+                                                        <div key={row.task.id} className="h-14 border-b border-slate-100 relative">
                                                           <div
-                                                            className="absolute top-1.5 h-9 rounded-md shadow-sm cursor-pointer hover:brightness-110 transition-all flex flex-col justify-center px-2 overflow-hidden"
+                                                            className="absolute top-2 h-10 rounded-md shadow-sm cursor-pointer hover:brightness-110 transition-all flex flex-col justify-center px-2 overflow-hidden"
                                                             style={{ left: getBarPos(row.task).left, width: getBarPos(row.task).width, backgroundColor: row.task.color || '#3b82f6' }}
                                                             onClick={() => openGanttModal(row.task)}
                                                             title={`${row.task.name}\n${row.task.startDate} → ${row.task.endDate}\nİlerleme: %${row.task.progress || 0}${row.task.assignedTo ? '\nSorumlu: ' + row.task.assignedTo : ''}`}
                                                           >
                                                             {getBarPos(row.task).width > 70 && <span className="text-[10px] text-white font-medium truncate drop-shadow-sm leading-tight">{row.task.name}</span>}
+                                                            {getBarPos(row.task).width > 100 && row.task.assignedTo && <span className="text-[9px] text-white/80 truncate leading-tight">{row.task.assignedTo}</span>}
                                                             {getBarPos(row.task).width > 50 && <div className="w-full bg-white/20 rounded-full h-1.5 mt-0.5"><div className="h-1.5 rounded-full bg-white/60" style={{ width: `${row.task.progress || 0}%` }} /></div>}
                                                           </div>
                                                         </div>
@@ -1548,7 +1570,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                           <span className={`font-medium ${isPast ? 'text-slate-400 line-through' : isActive ? 'text-cyan-700' : 'text-slate-600'}`}>{t.name}</span>
                                                           <span className="text-slate-400">{dur}g</span>
                                                           <span className="text-[9px] text-cyan-600 font-medium">%{t.progress || 0}</span>
-                                                          {t.assignedTo && <span className="text-[9px] text-slate-400">({t.assignedTo})</span>}
+                                                          {t.assignedTo && <span className="text-xs text-slate-500 font-medium">· {t.assignedTo}</span>}
                                                           {isActive && <span className="text-[9px] bg-cyan-100 text-cyan-700 px-1.5 py-0.5 rounded-full font-medium">Aktif</span>}
                                                           {isPast && <span className="text-[9px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded-full">Bitti</span>}
                                                         </div>
