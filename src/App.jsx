@@ -5,7 +5,8 @@ import {
   CheckSquare, Square, Sparkles, Bot, X, Copy, Loader2, FileStack, ClipboardCopy,
   AlertTriangle, Trash2, Pencil, Plus, Download, LayoutDashboard, ListChecks,
   StickyNote, FolderPlus, RotateCcw, MessageSquare, Clock, UserPlus, ChevronUp,
-  Shield, ArrowUpRight, TrendingUp, BookMarked, CalendarDays, Upload, Moon, Sun
+  Shield, ArrowUpRight, TrendingUp, BookMarked, CalendarDays, GripVertical, ChevronLeft, ChevronRight as ChevronRightIcon,
+  Moon, Sun, Upload
 } from 'lucide-react';
 
 // --- BABOK KNOWLEDGE AREAS AND DETAILED TASKS DATA ---
@@ -395,7 +396,7 @@ const generateId = () => `id_${Date.now()}_${Math.random().toString(36).substr(2
 const DEFAULT_PROJECT = {
   id: 'proj_1', name: 'Ana Proje', projectContext: '',
   completedTasks: [], completedSubTasks: [],
-  risks: [], actions: [], stakeholders: [], requirements: [], meetings: [], ganttTasks: [], reqCounter: 1,
+  risks: [], actions: [], stakeholders: [], requirements: [], meetings: [], timeline: [], reqCounter: 1,
 };
 const PROB_LABELS = ['','Düşük','Orta','Yüksek'];
 const IMPACT_LABELS = ['','Düşük','Orta','Yüksek'];
@@ -403,6 +404,9 @@ const RACI_LABELS = { R:'Sorumlu', A:'Onaylayan', C:'Danışılan', I:'Bilgilend
 const RACI_COLORS = { R:'bg-blue-100 text-blue-800', A:'bg-purple-100 text-purple-800', C:'bg-amber-100 text-amber-800', I:'bg-slate-100 text-slate-700' };
 const REQ_STATUS_COLORS = { 'Taslak':'bg-slate-100 text-slate-700', 'İncelemede':'bg-amber-100 text-amber-800', 'Onaylandı':'bg-blue-100 text-blue-800', 'Geliştiriliyor':'bg-purple-100 text-purple-800', 'Test':'bg-orange-100 text-orange-800', 'Canlıda':'bg-emerald-100 text-emerald-800' };
 const NOTE_TYPE_COLORS = { 'Karar':'bg-blue-100 text-blue-800 border-blue-200', 'Açık Nokta':'bg-rose-100 text-rose-800 border-rose-200', 'Aksiyon':'bg-amber-100 text-amber-800 border-amber-200' };
+const TIMELINE_COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#06b6d4','#f97316','#84cc16','#ec4899','#14b8a6'];
+const PX_PER_DAY = { week: 14, month: 4, quarter: 2 };
+const diffDays = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
 
 // --- BABOK UNDERLYING COMPETENCIES DATA ---
 const competenciesData = [
@@ -527,19 +531,27 @@ export default function App() {
   const [newNoteType, setNewNoteType] = useState('Karar');
   const [newNoteText, setNewNoteText] = useState('');
 
-  // Gantt states
-  const [showGanttModal, setShowGanttModal] = useState(false);
-  const [editingGanttTask, setEditingGanttTask] = useState(null);
-  const [ganttForm, setGanttForm] = useState({ name:'', startDate:'', endDate:'', color:'#3b82f6', category:'', assignedTo:'', progress:0 });
-  const [showDashboardDetail, setShowDashboardDetail] = useState(null);
-  const [ganttZoom, setGanttZoom] = useState('month');
-
-  // Dark mode
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('babok_darkMode') === 'true');
-  useEffect(() => { localStorage.setItem('babok_darkMode', String(darkMode)); }, [darkMode]);
-
   // Techniques filter
   const [techFilter, setTechFilter] = useState('all');
+
+  // Dark mode
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('babok_dark') === 'true');
+
+  // Timeline / Gantt
+  const [showTimelineModal, setShowTimelineModal] = useState(false);
+  const [editingTimeline, setEditingTimeline] = useState(null);
+  const today = new Date().toISOString().split('T')[0];
+  const [timelineForm, setTimelineForm] = useState({ name:'', group:'', startDate: today, endDate: today, color: TIMELINE_COLORS[0], progress: 0, notes:'', delayReason:'' });
+  const [timelineZoom, setTimelineZoom] = useState('month');
+
+  // Action notes expand
+  const [expandedActionNotes, setExpandedActionNotes] = useState({});
+  const toggleActionNotes = (id) => setExpandedActionNotes(p => ({ ...p, [id]: !p[id] }));
+
+  // Doc upload AI
+  const [showDocModal, setShowDocModal] = useState(false);
+  const [docContent, setDocContent] = useState('');
+  const [docFileName, setDocFileName] = useState('');
 
   const toggleTask = (taskId, e) => {
     e.stopPropagation();
@@ -563,6 +575,12 @@ export default function App() {
     localStorage.setItem('babok_v2_projects', JSON.stringify(projects));
     localStorage.setItem('babok_v2_activeProjectId', activeProjectId);
   }, [projects, activeProjectId]);
+
+  // Dark mode
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+    localStorage.setItem('babok_dark', darkMode);
+  }, [darkMode]);
 
   // Computed totals
   const totalTasks = babokData.reduce((acc, ka) => acc + ka.tasks.length, 0);
@@ -647,69 +665,85 @@ export default function App() {
     navigator.clipboard.writeText(lines.join('\n')); alert('MoM panoya kopylandı!');
   };
 
-  // --- GANTT ---
-  const GANTT_COLORS = ['#3b82f6','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#6366f1','#14b8a6','#f97316'];
-  const openGanttModal = (task = null) => {
-    setEditingGanttTask(task);
-    const td = new Date().toISOString().split('T')[0];
-    const nw = new Date(Date.now()+7*86400000).toISOString().split('T')[0];
-    setGanttForm(task ? { name:task.name, startDate:task.startDate, endDate:task.endDate, color:task.color, category:task.category, assignedTo:task.assignedTo||'', progress:task.progress||0 } : { name:'', startDate:td, endDate:nw, color:'#3b82f6', category:'', assignedTo:'', progress:0 });
-    setShowGanttModal(true);
-  };
-  const saveGanttTask = () => {
-    if (!ganttForm.name.trim() || !ganttForm.startDate || !ganttForm.endDate) return;
-    if (new Date(ganttForm.endDate) < new Date(ganttForm.startDate)) { alert('Bitiş tarihi başlangıç tarihinden önce olamaz!'); return; }
-    updateActive(p => ({
-      ...p,
-      ganttTasks: editingGanttTask
-        ? (p.ganttTasks||[]).map(t => t.id === editingGanttTask.id ? { ...ganttForm, id: editingGanttTask.id } : t)
-        : [...(p.ganttTasks||[]), { ...ganttForm, id: generateId() }]
-    }));
-    setShowGanttModal(false);
-  };
-  const deleteGanttTask = (id) => { if(window.confirm('Görevi silmek istiyor musunuz?')) updateActive(p => ({ ...p, ganttTasks: (p.ganttTasks||[]).filter(t => t.id !== id) })); };
-
   // --- PROJECT MANAGEMENT ---
   const createProject = () => { if(!newProjectName.trim()) return; const np={...DEFAULT_PROJECT,id:generateId(),name:newProjectName}; setProjects(prev=>[...prev,np]); setActiveProjectId(np.id); setNewProjectName(''); setShowProjectModal(false); };
   const deleteProject = (id) => { if(projects.length<=1){alert('En az bir proje olmalıdır!');return;} const rem=projects.filter(p=>p.id!==id); setProjects(rem); if(activeProjectId===id) setActiveProjectId(rem[0].id); };
-  const importProject = () => {
-    const input = document.createElement('input'); input.type='file'; input.accept='.json';
-    input.onchange = (e) => {
-      const file = e.target.files[0]; if(!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        try {
-          const data = JSON.parse(ev.target.result);
-          if (data && data.name) {
-            const np = { ...DEFAULT_PROJECT, ...data, id: generateId() };
-            setProjects(prev => [...prev, np]);
-            setActiveProjectId(np.id);
-            alert(`"${np.name}" projesi başarıyla içe aktarıldı!`);
-          } else if (Array.isArray(data)) {
-            data.forEach(d => { const np={...DEFAULT_PROJECT,...d,id:generateId()}; setProjects(prev=>[...prev,np]); });
-            alert(`${data.length} proje başarıyla içe aktarıldı!`);
-          } else { alert('Geçersiz proje dosyası formatı.'); }
-        } catch { alert('Dosya okunamadı. Lütfen geçerli bir JSON dosyası seçin.'); }
-      };
-      reader.readAsText(file);
-    };
-    input.click();
-  };
-  const exportProjectJSON = () => {
-    const blob = new Blob([JSON.stringify(activeProject, null, 2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=`${activeProject.name}_backup.json`; a.click(); URL.revokeObjectURL(url);
-  };
 
   // --- EXPORT ---
   const exportMarkdown = () => {
     const p=activeProject;
-    const lines=[`# BABOK Proje Raporu: ${p.name}`,`**Tarih:** ${new Date().toLocaleDateString('tr-TR')}`,`**Bağlam:** ${p.projectContext||'-'}`,'',`## İlerleme`,`- Ana: ${p.completedTasks.length}/${totalTasks}`,`- Alt: ${p.completedSubTasks.length}/${totalSubTasks}`,'',`## Riskler`,...p.risks.map(r=>`- [${getRiskLevel(r.probability,r.impact).label}] ${r.title} | ${r.owner}`),'',`## Aksiyonlar`,...p.actions.map(a=>`- [${a.status}] ${a.title} | ${a.owner} | ${a.dueDate}`),'',`## Paydaşlar`,...p.stakeholders.map(s=>`- ${s.name} (${s.role}) | ${s.raci} — ${RACI_LABELS[s.raci]} | Dept: ${s.department||'-'} | İlgi: ${PROB_LABELS[s.interest]} | Etki: ${PROB_LABELS[s.influence]}`),'',`## Gereksinimler`,...p.requirements.map(r=>`- ${r.reqId}: ${r.name} | ${r.status}`),'',`## Zaman Çizelgesi (Gantt)`,...(p.ganttTasks||[]).map(g=>`- ${g.name} | ${g.startDate} → ${g.endDate} | ${g.category||'Genel'} | %${g.progress||0} | ${g.assignedTo||'-'}`)];
+    const lines=[`# BABOK Proje Raporu: ${p.name}`,`**Tarih:** ${new Date().toLocaleDateString('tr-TR')}`,`**Bağlam:** ${p.projectContext||'-'}`,'',`## İlerleme`,`- Ana: ${p.completedTasks.length}/${totalTasks}`,`- Alt: ${p.completedSubTasks.length}/${totalSubTasks}`,'',`## Riskler`,...p.risks.map(r=>`- [${getRiskLevel(r.probability,r.impact).label}] ${r.title} | ${r.owner}`),'',`## Aksiyonlar`,...p.actions.map(a=>`- [${a.status}] ${a.title} | ${a.owner} | ${a.dueDate}`),'',`## Paydaşlar`,...p.stakeholders.map(s=>`- ${s.name} (${s.role}) | ${RACI_LABELS[s.raci]}`),'',`## Gereksinimler`,...p.requirements.map(r=>`- ${r.reqId}: ${r.name} | ${r.status}`)];
     const blob=new Blob([lines.join('\n')],{type:'text/markdown'});
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`${p.name}_BABOK.md`; a.click(); URL.revokeObjectURL(url);
   };
 
   // --- AI HELPER ---
   const handleRegenerateAI = () => { if(activeAiTask) { setAiResult(''); handleOpenAIModal(activeAiTask, ''); } };
+
+  // --- TIMELINE / GANTT ---
+  const openTimelineModal = (item = null) => {
+    setEditingTimeline(item);
+    setTimelineForm(item || { name:'', group:'', startDate: today, endDate: today, color: TIMELINE_COLORS[0], progress: 0, notes:'', delayReason:'' });
+    setShowTimelineModal(true);
+  };
+  const saveTimeline = () => {
+    if (!timelineForm.name.trim() || !timelineForm.startDate || !timelineForm.endDate) return;
+    updateActive(p => ({ ...p, timeline: editingTimeline
+      ? p.timeline.map(t => t.id === editingTimeline.id ? { ...timelineForm, id: editingTimeline.id } : t)
+      : [...(p.timeline||[]), { ...timelineForm, id: generateId() }]
+    }));
+    setShowTimelineModal(false);
+  };
+  const deleteTimeline = (id) => { if(window.confirm('Görevi silmek istiyor musunuz?')) updateActive(p => ({ ...p, timeline: p.timeline.filter(t => t.id !== id) })); };
+
+  // Gantt helpers
+  const ganttStart = (items) => {
+    if (!items.length) return today;
+    return items.reduce((min, t) => t.startDate < min ? t.startDate : min, items[0].startDate);
+  };
+  const isDelayed = (item) => item.endDate < today && item.progress < 100;
+
+  // --- QUICK ACTION STATUS CYCLE ---
+  const cycleActionStatus = (id) => {
+    const cycle = ['Bekliyor', 'Devam Ediyor', 'Tamamlandı'];
+    updateActive(p => ({
+      ...p,
+      actions: p.actions.map(a => a.id === id ? { ...a, status: cycle[(cycle.indexOf(a.status) + 1) % cycle.length] } : a)
+    }));
+  };
+
+  // --- UPDATE ACTION NOTES ---
+  const updateActionNotes = (id, notes) => {
+    updateActive(p => ({ ...p, actions: p.actions.map(a => a.id === id ? { ...a, notes } : a) }));
+  };
+
+  // --- MEETING NOTE → ACTION ---
+  const addNoteAsAction = (mtg, note) => {
+    const newAction = { id: generateId(), title: note.text, owner: '', dueDate: '', status: 'Bekliyor', source: mtg.topic, notes: '' };
+    updateActive(p => ({ ...p, actions: [...p.actions, newAction] }));
+    alert(`"${note.text.substring(0,40)}..." aksiyonlara eklendi!`);
+  };
+
+  // --- DOCUMENT AI EVALUATION ---
+  const handleDocFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setDocFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (ev) => setDocContent(ev.target.result);
+    reader.readAsText(file, 'UTF-8');
+  };
+  const evaluateDocWithAI = async () => {
+    if (!docContent) return;
+    const prompt = `Aşağıdaki proje dokümanını BABOK v3 perspektifinden kapsamlı olarak değerlendir. Hangi BABOK bilgi alanlarına (Knowledge Areas) değinilmiş, hangilerine değinilmemiş? İş analizinin 6 temel alanı açısından eksiklikleri ve güçlü yönlerini belirt. Gereksinim yönetimi, paydaş katılımı, risk analizi ve çözüm değerlendirmesi konularında somut öneriler ver.\n\nProje Bağlamı: ${activeProject.projectContext || 'Belirtilmemiş'}\n\nDOKÜMAN:\n${docContent.substring(0, 8000)}`;
+    setIsAiModalOpen(true);
+    setAiResult('');
+    setAiLoading(true);
+    const result = await generateWithGemini(prompt);
+    setAiResult(result);
+    setAiLoading(false);
+    setShowDocModal(false);
+  };
 
   // --- GEMINI API INTEGRATION ---
   const generateWithGemini = async (promptText) => {
@@ -822,171 +856,211 @@ TALİMATLAR (ÇOK ÖNEMLİ):
   };
 
   return (
-    <div className={`min-h-screen font-sans pb-12 transition-colors duration-300 ${darkMode ? 'dark bg-slate-900 text-slate-200' : 'bg-slate-50 text-slate-800'}`}>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans text-slate-800 dark:text-slate-200 pb-12">
       {/* HEADER */}
-      <header className={`sticky top-0 z-10 shadow-sm border-b transition-colors duration-300 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h1 className={`text-xl font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                <Layers className="text-blue-500" /> BABOK v3 Saha Asistanı
-              </h1>
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className={`p-1.5 rounded-lg transition-all duration-300 ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-amber-400' : 'bg-slate-100 hover:bg-slate-200 text-slate-500'}`}
-                title={darkMode ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
-              >
-                {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </button>
-            </div>
-            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10 shadow-sm">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+          <div className="flex-1">
+            <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <Layers className="text-blue-600 shrink-0" />
+              <span>BABOK v3</span>
+              <span className="text-slate-300 dark:text-slate-600 font-light">·</span>
+              <span className="text-blue-700 dark:text-blue-400 truncate max-w-[180px]">{activeProject.name}</span>
+            </h1>
+            {/* Project Switcher */}
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
               <select
                 value={activeProjectId}
                 onChange={e => setActiveProjectId(e.target.value)}
-                className={`text-xs border rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 max-w-[180px] ${darkMode ? 'bg-slate-700 border-slate-600 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'}`}
+                className="text-xs border border-slate-200 rounded-md px-2 py-1 bg-slate-50 text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
               >
                 {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
-              <button onClick={() => setShowProjectModal(true)} className={`text-xs px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${darkMode ? 'bg-blue-900/40 hover:bg-blue-900/60 text-blue-300' : 'bg-blue-50 hover:bg-blue-100 text-blue-700'}`} title="Yeni Proje">
+              <button onClick={() => setShowProjectModal(true)} className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-1 rounded-md flex items-center gap-1 transition-colors">
                 <FolderPlus className="w-3 h-3" /> Yeni
               </button>
-              <button onClick={importProject} className={`text-xs px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${darkMode ? 'bg-emerald-900/40 hover:bg-emerald-900/60 text-emerald-300' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700'}`} title="Proje İçe Aktar (.json)">
-                <Upload className="w-3 h-3" /> İçe Aktar
-              </button>
-              <button onClick={exportProjectJSON} className={`text-xs px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-slate-300' : 'bg-slate-50 hover:bg-slate-100 text-slate-600'}`} title="Projeyi JSON olarak dışa aktar">
-                <Download className="w-3 h-3" /> Yedekle
-              </button>
               {projects.length > 1 && (
-                <button onClick={() => { if(window.confirm(`"${activeProject.name}" projesini silmek istiyor musunuz?`)) deleteProject(activeProjectId); }} className={`text-xs px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${darkMode ? 'bg-rose-900/40 hover:bg-rose-900/60 text-rose-300' : 'bg-rose-50 hover:bg-rose-100 text-rose-600'}`}>
+                <button onClick={() => { if(window.confirm(`"${activeProject.name}" projesini silmek istiyor musunuz?`)) deleteProject(activeProjectId); }} className="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 px-2 py-1 rounded-md flex items-center gap-1 transition-colors">
                   <Trash2 className="w-3 h-3" /> Sil
                 </button>
               )}
-              <button onClick={() => setShowResetConfirm(true)} title="İlerlemeyi sıfırla" className={`text-xs px-1 py-1 rounded transition-colors ${darkMode ? 'text-slate-500 hover:text-rose-400' : 'text-slate-400 hover:text-rose-500'}`}>
+              <button onClick={() => setShowResetConfirm(true)} title="İlerlemeyi sıfırla" className="text-xs text-slate-400 hover:text-rose-500 px-1 py-1 rounded transition-colors">
                 <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+              <button onClick={() => setShowDocModal(true)} title="Proje dokümanı yükle ve AI değerlendirmesi al" className="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 px-2 py-1 rounded-md flex items-center gap-1 transition-colors">
+                <Upload className="w-3 h-3" /> Doküman
               </button>
             </div>
           </div>
-          <div className="flex flex-col items-end w-full md:w-64 shrink-0">
-            <div className="flex justify-between w-full mb-1">
-              <span className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Genel İlerleme</span>
-              <span className="text-xs font-bold text-blue-500">{overallProgress}%</span>
+          <div className="flex items-center gap-3">
+            {/* Dark Mode Toggle */}
+            <button onClick={() => setDarkMode(d => !d)} className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-800 transition-colors" title={darkMode?'Aydınlık moda geç':'Karanlık moda geç'}>
+              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+            <div className="flex flex-col items-end w-44">
+              <div className="flex justify-between w-full mb-1">
+                <span className="text-xs font-medium text-slate-600">Genel İlerleme</span>
+                <span className="text-xs font-bold text-blue-600">{overallProgress}%</span>
+              </div>
+              <div className="w-full bg-slate-200 rounded-full h-2">
+                <div className="bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out" style={{ width: `${overallProgress}%` }}></div>
+              </div>
+              <span className="text-[10px] text-slate-400 mt-0.5">{completedTasks.length}/{totalTasks} Ana · {completedSubTasks.length}/{totalSubTasks} Alt Görev</span>
             </div>
-            <div className={`w-full rounded-full h-2.5 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>
-              <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out" style={{ width: `${overallProgress}%` }}></div>
-            </div>
-            <span className={`text-[10px] mt-0.5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{completedTasks.length}/{totalTasks} Ana · {completedSubTasks.length}/{totalSubTasks} Alt Görev</span>
           </div>
         </div>
-        {/* TAB NAVIGATION — Redesigned */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex gap-0.5 overflow-x-auto pb-0 -mb-px scrollbar-hide">
-            {[['dashboard','LayoutDashboard','Dashboard'],['knowledge_areas','LayoutGrid','Checklistler'],['risks','AlertTriangle','Riskler'],['actions','ListChecks','Aksiyonlar'],['stakeholders','Users','Paydaşlar'],['requirements','BookMarked','Gereksinimler'],['meetings','MessageSquare','Toplantılar'],['gantt','CalendarDays','Gantt'],['techniques','Wrench','Teknikler'],['templates','FileStack','Dokümanlar'],['competencies','BrainCircuit','Yetkinlikler']].map(([tab,,label]) => {
-              const icons = {dashboard:LayoutDashboard,knowledge_areas:LayoutGrid,risks:AlertTriangle,actions:ListChecks,stakeholders:Users,requirements:BookMarked,meetings:MessageSquare,gantt:CalendarDays,techniques:Wrench,templates:FileStack,competencies:BrainCircuit};
-              const Icon = icons[tab];
-              return (
-                <button key={tab} onClick={() => {setActiveTab(tab);setShowDashboardDetail(null);}} className={`pb-2.5 pt-2 px-3 font-medium text-[13px] flex items-center gap-1.5 whitespace-nowrap border-b-2 transition-all rounded-t-md ${
-                  activeTab === tab
-                    ? (darkMode ? 'border-blue-400 text-blue-300 bg-blue-900/30' : 'border-blue-600 text-blue-700 bg-blue-50/60')
-                    : (darkMode ? 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700/50' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50')
-                }`}>
-                  <Icon className="w-3.5 h-3.5" />
-                  {label}
-                </button>
-              );
-            })}
-          </div>
+        {/* TAB NAVIGATION */}
+        <div className="max-w-5xl mx-auto px-4 mt-1 flex gap-0.5 overflow-x-auto pb-px scrollbar-hide">
+          {[['dashboard','Dashboard'],['knowledge_areas','Checklistler'],['timeline','Timeline'],['risks','Riskler'],['actions','Aksiyonlar'],['stakeholders','Paydaşlar'],['requirements','Gereksinimler'],['meetings','Toplantılar'],['techniques','Teknikler'],['templates','Dokümanlar'],['competencies','Yetkinlikler']].map(([tab,label]) => (
+            <button key={tab} onClick={() => setActiveTab(tab)} className={`pb-2.5 px-2.5 font-medium text-xs flex items-center gap-1.5 whitespace-nowrap border-b-2 transition-colors ${
+              activeTab === tab ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}>
+              {tab==='dashboard' && <LayoutDashboard className="w-3.5 h-3.5" />}
+              {tab==='knowledge_areas' && <LayoutGrid className="w-3.5 h-3.5" />}
+              {tab==='timeline' && <CalendarDays className="w-3.5 h-3.5" />}
+              {tab==='risks' && <AlertTriangle className="w-3.5 h-3.5" />}
+              {tab==='actions' && <ListChecks className="w-3.5 h-3.5" />}
+              {tab==='stakeholders' && <Users className="w-3.5 h-3.5" />}
+              {tab==='requirements' && <BookMarked className="w-3.5 h-3.5" />}
+              {tab==='meetings' && <MessageSquare className="w-3.5 h-3.5" />}
+              {tab==='techniques' && <Wrench className="w-3.5 h-3.5" />}
+              {tab==='templates' && <FileStack className="w-3.5 h-3.5" />}
+              {tab==='competencies' && <BrainCircuit className="w-3.5 h-3.5" />}
+              {label}
+            </button>
+          ))}
         </div>
       </header>
 
       {/* MAIN CONTENT */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col lg:flex-row gap-6">
+      <main className="max-w-5xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
         
-        <div className="flex-1 space-y-4 min-w-0">
+        <div className="flex-1 space-y-4">
           
+          {/* TIMELINE / GANTT TAB */}
+          {activeTab === 'timeline' && (() => {
+            const items = activeProject.timeline || [];
+            const gStart = ganttStart(items);
+            const ppd = PX_PER_DAY[timelineZoom];
+            const todayOffset = diffDays(gStart, today);
+            const groups = [...new Set(items.map(t => t.group).filter(Boolean))];
+            const maxEnd = items.reduce((m, t) => t.endDate > m ? t.endDate : m, today);
+            const totalDays = Math.max(diffDays(gStart, maxEnd) + 30, 60);
+            return (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2"><CalendarDays className="text-blue-500 w-5 h-5"/>Proje Timeline'ı (Gantt)</h2>
+                    <p className="text-sm text-slate-500">{items.length} görev · {items.filter(isDelayed).length} gecikmeli</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex border border-slate-200 rounded-lg overflow-hidden">
+                      {['week','month','quarter'].map(z => (
+                        <button key={z} onClick={() => setTimelineZoom(z)} className={`px-3 py-1.5 text-xs font-medium transition-colors ${ timelineZoom===z ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50' }`}>{z==='week'?'Hafta':z==='month'?'Ay':'Çeyrek'}</button>
+                      ))}
+                    </div>
+                    <button onClick={() => openTimelineModal()} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"><Plus className="w-4 h-4"/>Görev Ekle</button>
+                  </div>
+                </div>
+                {items.length === 0 ? (
+                  <div className="text-center py-16 text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
+                    <CalendarDays className="w-10 h-10 mx-auto mb-3 opacity-30"/>
+                    <p>Henüz görev eklenmemiş. "Görev Ekle" ile başlayın.</p>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    {/* Header row */}
+                    <div className="flex border-b border-slate-200">
+                      <div className="w-56 shrink-0 px-4 py-2 text-xs font-bold text-slate-500 uppercase bg-slate-50 border-r border-slate-200">Görev</div>
+                      <div className="flex-1 overflow-x-auto">
+                        <div style={{ width: totalDays * ppd, position: 'relative', height: 32 }} className="bg-slate-50">
+                          {/* Month labels */}
+                          {Array.from({ length: Math.ceil(totalDays / 30) + 1 }, (_, i) => {
+                            const d = new Date(gStart); d.setDate(d.getDate() + i * 30);
+                            return (
+                              <div key={i} className="absolute top-0 h-full flex items-center" style={{ left: i * 30 * ppd }}>
+                                <div className="border-l border-slate-200 h-full"/>
+                                <span className="text-[10px] text-slate-400 pl-1 whitespace-nowrap">{d.toLocaleDateString('tr-TR', { month: 'short', year: '2-digit' })}</span>
+                              </div>
+                            );
+                          })}
+                          {/* Today line */}
+                          {todayOffset >= 0 && todayOffset <= totalDays && (
+                            <div className="absolute top-0 h-full border-l-2 border-rose-500 z-10" style={{ left: todayOffset * ppd }}>
+                              <span className="absolute -top-px left-1 text-[9px] text-rose-600 font-bold">Bugün</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    {/* Task rows */}
+                    <div className="divide-y divide-slate-100">
+                      {items.map(item => {
+                        const left = Math.max(0, diffDays(gStart, item.startDate)) * ppd;
+                        const width = Math.max(ppd, diffDays(item.startDate, item.endDate) * ppd);
+                        const delayed = isDelayed(item);
+                        return (
+                          <div key={item.id} className="flex hover:bg-slate-50 transition-colors group">
+                            {/* Left: task info */}
+                            <div className="w-56 shrink-0 px-4 py-2.5 border-r border-slate-100 flex items-start gap-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold text-slate-800 truncate">{item.name}</p>
+                                {item.group && <p className="text-[10px] text-slate-400 truncate">{item.group}</p>}
+                                <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                                  {delayed && <span className="text-[9px] bg-rose-100 text-rose-700 px-1 rounded font-bold">GECİKİYOR</span>}
+                                  <span className="text-[9px] text-slate-400">{item.progress}%</span>
+                                </div>
+                                {delayed && item.delayReason && <p className="text-[9px] text-rose-500 mt-0.5 truncate" title={item.delayReason}>⚠ {item.delayReason}</p>}
+                              </div>
+                              <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                <button onClick={() => openTimelineModal(item)} className="p-0.5 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-600"><Pencil className="w-3 h-3"/></button>
+                                <button onClick={() => deleteTimeline(item.id)} className="p-0.5 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-600"><Trash2 className="w-3 h-3"/></button>
+                              </div>
+                            </div>
+                            {/* Right: Gantt bar */}
+                            <div className="flex-1 overflow-x-auto">
+                              <div style={{ width: totalDays * ppd, position: 'relative', height: 44, paddingTop: 10 }}>
+                                {/* Today line */}
+                                {todayOffset >= 0 && <div className="absolute top-0 h-full border-l border-rose-200" style={{ left: todayOffset * ppd }} />}
+                                {/* Bar */}
+                                <div
+                                  style={{ left, width, background: item.color, position: 'absolute', top: 10, height: 22, borderRadius: 6, overflow: 'hidden', opacity: item.progress===100?0.6:1 }}
+                                  className={`${delayed ? 'ring-2 ring-rose-500 ring-offset-1' : ''}`}
+                                  title={`${item.startDate} → ${item.endDate}`}
+                                >
+                                  {/* Progress fill */}
+                                  <div style={{ width: `${item.progress}%`, background: 'rgba(255,255,255,0.35)', height: '100%' }} />
+                                  <span className="absolute inset-0 flex items-center justify-center text-[9px] text-white font-bold">{item.name.length > 12 ? item.name.substring(0,10)+'…' : item.name}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* DASHBOARD TAB */}
           {activeTab === 'dashboard' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { key:'progress', label:'Genel İlerleme', value:`${overallProgress}%`, sub:`${completedTasks.length+completedSubTasks.length}/${totalTasks+totalSubTasks} görev`, color:'text-blue-700', bg:'bg-blue-50 border-blue-200 hover:border-blue-400', icon: <TrendingUp className="w-5 h-5 text-blue-400"/> },
-                  { key:'risks', label:'Açık Riskler', value: activeProject.risks.filter(r=>r.status==='Açık').length, sub:`${activeProject.risks.length} toplam risk`, color:'text-rose-700', bg:'bg-rose-50 border-rose-200 hover:border-rose-400', icon: <AlertTriangle className="w-5 h-5 text-rose-400"/> },
-                  { key:'actions', label:'Bekleyen Aksiyonlar', value: activeProject.actions.filter(a=>a.status!=='Tamamlandı').length, sub:`${activeProject.actions.filter(isOverdue).length} gecikmiş`, color:'text-amber-700', bg:'bg-amber-50 border-amber-200 hover:border-amber-400', icon: <ListChecks className="w-5 h-5 text-amber-400"/> },
-                  { key:'requirements', label:'Gereksinimler', value: activeProject.requirements.length, sub:`${activeProject.requirements.filter(r=>r.status==='Canlıda').length} canlıda`, color:'text-emerald-700', bg:'bg-emerald-50 border-emerald-200 hover:border-emerald-400', icon: <BookMarked className="w-5 h-5 text-emerald-400"/> },
+                  { label:'Genel İlerleme', value:`${overallProgress}%`, sub:`${completedTasks.length+completedSubTasks.length}/${totalTasks+totalSubTasks} görev`, color:'text-blue-700', bg:'bg-blue-50 border-blue-200' },
+                  { label:'Açık Riskler', value: activeProject.risks.filter(r=>r.status==='Açık').length, sub:`${activeProject.risks.length} toplam risk`, color:'text-rose-700', bg:'bg-rose-50 border-rose-200' },
+                  { label:'Bekleyen Aksiyonlar', value: activeProject.actions.filter(a=>a.status!=='Tamamlandı').length, sub:`${activeProject.actions.filter(isOverdue).length} gecikmiş`, color:'text-amber-700', bg:'bg-amber-50 border-amber-200' },
+                  { label:'Gereksinimler', value: activeProject.requirements.length, sub:`${activeProject.requirements.filter(r=>r.status==='Canlıda').length} canlıda`, color:'text-emerald-700', bg:'bg-emerald-50 border-emerald-200' },
                 ].map((s,i) => (
-                  <div key={i} onClick={()=>setShowDashboardDetail(showDashboardDetail===s.key?null:s.key)} className={`p-4 rounded-xl border ${s.bg} flex flex-col cursor-pointer transition-all ${showDashboardDetail===s.key?'ring-2 ring-offset-1 ring-blue-300 scale-[1.02]':''}`}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-slate-500 font-medium">{s.label}</span>
-                      {s.icon}
-                    </div>
-                    <span className={`text-3xl font-black ${s.color}`}>{s.value}</span>
-                    <span className="text-[11px] text-slate-400 mt-1">{s.sub}</span>
-                    <span className="text-[10px] text-blue-500 mt-1.5 font-medium">Detay için tıklayın →</span>
+                  <div key={i} className={`p-4 rounded-xl border ${s.bg} flex flex-col`}>
+                    <span className="text-xs text-slate-500 mb-1">{s.label}</span>
+                    <span className={`text-2xl font-black ${s.color}`}>{s.value}</span>
+                    <span className="text-[10px] text-slate-400 mt-1">{s.sub}</span>
                   </div>
                 ))}
               </div>
-
-              {/* Dashboard detail panels */}
-              {showDashboardDetail === 'progress' && (
-                <div className="bg-white rounded-xl border border-blue-200 p-5 shadow-sm space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <h3 className="font-bold text-blue-800 flex items-center gap-2"><TrendingUp className="w-5 h-5"/>İlerleme Detayları</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {babokData.map(ka => {
-                      const done = ka.tasks.filter(t => completedTasks.includes(t.id)).length;
-                      const pct = Math.round((done/ka.tasks.length)*100);
-                      return <div key={ka.id} className="flex items-center gap-2 text-sm"><div className="w-full bg-slate-100 rounded-full h-2 flex-1"><div className={`h-2 rounded-full ${pct===100?'bg-green-500':'bg-blue-500'}`} style={{width:`${pct}%`}}/></div><span className="text-xs text-slate-500 w-8 text-right">{pct}%</span><span className="text-xs text-slate-700 truncate">{ka.title.split(' ')[0]}</span></div>;
-                    })}
-                  </div>
-                </div>
-              )}
-              {showDashboardDetail === 'risks' && (
-                <div className="bg-white rounded-xl border border-rose-200 p-5 shadow-sm space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <h3 className="font-bold text-rose-800 flex items-center gap-2"><AlertTriangle className="w-5 h-5"/>Açık Riskler</h3>
-                  {activeProject.risks.filter(r=>r.status==='Açık').length===0 ? <p className="text-sm text-slate-400">Açık risk bulunmuyor.</p> : activeProject.risks.filter(r=>r.status==='Açık').map(r=>(
-                    <div key={r.id} className="flex items-center gap-3 text-sm p-2 rounded-lg bg-rose-50">
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${getRiskLevel(r.probability,r.impact).cls}`}>{getRiskLevel(r.probability,r.impact).label}</span>
-                      <span className="font-medium text-slate-700 flex-1">{r.title}</span>
-                      <span className="text-xs text-slate-400">{r.owner||'—'}</span>
-                      <button onClick={()=>{setActiveTab('risks');}} className="text-xs text-rose-600 hover:underline">Git →</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {showDashboardDetail === 'actions' && (
-                <div className="bg-white rounded-xl border border-amber-200 p-5 shadow-sm space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <h3 className="font-bold text-amber-800 flex items-center gap-2"><ListChecks className="w-5 h-5"/>Bekleyen Aksiyonlar</h3>
-                  {activeProject.actions.filter(a=>a.status!=='Tamamlandı').length===0 ? <p className="text-sm text-slate-400">Bekleyen aksiyon yok.</p> : activeProject.actions.filter(a=>a.status!=='Tamamlandı').map(a=>(
-                    <div key={a.id} className={`flex items-center gap-3 text-sm p-2 rounded-lg ${isOverdue(a)?'bg-rose-50':'bg-amber-50'}`}>
-                      {isOverdue(a) && <span className="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded-full font-bold">Gecikmiş</span>}
-                      <span className="font-medium text-slate-700 flex-1">{a.title}</span>
-                      <span className="text-xs text-slate-400">{a.owner||'—'}</span>
-                      <span className="text-xs text-slate-400">{a.dueDate||'—'}</span>
-                      <button onClick={()=>{setActiveTab('actions');}} className="text-xs text-amber-600 hover:underline">Git →</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {showDashboardDetail === 'requirements' && (
-                <div className="bg-white rounded-xl border border-emerald-200 p-5 shadow-sm space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <h3 className="font-bold text-emerald-800 flex items-center gap-2"><BookMarked className="w-5 h-5"/>Gereksinim Durumu</h3>
-                  {activeProject.requirements.length===0 ? <p className="text-sm text-slate-400">Henüz gereksinim eklenmemiş.</p> : (
-                    <div className="flex flex-wrap gap-2">
-                      {Object.keys(REQ_STATUS_COLORS).map(st => {
-                        const cnt = activeProject.requirements.filter(r=>r.status===st).length;
-                        return cnt > 0 ? <div key={st} className={`text-xs px-3 py-1.5 rounded-full font-medium ${REQ_STATUS_COLORS[st]}`}>{st}: {cnt}</div> : null;
-                      })}
-                    </div>
-                  )}
-                  {activeProject.requirements.slice(0,5).map(r=>(
-                    <div key={r.id} className="flex items-center gap-3 text-sm p-2 rounded-lg bg-emerald-50">
-                      <span className="text-xs font-mono text-slate-400">{r.reqId}</span>
-                      <span className="font-medium text-slate-700 flex-1">{r.name}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${REQ_STATUS_COLORS[r.status]||''}`}>{r.status}</span>
-                    </div>
-                  ))}
-                  {activeProject.requirements.length>5 && <button onClick={()=>setActiveTab('requirements')} className="text-xs text-emerald-600 hover:underline">Tümünü gör ({activeProject.requirements.length}) →</button>}
-                </div>
-              )}
-
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {babokData.map(ka => {
                   const done = ka.tasks.filter(t => completedTasks.includes(t.id)).length;
@@ -994,32 +1068,28 @@ TALİMATLAR (ÇOK ÖNEMLİ):
                   const subTotal = ka.tasks.reduce((a,t)=>a+t.checklist.length,0);
                   const pct = Math.round((done/ka.tasks.length)*100);
                   return (
-                    <div key={ka.id} onClick={()=>{setActiveTab('knowledge_areas');setExpandedKA(ka.id);}} className={`bg-white rounded-xl border p-4 shadow-sm cursor-pointer hover:shadow-md transition-all ${done===ka.tasks.length?'border-green-200':'border-slate-200 hover:border-blue-200'}`}>
+                    <div key={ka.id} className={`bg-white rounded-xl border p-4 shadow-sm ${done===ka.tasks.length?'border-green-200':'border-slate-200'}`}>
                       <div className="flex items-center gap-2 mb-3">
                         <div className={`p-1.5 rounded-lg ${ka.color} ${done===ka.tasks.length?'!bg-green-100 !border-green-200':''}`}>
                           {done===ka.tasks.length ? <CheckCircle2 className="w-4 h-4 text-green-600" /> : ka.icon}
                         </div>
                         <h3 className={`font-bold text-sm ${ka.headerColor}`}>{ka.title}</h3>
                       </div>
-                      <div className="w-full bg-slate-100 rounded-full h-2.5 mb-1">
-                        <div className={`h-2.5 rounded-full transition-all ${done===ka.tasks.length?'bg-green-500':'bg-blue-500'}`} style={{width:`${pct}%`}}></div>
+                      <div className="w-full bg-slate-100 rounded-full h-2 mb-1">
+                        <div className={`h-2 rounded-full transition-all ${done===ka.tasks.length?'bg-green-500':'bg-blue-500'}`} style={{width:`${pct}%`}}></div>
                       </div>
-                      <div className="flex justify-between text-[11px] text-slate-400">
+                      <div className="flex justify-between text-[10px] text-slate-400">
                         <span>{done}/{ka.tasks.length} Ana Görev ({pct}%)</span>
                         <span>{subDone}/{subTotal} Alt</span>
                       </div>
+                      <button onClick={()=>{setActiveTab('knowledge_areas');}} className="mt-2 text-xs text-blue-600 hover:underline">Detay →</button>
                     </div>
                   );
                 })}
               </div>
-              <div className="flex gap-3 flex-wrap">
-                <button onClick={exportMarkdown} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm">
-                  <Download className="w-4 h-4" /> Dışa Aktar (.md)
-                </button>
-                <button onClick={exportProjectJSON} className="flex items-center gap-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm">
-                  <Download className="w-4 h-4" /> JSON Yedek
-                </button>
-              </div>
+              <button onClick={exportMarkdown} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                <Download className="w-4 h-4" /> Tüm Projeyi Dışa Aktar (.md)
+              </button>
             </div>
           )}
 
@@ -1076,22 +1146,49 @@ TALİMATLAR (ÇOK ÖNEMLİ):
               {activeProject.actions.length === 0 ? (
                 <div className="text-center py-16 text-slate-400"><ListChecks className="w-10 h-10 mx-auto mb-3 opacity-30"/><p>Henüz aksiyon eklenmemiş.</p></div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {activeProject.actions.map(a => {
                     const od = isOverdue(a);
                     return (
-                      <div key={a.id} className={`bg-white rounded-xl border p-4 shadow-sm flex items-start gap-4 ${od?'border-l-4 border-l-rose-400 bg-rose-50/20':''}`}>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${a.status==='Tamamlandı'?'bg-emerald-100 text-emerald-800 border-emerald-200':a.status==='Devam Ediyor'?'bg-blue-100 text-blue-800 border-blue-200':'bg-slate-100 text-slate-700 border-slate-200'}`}>{a.status}</span>
-                            {od && <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 flex items-center gap-1"><Clock className="w-3 h-3"/>Gecikmiş</span>}
+                      <div key={a.id} className={`bg-white rounded-xl border shadow-sm ${od?'border-l-4 border-l-rose-400':'border-slate-200'}`}>
+                        <div className="p-4 flex items-start gap-3">
+                          {/* Quick status cycle button */}
+                          <button
+                            onClick={() => cycleActionStatus(a.id)}
+                            title="Durumu değiştirmek için tıkla"
+                            className={`shrink-0 mt-0.5 text-xs font-bold px-2 py-1 rounded-full border cursor-pointer hover:opacity-80 transition-opacity ${
+                              a.status==='Tamamlandı'?'bg-emerald-100 text-emerald-800 border-emerald-200':
+                              a.status==='Devam Ediyor'?'bg-blue-100 text-blue-800 border-blue-200':
+                              'bg-slate-100 text-slate-700 border-slate-200'
+                            }`}
+                          >
+                            {a.status}
+                          </button>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              {od && <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 flex items-center gap-1"><Clock className="w-3 h-3"/>Gecikmiş</span>}
+                            </div>
+                            <p className={`font-semibold ${a.status==='Tamamlandı'?'line-through text-slate-400':'text-slate-800'}`}>{a.title}</p>
+                            <p className="text-xs text-slate-400 mt-0.5">Sorumlu: {a.owner||'—'} · Tarih: {a.dueDate||'—'}{a.source?` · Kaynak: ${a.source}`:''}</p>
+                            {/* Notes expand */}
+                            <button onClick={() => toggleActionNotes(a.id)} className="text-xs text-slate-400 hover:text-slate-600 mt-1 flex items-center gap-1">
+                              <ChevronDown className={`w-3 h-3 transition-transform ${expandedActionNotes[a.id]?'rotate-180':''}`}/>
+                              {a.notes ? 'Notu gör' : 'Not ekle'}
+                            </button>
+                            {expandedActionNotes[a.id] && (
+                              <textarea
+                                value={a.notes||''}
+                                onChange={e => updateActionNotes(a.id, e.target.value)}
+                                placeholder="Aksiyon notu..."
+                                rows={2}
+                                className="mt-1 w-full text-xs border border-slate-200 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-300 resize-none"
+                              />
+                            )}
                           </div>
-                          <p className={`font-semibold ${a.status==='Tamamlandı'?'line-through text-slate-400':'text-slate-800'}`}>{a.title}</p>
-                          <p className="text-xs text-slate-400 mt-1">Sorumlu: {a.owner||'—'} · Tarih: {a.dueDate||'—'}{a.source?` · Kaynak: ${a.source}`:''}</p>
-                        </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button onClick={()=>openActionModal(a)} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4"/></button>
-                          <button onClick={()=>deleteAction(a.id)} className="p-1.5 hover:bg-rose-50 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4"/></button>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button onClick={()=>openActionModal(a)} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4"/></button>
+                            <button onClick={()=>deleteAction(a.id)} className="p-1.5 hover:bg-rose-50 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4"/></button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -1112,77 +1209,25 @@ TALİMATLAR (ÇOK ÖNEMLİ):
                 <button onClick={()=>openStakeholderModal()} className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"><Plus className="w-4 h-4"/>Paydaş Ekle</button>
               </div>
               {activeProject.stakeholders.length > 0 && (
-                <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-bold text-slate-700">İlgi / Etki Matrisi</h3>
-                    <div className="flex gap-3">
-                      {Object.entries(RACI_LABELS).map(([k,v])=>(
-                        <div key={k} className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded-full" style={{background:k==='R'?'#3b82f6':k==='A'?'#8b5cf6':k==='C'?'#f59e0b':'#94a3b8'}}/>
-                          <span className="text-[10px] text-slate-500 font-medium">{k} — {v}</span>
+                <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                  <h3 className="text-sm font-bold text-slate-700 mb-3">İlgi / Etki Matrisi</h3>
+                  <div className="relative h-48 border border-slate-200 rounded-lg bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden">
+                    <div className="absolute inset-0 flex"><div className="flex-1 border-r border-dashed border-slate-300"/><div className="flex-1"/></div>
+                    <div className="absolute inset-0 flex flex-col"><div className="flex-1 border-b border-dashed border-slate-300"/><div className="flex-1"/></div>
+                    <span className="absolute top-1 left-2 text-[9px] text-slate-400">Yüksek Etki</span>
+                    <span className="absolute bottom-1 left-2 text-[9px] text-slate-400">Düşük Etki</span>
+                    <span className="absolute bottom-1 left-6 text-[9px] text-slate-400">Düşük İlgi</span>
+                    <span className="absolute bottom-1 right-2 text-[9px] text-slate-400">Yüksek İlgi</span>
+                    {activeProject.stakeholders.map(s => {
+                      const x = ((s.interest-1)/2)*85+5;
+                      const y = 100-((s.influence-1)/2)*85-10;
+                      return (
+                        <div key={s.id} className="absolute flex flex-col items-center" style={{left:`${x}%`,top:`${y}%`,transform:'translate(-50%,-50%)'}}>
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-md ${RACI_COLORS[s.raci].replace('bg-','bg-').replace('text-','')}`} style={{background:s.raci==='R'?'#3b82f6':s.raci==='A'?'#8b5cf6':s.raci==='C'?'#f59e0b':'#94a3b8'}} title={s.name}>{s.name.charAt(0)}</div>
+                          <span className="text-[8px] text-slate-600 whitespace-nowrap mt-0.5 bg-white/80 px-1 rounded">{s.name}</span>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="relative border border-slate-200 rounded-xl overflow-hidden" style={{ height: Math.max(260, activeProject.stakeholders.length > 6 ? 340 : 280) }}>
-                    {/* Quadrant backgrounds */}
-                    <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
-                      <div className="bg-amber-50/40 border-r border-b border-dashed border-slate-300"/>
-                      <div className="bg-rose-50/40 border-b border-dashed border-slate-300"/>
-                      <div className="bg-emerald-50/30 border-r border-dashed border-slate-300"/>
-                      <div className="bg-blue-50/40"/>
-                    </div>
-                    {/* Quadrant labels */}
-                    <span className="absolute top-2 left-3 text-[10px] font-bold text-amber-600/70">İzle</span>
-                    <span className="absolute top-2 right-3 text-[10px] font-bold text-rose-600/70">Yakından Yönet</span>
-                    <span className="absolute bottom-2 left-3 text-[10px] font-bold text-emerald-600/60">Minimal Efor</span>
-                    <span className="absolute bottom-2 right-3 text-[10px] font-bold text-blue-600/70">Bilgilendir</span>
-                    {/* Axis labels */}
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -rotate-90 text-[9px] font-bold text-slate-400 tracking-wider">ETKİ →</div>
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-[9px] font-bold text-slate-400 tracking-wider mb-0.5">İLGİ →</div>
-                    {(() => {
-                      const ITEM_W = 52, ITEM_H = 34;
-                      const placed = [];
-                      return activeProject.stakeholders.map(s => {
-                        const baseX = ((s.interest - 1) / 2) * 85 + 5;
-                        const baseY = 100 - ((s.influence - 1) / 2) * 85 - 10;
-                        let finalX = baseX, finalY = baseY;
-                        const collides = (cx, cy) => placed.some(p =>
-                          Math.abs(cx - p.x) < ITEM_W / (placed.length > 12 ? 3.5 : 4) &&
-                          Math.abs(cy - p.y) < ITEM_H / (placed.length > 12 ? 3.5 : 4)
-                        );
-                        if (collides(finalX, finalY)) {
-                          const spiralSteps = [
-                            [1,0],[-1,0],[0,1],[0,-1],
-                            [1,1],[-1,1],[1,-1],[-1,-1],
-                            [2,0],[-2,0],[0,2],[0,-2],
-                            [2,1],[-2,1],[2,-1],[-2,-1],
-                            [1,2],[-1,2],[1,-2],[-1,-2],
-                            [3,0],[-3,0],[0,3],[0,-3],
-                            [2,2],[-2,2],[2,-2],[-2,-2],
-                            [3,1],[-3,1],[3,-1],[-3,-1],
-                            [1,3],[-1,3],[1,-3],[-1,-3],
-                            [3,2],[-3,2],[3,-2],[-3,-2],
-                            [4,0],[-4,0],[0,4],[0,-4],
-                          ];
-                          const stepSize = placed.length > 12 ? 3.5 : 4.5;
-                          for (const [dx, dy] of spiralSteps) {
-                            const nx = baseX + dx * stepSize;
-                            const ny = baseY + dy * stepSize;
-                            if (nx >= 2 && nx <= 98 && ny >= 4 && ny <= 96 && !collides(nx, ny)) {
-                              finalX = nx; finalY = ny; break;
-                            }
-                          }
-                        }
-                        placed.push({ x: finalX, y: finalY });
-                        return (
-                          <div key={s.id} className="absolute flex flex-col items-center z-[1] transition-all duration-200" style={{left:`${finalX}%`,top:`${finalY}%`,transform:'translate(-50%,-50%)'}}>
-                            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-md ring-2 ring-white" style={{background:s.raci==='R'?'#3b82f6':s.raci==='A'?'#8b5cf6':s.raci==='C'?'#f59e0b':'#94a3b8'}} title={`${s.name} — İlgi: ${PROB_LABELS[s.interest]}, Etki: ${PROB_LABELS[s.influence]}`}>{s.name.charAt(0)}</div>
-                            <span className="text-[8px] text-slate-600 whitespace-nowrap mt-0.5 bg-white/90 px-1 rounded shadow-sm">{s.name}</span>
-                          </div>
-                        );
-                      });
-                    })()}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -1296,18 +1341,21 @@ TALİMATLAR (ÇOK ÖNEMLİ):
                         <button onClick={()=>generateMoM(selectedMeeting)} className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1.5 rounded-md flex items-center gap-1.5 transition-colors"><ClipboardCopy className="w-3.5 h-3.5"/>MoM Oluştur</button>
                       </div>
                       <div className="flex gap-2">
-                        <select value={newNoteType} onChange={e=>setNewNoteType(e.target.value)} className="text-sm border border-slate-200 rounded-lg px-3 py-2.5 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-violet-400 w-36">
+                        <select value={newNoteType} onChange={e=>setNewNoteType(e.target.value)} className="text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-slate-50 focus:outline-none w-32">
                           <option>Karar</option><option>Açık Nokta</option><option>Aksiyon</option>
                         </select>
-                        <textarea value={newNoteText} onChange={e=>setNewNoteText(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();addNote();}}} placeholder="Not ekle ve Enter'a bas... (Shift+Enter: yeni satır)" rows="2" className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-violet-400 resize-none"/>
-                        <button onClick={addNote} className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-lg text-sm transition-colors self-end"><Plus className="w-4 h-4"/></button>
+                        <input value={newNoteText} onChange={e=>setNewNoteText(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addNote()} placeholder="Not ekle ve Enter'a bas..." className="flex-1 text-sm border border-slate-200 rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-violet-400"/>
+                        <button onClick={addNote} className="bg-violet-600 hover:bg-violet-700 text-white px-3 py-1.5 rounded-md text-sm transition-colors"><Plus className="w-4 h-4"/></button>
                       </div>
-                      <div className="space-y-2 max-h-[420px] overflow-y-auto">
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
                         {selectedMeeting.notes.length===0 && <p className="text-xs text-slate-400 text-center py-4">Henüz not yok. Yukarıdan ekleyin.</p>}
                         {selectedMeeting.notes.map(n=>(
                           <div key={n.id} className={`flex items-start gap-2 p-2.5 rounded-lg border text-sm ${NOTE_TYPE_COLORS[n.type]}`}>
                             <span className="text-xs font-bold whitespace-nowrap shrink-0 mt-0.5">{n.type}</span>
                             <span className="flex-1">{n.text}</span>
+                            {n.type === 'Aksiyon' && (
+                              <button onClick={() => addNoteAsAction(selectedMeeting, n)} className="shrink-0 text-[9px] bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-medium transition-colors whitespace-nowrap" title="Aksiyonlara ekle">+ Aksiyon</button>
+                            )}
                             <button onClick={()=>deleteNote(n.id)} className="shrink-0 opacity-50 hover:opacity-100 transition-opacity"><X className="w-3.5 h-3.5"/></button>
                           </div>
                         ))}
@@ -1318,241 +1366,6 @@ TALİMATLAR (ÇOK ÖNEMLİ):
               </div>
             </div>
           )}
-
-          {/* GANTT CHART TAB */}
-          {activeTab === 'gantt' && (() => {
-            const tasks = activeProject.ganttTasks || [];
-            const DAY_WIDTHS = { week: 40, month: 16, quarter: 6 };
-            const dayWidth = DAY_WIDTHS[ganttZoom];
-
-            let rangeStart, rangeEnd;
-            if (tasks.length > 0) {
-              const starts = tasks.map(t => new Date(t.startDate).getTime());
-              const ends = tasks.map(t => new Date(t.endDate).getTime());
-              rangeStart = new Date(Math.min(...starts));
-              rangeEnd = new Date(Math.max(...ends));
-              const pad = ganttZoom === 'week' ? 3 : ganttZoom === 'month' ? 7 : 14;
-              rangeStart.setDate(rangeStart.getDate() - pad);
-              rangeEnd.setDate(rangeEnd.getDate() + pad);
-            } else {
-              rangeStart = new Date(); rangeStart.setDate(1);
-              rangeEnd = new Date(); rangeEnd.setMonth(rangeEnd.getMonth() + 3);
-            }
-            const dow = rangeStart.getDay();
-            rangeStart.setDate(rangeStart.getDate() - (dow === 0 ? 6 : dow - 1));
-            rangeStart.setHours(0,0,0,0);
-            rangeEnd.setHours(0,0,0,0);
-
-            const diffDays = (a, b) => Math.round((a - b) / 86400000);
-            const totalDays = diffDays(rangeEnd, rangeStart) + 1;
-            const totalWidth = Math.max(totalDays * dayWidth, 600);
-
-            const today = new Date(); today.setHours(0,0,0,0);
-            const todayPos = diffDays(today, rangeStart) * dayWidth;
-
-            const categories = [...new Set(tasks.map(t => t.category || 'Genel'))];
-            if (categories.length === 0) categories.push('Genel');
-
-            const monthHeaders = [];
-            const mCur = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 1);
-            while (mCur <= rangeEnd) {
-              const mStart = mCur < rangeStart ? new Date(rangeStart) : new Date(mCur);
-              const mLast = new Date(mCur.getFullYear(), mCur.getMonth() + 1, 0);
-              const mEnd = mLast > rangeEnd ? rangeEnd : mLast;
-              monthHeaders.push({
-                label: mCur.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }),
-                left: diffDays(mStart, rangeStart) * dayWidth,
-                width: (diffDays(mEnd, mStart) + 1) * dayWidth,
-              });
-              mCur.setMonth(mCur.getMonth() + 1);
-            }
-
-            const weekMarkers = [];
-            for (let i = 0; i < totalDays; i += 7) { weekMarkers.push(i * dayWidth); }
-
-            const getBarPos = (task) => {
-              const s = new Date(task.startDate); s.setHours(0,0,0,0);
-              const e = new Date(task.endDate); e.setHours(0,0,0,0);
-              return {
-                left: diffDays(s, rangeStart) * dayWidth,
-                width: Math.max((diffDays(e, s) + 1) * dayWidth, dayWidth),
-              };
-            };
-
-            const rows = [];
-            categories.forEach(cat => {
-              rows.push({ type: 'category', label: cat });
-              tasks.filter(t => (t.category || 'Genel') === cat).forEach(t => rows.push({ type: 'task', task: t }));
-            });
-
-            return (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div>
-                    <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                      <CalendarDays className="text-cyan-500 w-5 h-5"/>Proje Zaman Çizelgesi (Gantt)
-                    </h2>
-                    <p className="text-sm text-slate-500">{tasks.length} görev{categories.length > 1 ? ` · ${categories.length} kategori` : ''}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
-                      {[['week','Hafta'],['month','Ay'],['quarter','Çeyrek']].map(([z,label]) => (
-                        <button key={z} onClick={() => setGanttZoom(z)} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${ganttZoom === z ? 'bg-white text-cyan-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>{label}</button>
-                      ))}
-                    </div>
-                    <button onClick={() => openGanttModal()} className="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm">
-                      <Plus className="w-4 h-4"/>Görev Ekle
-                    </button>
-                  </div>
-                </div>
-
-                {tasks.length === 0 ? (
-                  <div className="text-center py-16 text-slate-400 bg-white rounded-xl border border-slate-200">
-                    <CalendarDays className="w-10 h-10 mx-auto mb-3 opacity-30"/>
-                    <p className="font-medium">Henüz görev eklenmemiş.</p>
-                    <p className="text-xs mt-1">Proje fazlarını ve görevlerini ekleyerek zaman çizelgenizi oluşturun.</p>
-                  </div>
-                ) : (
-                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="flex" style={{maxHeight:'calc(100vh - 260px)', minHeight: 200}}>
-                      {/* Sidebar */}
-                      <div className="w-60 shrink-0 border-r border-slate-200 bg-slate-50 z-[2] overflow-y-auto">
-                        <div className="h-[52px] border-b border-slate-200 flex items-end px-3 pb-1.5 sticky top-0 bg-slate-50 z-[1]">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Görev Adı</span>
-                        </div>
-                        {rows.map((row, idx) => row.type === 'category' ? (
-                          <div key={`cat-${idx}`} className="h-8 px-3 flex items-center bg-slate-100/80 border-b border-slate-200">
-                            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">{row.label}</span>
-                          </div>
-                        ) : (
-                          <div key={row.task.id} className="h-12 px-3 flex items-center justify-between border-b border-slate-100 group hover:bg-white transition-colors">
-                            <div className="flex items-center gap-2 min-w-0 flex-1">
-                              <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: row.task.color }}/>
-                              <div className="min-w-0">
-                                <span className="text-xs text-slate-700 truncate block" title={row.task.name}>{row.task.name}</span>
-                                <div className="flex items-center gap-1.5">
-                                  {row.task.assignedTo && <span className="text-[9px] text-slate-400 truncate">{row.task.assignedTo}</span>}
-                                  <div className="flex items-center gap-1 w-14"><div className="w-full bg-slate-200 rounded-full h-1"><div className="h-1 rounded-full bg-cyan-500" style={{width:`${row.task.progress||0}%`}}/></div><span className="text-[8px] text-slate-400">{row.task.progress||0}%</span></div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
-                              <button onClick={() => openGanttModal(row.task)} className="p-0.5 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-600"><Pencil className="w-3 h-3"/></button>
-                              <button onClick={() => deleteGanttTask(row.task.id)} className="p-0.5 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-600"><Trash2 className="w-3 h-3"/></button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Timeline */}
-                      <div className="flex-1 overflow-x-auto overflow-y-auto">
-                        <div style={{ width: totalWidth, minWidth: '100%' }} className="relative">
-                          {/* Month header */}
-                          <div className="h-[26px] border-b border-slate-200 relative bg-slate-50 sticky top-0 z-[1]">
-                            {monthHeaders.map((m, i) => (
-                              <div key={i} className="absolute top-0 h-full flex items-center border-r border-slate-200 overflow-hidden" style={{ left: m.left, width: m.width }}>
-                                <span className="text-[10px] font-bold text-slate-500 px-2 truncate capitalize">{m.label}</span>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Sub-header */}
-                          <div className="h-[26px] border-b border-slate-200 relative bg-white sticky top-[26px] z-[1]">
-                            {Array.from({ length: totalDays }, (_, i) => {
-                              const d = new Date(rangeStart); d.setDate(d.getDate() + i);
-                              const isMonday = d.getDay() === 1;
-                              const isFirst = d.getDate() === 1;
-                              const isWeekend = d.getDay() === 0 || d.getDay() === 6;
-                              const show = ganttZoom === 'week' || (ganttZoom === 'month' && isMonday) || (ganttZoom === 'quarter' && isFirst);
-                              return show ? (
-                                <div key={i} className="absolute top-0 h-full flex items-center" style={{ left: i * dayWidth }}>
-                                  <span className={`text-[9px] px-0.5 ${isWeekend ? 'text-rose-300' : 'text-slate-400'}`}>
-                                    {ganttZoom === 'week' ? d.getDate() : ganttZoom === 'month' ? `${d.getDate()}/${d.getMonth()+1}` : d.toLocaleDateString('tr-TR',{month:'short'})}
-                                  </span>
-                                </div>
-                              ) : null;
-                            })}
-                          </div>
-
-                          {/* Task rows */}
-                          {rows.map((row, idx) => row.type === 'category' ? (
-                            <div key={`cat-${idx}`} className="h-8 border-b border-slate-200 bg-slate-50/60 flex items-center px-2"><span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{row.label}</span></div>
-                          ) : (
-                            <div key={row.task.id} className="h-12 border-b border-slate-100 relative">
-                              <div
-                                className="absolute top-1.5 h-9 rounded-md shadow-sm cursor-pointer hover:brightness-110 transition-all flex flex-col justify-center px-2 overflow-hidden"
-                                style={{ left: getBarPos(row.task).left, width: getBarPos(row.task).width, backgroundColor: row.task.color || '#3b82f6' }}
-                                onClick={() => openGanttModal(row.task)}
-                                title={`${row.task.name}\n${row.task.startDate} → ${row.task.endDate}\nİlerleme: %${row.task.progress||0}${row.task.assignedTo?'\nSorumlu: '+row.task.assignedTo:''}`}
-                              >
-                                {getBarPos(row.task).width > 70 && <span className="text-[10px] text-white font-medium truncate drop-shadow-sm leading-tight">{row.task.name}</span>}
-                                {getBarPos(row.task).width > 50 && <div className="w-full bg-white/20 rounded-full h-1.5 mt-0.5"><div className="h-1.5 rounded-full bg-white/60" style={{width:`${row.task.progress||0}%`}}/></div>}
-                              </div>
-                            </div>
-                          ))}
-
-                          {/* Weekend columns overlay */}
-                          {ganttZoom !== 'quarter' && (
-                            <div className="absolute inset-0 pointer-events-none" style={{ top: 52 }}>
-                              {Array.from({ length: totalDays }, (_, i) => {
-                                const d = new Date(rangeStart); d.setDate(d.getDate() + i);
-                                return (d.getDay() === 0 || d.getDay() === 6) ? (
-                                  <div key={i} className="absolute top-0 bottom-0 bg-slate-100/40" style={{ left: i * dayWidth, width: dayWidth }}/>
-                                ) : null;
-                              })}
-                            </div>
-                          )}
-
-                          {/* Week separator lines */}
-                          <div className="absolute inset-0 pointer-events-none" style={{ top: 52 }}>
-                            {weekMarkers.map((left, i) => (
-                              <div key={i} className="absolute top-0 bottom-0 border-l border-slate-100/80" style={{ left }}/>
-                            ))}
-                          </div>
-
-                          {/* Today line */}
-                          {todayPos >= 0 && todayPos <= totalWidth && (
-                            <div className="absolute top-0 bottom-0 z-[3] pointer-events-none" style={{ left: todayPos }}>
-                              <div className="w-0.5 h-full bg-rose-500 opacity-80"/>
-                              <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-rose-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-b-md shadow-sm whitespace-nowrap">Bugün</div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Summary bar */}
-                    <div className="border-t border-slate-200 bg-slate-50 px-4 py-3">
-                      <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-                        <span className="text-xs font-bold text-slate-500">{tasks.length} görev</span>
-                        {tasks.length > 0 && (() => { const avg = Math.round(tasks.reduce((a,t)=>a+(t.progress||0),0)/tasks.length); return <span className="text-xs font-medium text-cyan-600">Ortalama İlerleme: %{avg}</span>; })()}
-                      </div>
-                      <div className="flex flex-wrap gap-x-5 gap-y-1.5">
-                        {tasks.map(t => {
-                          const s = new Date(t.startDate);
-                          const e = new Date(t.endDate);
-                          const dur = diffDays(e, s) + 1;
-                          const isPast = e < today;
-                          const isActive = s <= today && today <= e;
-                          return (
-                            <div key={t.id} className="flex items-center gap-1.5 text-xs">
-                              <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: t.color }}/>
-                              <span className={`font-medium ${isPast ? 'text-slate-400 line-through' : isActive ? 'text-cyan-700' : 'text-slate-600'}`}>{t.name}</span>
-                              <span className="text-slate-400">{dur}g</span>
-                              <span className="text-[9px] text-cyan-600 font-medium">%{t.progress||0}</span>
-                              {t.assignedTo && <span className="text-[9px] text-slate-400">({t.assignedTo})</span>}
-                              {isActive && <span className="text-[9px] bg-cyan-100 text-cyan-700 px-1.5 py-0.5 rounded-full font-medium">Aktif</span>}
-                              {isPast && <span className="text-[9px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded-full">Bitti</span>}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
 
           {/* TAB 1: KNOWLEDGE AREAS (Proje Kontrol Listesi) */}
           {activeTab === 'knowledge_areas' && (
@@ -1856,6 +1669,70 @@ TALİMATLAR (ÇOK ÖNEMLİ):
         </div>
       </main>
 
+      {/* TIMELINE MODAL */}
+      {showTimelineModal && (
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl p-6 max-w-lg w-full">
+            <h3 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2"><CalendarDays className="text-blue-500 w-5 h-5"/>{editingTimeline?'G\u00f6revi D\u00fczenle':'Yeni G\u00f6rev / A\u015fama'}</h3>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <input value={timelineForm.name} onChange={e=>setTimelineForm({...timelineForm,name:e.target.value})} placeholder="G\u00f6rev ad\u0131*" className="col-span-2 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"/>
+                <input value={timelineForm.group} onChange={e=>setTimelineForm({...timelineForm,group:e.target.value})} placeholder="Grup / Faz (iste\u011fe ba\u011fl\u0131)" className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-slate-500 shrink-0">Renk</label>
+                  <div className="flex gap-1 flex-wrap">
+                    {TIMELINE_COLORS.map(c => (
+                      <button key={c} onClick={() => setTimelineForm({...timelineForm,color:c})} className={`w-5 h-5 rounded-full border-2 transition-all ${timelineForm.color===c?'border-slate-700 scale-110':'border-transparent'}`} style={{background:c}}/>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs text-slate-500 block mb-1">Ba\u015flang\u0131\u00e7</label><input type="date" value={timelineForm.startDate} onChange={e=>setTimelineForm({...timelineForm,startDate:e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/></div>
+                <div><label className="text-xs text-slate-500 block mb-1">Biti\u015f</label><input type="date" value={timelineForm.endDate} onChange={e=>setTimelineForm({...timelineForm,endDate:e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/></div>
+              </div>
+              <div><label className="text-xs text-slate-500 block mb-1">Tamamlanma: {timelineForm.progress}%</label>
+                <input type="range" min="0" max="100" step="5" value={timelineForm.progress} onChange={e=>setTimelineForm({...timelineForm,progress:Number(e.target.value)})} className="w-full accent-blue-600"/>
+              </div>
+              {(timelineForm.endDate < today && timelineForm.progress < 100) && (
+                <div className="bg-rose-50 border border-rose-200 rounded-lg p-3">
+                  <p className="text-xs text-rose-700 font-medium mb-1">⚠ Bu g\u00f6rev gecikmeli g\u00f6r\u00fcn\u00fcyor. Neden gecikti?</p>
+                  <input value={timelineForm.delayReason} onChange={e=>setTimelineForm({...timelineForm,delayReason:e.target.value})} placeholder="Gecikme nedeni..." className="w-full text-xs border border-rose-200 rounded-md px-2 py-1.5 focus:outline-none bg-white"/>
+                </div>
+              )}
+              <textarea value={timelineForm.notes} onChange={e=>setTimelineForm({...timelineForm,notes:e.target.value})} placeholder="Notlar..." rows="2" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none"/>
+            </div>
+            <div className="flex justify-end gap-3 mt-5">
+              <button onClick={()=>setShowTimelineModal(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">\u0130ptal</button>
+              <button onClick={saveTimeline} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium">Kaydet</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DOC UPLOAD MODAL */}
+      {showDocModal && (
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full">
+            <h3 className="font-bold text-lg text-slate-800 mb-2 flex items-center gap-2"><Upload className="text-purple-500 w-5 h-5"/>Proje Dok\u00fcman\u0131 Y\u00fckle</h3>
+            <p className="text-sm text-slate-500 mb-4">Dok\u00fcman\u0131n\u0131z\u0131 y\u00fckleyin; AI BABOK v3 perspektifinden de\u011ferlendirecek ve eksik alanlar\u0131 belirtecek.</p>
+            <label className="block border-2 border-dashed border-purple-200 rounded-xl p-6 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-colors mb-4">
+              <Upload className="w-8 h-8 mx-auto mb-2 text-purple-400"/>
+              <p className="text-sm font-medium text-slate-700">{docFileName || 'Dosya se\u00e7mek i\u00e7in t\u0131klay\u0131n'}</p>
+              <p className="text-xs text-slate-400 mt-1">.txt, .md desteklenir (8000 karakter limit)</p>
+              <input type="file" accept=".txt,.md,.csv" onChange={handleDocFile} className="hidden"/>
+            </label>
+            {docContent && <p className="text-xs text-emerald-600 mb-4">✓ {docContent.length} karakter y\u00fcklendi</p>}
+            <div className="flex justify-end gap-3">
+              <button onClick={()=>{setShowDocModal(false);setDocContent('');setDocFileName('');}} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">\u0130ptal</button>
+              <button onClick={evaluateDocWithAI} disabled={!docContent} className="px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-md font-medium flex items-center gap-2">
+                <Sparkles className="w-4 h-4"/> AI ile De\u011ferlendir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* RESET CONFIRM */}
       {showResetConfirm && (
         <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
@@ -2023,56 +1900,6 @@ TALİMATLAR (ÇOK ÖNEMLİ):
             <div className="flex justify-end gap-3 mt-5">
               <button onClick={()=>setShowMeetingModal(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">İptal</button>
               <button onClick={saveMeeting} className="px-4 py-2 text-sm bg-violet-600 hover:bg-violet-700 text-white rounded-md font-medium">Oluştur</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* GANTT TASK MODAL */}
-      {showGanttModal && (
-        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full">
-            <h3 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2"><CalendarDays className="text-cyan-500 w-5 h-5"/>{editingGanttTask?'Görevi Düzenle':'Yeni Görev / Faz'}</h3>
-            <div className="space-y-3">
-              <input value={ganttForm.name} onChange={e=>setGanttForm({...ganttForm,name:e.target.value})} placeholder="Görev/Faz adı*" className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300" autoFocus/>
-              <div className="grid grid-cols-2 gap-3">
-                <input value={ganttForm.category} onChange={e=>setGanttForm({...ganttForm,category:e.target.value})} placeholder="Kategori (ör. Faz 1)" className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/>
-                <input value={ganttForm.assignedTo} onChange={e=>setGanttForm({...ganttForm,assignedTo:e.target.value})} placeholder="Sorumlu kişi" className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-slate-500 block mb-1">Başlangıç Tarihi*</label>
-                  <input type="date" value={ganttForm.startDate} onChange={e=>setGanttForm({...ganttForm,startDate:e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300"/>
-                </div>
-                <div>
-                  <label className="text-xs text-slate-500 block mb-1">Bitiş Tarihi*</label>
-                  <input type="date" value={ganttForm.endDate} onChange={e=>setGanttForm({...ganttForm,endDate:e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300"/>
-                </div>
-              </div>
-              <div>
-                <label className="text-xs text-slate-500 block mb-1">İlerleme: <span className="font-bold text-cyan-700">%{ganttForm.progress}</span></label>
-                <input type="range" min="0" max="100" step="5" value={ganttForm.progress} onChange={e=>setGanttForm({...ganttForm,progress:Number(e.target.value)})} className="w-full accent-cyan-500"/>
-                <div className="flex justify-between text-[9px] text-slate-400"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
-              </div>
-              <div>
-                <label className="text-xs text-slate-500 block mb-1.5">Renk</label>
-                <div className="flex gap-2 flex-wrap">
-                  {GANTT_COLORS.map(c => (
-                    <button key={c} onClick={() => setGanttForm({...ganttForm, color: c})} className={`w-7 h-7 rounded-lg transition-all ${ganttForm.color === c ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : 'hover:scale-105'}`} style={{ backgroundColor: c }}/>
-                  ))}
-                </div>
-              </div>
-              {ganttForm.startDate && ganttForm.endDate && new Date(ganttForm.endDate) >= new Date(ganttForm.startDate) && (
-                <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-center">
-                  <span className="text-sm font-bold text-cyan-700">
-                    Süre: {Math.round((new Date(ganttForm.endDate) - new Date(ganttForm.startDate)) / 86400000) + 1} gün
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className="flex justify-end gap-3 mt-5">
-              <button onClick={()=>setShowGanttModal(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">İptal</button>
-              <button onClick={saveGanttTask} className="px-4 py-2 text-sm bg-cyan-600 hover:bg-cyan-700 text-white rounded-md font-medium">Kaydet</button>
             </div>
           </div>
         </div>

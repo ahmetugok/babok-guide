@@ -5,7 +5,8 @@ import {
   CheckSquare, Square, Sparkles, Bot, X, Copy, Loader2, FileStack, ClipboardCopy,
   AlertTriangle, Trash2, Pencil, Plus, Download, LayoutDashboard, ListChecks,
   StickyNote, FolderPlus, RotateCcw, MessageSquare, Clock, UserPlus, ChevronUp,
-  Shield, ArrowUpRight, TrendingUp, BookMarked, CalendarDays, GripVertical, ChevronLeft, ChevronRight as ChevronRightIcon
+  Shield, ArrowUpRight, TrendingUp, BookMarked, CalendarDays, GripVertical, ChevronLeft, ChevronRight as ChevronRightIcon,
+  Moon, Sun, Upload
 } from 'lucide-react';
 
 // --- BABOK KNOWLEDGE AREAS AND DETAILED TASKS DATA ---
@@ -533,6 +534,25 @@ export default function App() {
   // Techniques filter
   const [techFilter, setTechFilter] = useState('all');
 
+  // Dark mode
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('babok_dark') === 'true');
+
+  // Timeline / Gantt
+  const [showTimelineModal, setShowTimelineModal] = useState(false);
+  const [editingTimeline, setEditingTimeline] = useState(null);
+  const today = new Date().toISOString().split('T')[0];
+  const [timelineForm, setTimelineForm] = useState({ name:'', group:'', startDate: today, endDate: today, color: TIMELINE_COLORS[0], progress: 0, notes:'', delayReason:'' });
+  const [timelineZoom, setTimelineZoom] = useState('month');
+
+  // Action notes expand
+  const [expandedActionNotes, setExpandedActionNotes] = useState({});
+  const toggleActionNotes = (id) => setExpandedActionNotes(p => ({ ...p, [id]: !p[id] }));
+
+  // Doc upload AI
+  const [showDocModal, setShowDocModal] = useState(false);
+  const [docContent, setDocContent] = useState('');
+  const [docFileName, setDocFileName] = useState('');
+
   const toggleTask = (taskId, e) => {
     e.stopPropagation();
     if (completedTasks.includes(taskId)) {
@@ -555,6 +575,12 @@ export default function App() {
     localStorage.setItem('babok_v2_projects', JSON.stringify(projects));
     localStorage.setItem('babok_v2_activeProjectId', activeProjectId);
   }, [projects, activeProjectId]);
+
+  // Dark mode
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+    localStorage.setItem('babok_dark', darkMode);
+  }, [darkMode]);
 
   // Computed totals
   const totalTasks = babokData.reduce((acc, ka) => acc + ka.tasks.length, 0);
@@ -653,6 +679,71 @@ export default function App() {
 
   // --- AI HELPER ---
   const handleRegenerateAI = () => { if(activeAiTask) { setAiResult(''); handleOpenAIModal(activeAiTask, ''); } };
+
+  // --- TIMELINE / GANTT ---
+  const openTimelineModal = (item = null) => {
+    setEditingTimeline(item);
+    setTimelineForm(item || { name:'', group:'', startDate: today, endDate: today, color: TIMELINE_COLORS[0], progress: 0, notes:'', delayReason:'' });
+    setShowTimelineModal(true);
+  };
+  const saveTimeline = () => {
+    if (!timelineForm.name.trim() || !timelineForm.startDate || !timelineForm.endDate) return;
+    updateActive(p => ({ ...p, timeline: editingTimeline
+      ? p.timeline.map(t => t.id === editingTimeline.id ? { ...timelineForm, id: editingTimeline.id } : t)
+      : [...(p.timeline||[]), { ...timelineForm, id: generateId() }]
+    }));
+    setShowTimelineModal(false);
+  };
+  const deleteTimeline = (id) => { if(window.confirm('Görevi silmek istiyor musunuz?')) updateActive(p => ({ ...p, timeline: p.timeline.filter(t => t.id !== id) })); };
+
+  // Gantt helpers
+  const ganttStart = (items) => {
+    if (!items.length) return today;
+    return items.reduce((min, t) => t.startDate < min ? t.startDate : min, items[0].startDate);
+  };
+  const isDelayed = (item) => item.endDate < today && item.progress < 100;
+
+  // --- QUICK ACTION STATUS CYCLE ---
+  const cycleActionStatus = (id) => {
+    const cycle = ['Bekliyor', 'Devam Ediyor', 'Tamamlandı'];
+    updateActive(p => ({
+      ...p,
+      actions: p.actions.map(a => a.id === id ? { ...a, status: cycle[(cycle.indexOf(a.status) + 1) % cycle.length] } : a)
+    }));
+  };
+
+  // --- UPDATE ACTION NOTES ---
+  const updateActionNotes = (id, notes) => {
+    updateActive(p => ({ ...p, actions: p.actions.map(a => a.id === id ? { ...a, notes } : a) }));
+  };
+
+  // --- MEETING NOTE → ACTION ---
+  const addNoteAsAction = (mtg, note) => {
+    const newAction = { id: generateId(), title: note.text, owner: '', dueDate: '', status: 'Bekliyor', source: mtg.topic, notes: '' };
+    updateActive(p => ({ ...p, actions: [...p.actions, newAction] }));
+    alert(`"${note.text.substring(0,40)}..." aksiyonlara eklendi!`);
+  };
+
+  // --- DOCUMENT AI EVALUATION ---
+  const handleDocFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setDocFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (ev) => setDocContent(ev.target.result);
+    reader.readAsText(file, 'UTF-8');
+  };
+  const evaluateDocWithAI = async () => {
+    if (!docContent) return;
+    const prompt = `Aşağıdaki proje dokümanını BABOK v3 perspektifinden kapsamlı olarak değerlendir. Hangi BABOK bilgi alanlarına (Knowledge Areas) değinilmiş, hangilerine değinilmemiş? İş analizinin 6 temel alanı açısından eksiklikleri ve güçlü yönlerini belirt. Gereksinim yönetimi, paydaş katılımı, risk analizi ve çözüm değerlendirmesi konularında somut öneriler ver.\n\nProje Bağlamı: ${activeProject.projectContext || 'Belirtilmemiş'}\n\nDOKÜMAN:\n${docContent.substring(0, 8000)}`;
+    setIsAiModalOpen(true);
+    setAiResult('');
+    setAiLoading(true);
+    const result = await generateWithGemini(prompt);
+    setAiResult(result);
+    setAiLoading(false);
+    setShowDocModal(false);
+  };
 
   // --- GEMINI API INTEGRATION ---
   const generateWithGemini = async (promptText) => {
@@ -765,13 +856,16 @@ TALİMATLAR (ÇOK ÖNEMLİ):
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-12">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans text-slate-800 dark:text-slate-200 pb-12">
       {/* HEADER */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
-          <div>
+          <div className="flex-1">
             <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <Layers className="text-blue-600" /> BABOK v3 Saha Asistanı
+              <Layers className="text-blue-600 shrink-0" />
+              <span>BABOK v3</span>
+              <span className="text-slate-300 dark:text-slate-600 font-light">·</span>
+              <span className="text-blue-700 dark:text-blue-400 truncate max-w-[180px]">{activeProject.name}</span>
             </h1>
             {/* Project Switcher */}
             <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -793,27 +887,37 @@ TALİMATLAR (ÇOK ÖNEMLİ):
               <button onClick={() => setShowResetConfirm(true)} title="İlerlemeyi sıfırla" className="text-xs text-slate-400 hover:text-rose-500 px-1 py-1 rounded transition-colors">
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>
+              <button onClick={() => setShowDocModal(true)} title="Proje dokümanı yükle ve AI değerlendirmesi al" className="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 px-2 py-1 rounded-md flex items-center gap-1 transition-colors">
+                <Upload className="w-3 h-3" /> Doküman
+              </button>
             </div>
           </div>
-          <div className="flex flex-col items-end w-full md:w-56">
-            <div className="flex justify-between w-full mb-1">
-              <span className="text-xs font-medium text-slate-600">Genel İlerleme</span>
-              <span className="text-xs font-bold text-blue-600">{overallProgress}%</span>
+          <div className="flex items-center gap-3">
+            {/* Dark Mode Toggle */}
+            <button onClick={() => setDarkMode(d => !d)} className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-800 transition-colors" title={darkMode?'Aydınlık moda geç':'Karanlık moda geç'}>
+              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+            <div className="flex flex-col items-end w-44">
+              <div className="flex justify-between w-full mb-1">
+                <span className="text-xs font-medium text-slate-600">Genel İlerleme</span>
+                <span className="text-xs font-bold text-blue-600">{overallProgress}%</span>
+              </div>
+              <div className="w-full bg-slate-200 rounded-full h-2">
+                <div className="bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out" style={{ width: `${overallProgress}%` }}></div>
+              </div>
+              <span className="text-[10px] text-slate-400 mt-0.5">{completedTasks.length}/{totalTasks} Ana · {completedSubTasks.length}/{totalSubTasks} Alt Görev</span>
             </div>
-            <div className="w-full bg-slate-200 rounded-full h-2">
-              <div className="bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out" style={{ width: `${overallProgress}%` }}></div>
-            </div>
-            <span className="text-[10px] text-slate-400 mt-0.5">{completedTasks.length}/{totalTasks} Ana · {completedSubTasks.length}/{totalSubTasks} Alt Görev</span>
           </div>
         </div>
         {/* TAB NAVIGATION */}
-        <div className="max-w-5xl mx-auto px-4 mt-1 flex gap-1 overflow-x-auto pb-px">
-          {[['dashboard','LayoutDashboard','Dashboard'],['knowledge_areas','LayoutGrid','Checklistler'],['risks','AlertTriangle','Riskler'],['actions','ListChecks','Aksiyonlar'],['stakeholders','Users','Paydaşlar'],['requirements','BookMarked','Gereksinimler'],['meetings','MessageSquare','Toplantılar'],['techniques','Wrench','Teknikler'],['templates','FileStack','Dokümanlar'],['competencies','BrainCircuit','Yetkinlikler']].map(([tab,,label]) => (
+        <div className="max-w-5xl mx-auto px-4 mt-1 flex gap-0.5 overflow-x-auto pb-px scrollbar-hide">
+          {[['dashboard','Dashboard'],['knowledge_areas','Checklistler'],['timeline','Timeline'],['risks','Riskler'],['actions','Aksiyonlar'],['stakeholders','Paydaşlar'],['requirements','Gereksinimler'],['meetings','Toplantılar'],['techniques','Teknikler'],['templates','Dokümanlar'],['competencies','Yetkinlikler']].map(([tab,label]) => (
             <button key={tab} onClick={() => setActiveTab(tab)} className={`pb-2.5 px-2.5 font-medium text-xs flex items-center gap-1.5 whitespace-nowrap border-b-2 transition-colors ${
               activeTab === tab ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}>
               {tab==='dashboard' && <LayoutDashboard className="w-3.5 h-3.5" />}
               {tab==='knowledge_areas' && <LayoutGrid className="w-3.5 h-3.5" />}
+              {tab==='timeline' && <CalendarDays className="w-3.5 h-3.5" />}
               {tab==='risks' && <AlertTriangle className="w-3.5 h-3.5" />}
               {tab==='actions' && <ListChecks className="w-3.5 h-3.5" />}
               {tab==='stakeholders' && <Users className="w-3.5 h-3.5" />}
@@ -833,6 +937,113 @@ TALİMATLAR (ÇOK ÖNEMLİ):
         
         <div className="flex-1 space-y-4">
           
+          {/* TIMELINE / GANTT TAB */}
+          {activeTab === 'timeline' && (() => {
+            const items = activeProject.timeline || [];
+            const gStart = ganttStart(items);
+            const ppd = PX_PER_DAY[timelineZoom];
+            const todayOffset = diffDays(gStart, today);
+            const groups = [...new Set(items.map(t => t.group).filter(Boolean))];
+            const maxEnd = items.reduce((m, t) => t.endDate > m ? t.endDate : m, today);
+            const totalDays = Math.max(diffDays(gStart, maxEnd) + 30, 60);
+            return (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2"><CalendarDays className="text-blue-500 w-5 h-5"/>Proje Timeline'ı (Gantt)</h2>
+                    <p className="text-sm text-slate-500">{items.length} görev · {items.filter(isDelayed).length} gecikmeli</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex border border-slate-200 rounded-lg overflow-hidden">
+                      {['week','month','quarter'].map(z => (
+                        <button key={z} onClick={() => setTimelineZoom(z)} className={`px-3 py-1.5 text-xs font-medium transition-colors ${ timelineZoom===z ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50' }`}>{z==='week'?'Hafta':z==='month'?'Ay':'Çeyrek'}</button>
+                      ))}
+                    </div>
+                    <button onClick={() => openTimelineModal()} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"><Plus className="w-4 h-4"/>Görev Ekle</button>
+                  </div>
+                </div>
+                {items.length === 0 ? (
+                  <div className="text-center py-16 text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
+                    <CalendarDays className="w-10 h-10 mx-auto mb-3 opacity-30"/>
+                    <p>Henüz görev eklenmemiş. "Görev Ekle" ile başlayın.</p>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    {/* Header row */}
+                    <div className="flex border-b border-slate-200">
+                      <div className="w-56 shrink-0 px-4 py-2 text-xs font-bold text-slate-500 uppercase bg-slate-50 border-r border-slate-200">Görev</div>
+                      <div className="flex-1 overflow-x-auto">
+                        <div style={{ width: totalDays * ppd, position: 'relative', height: 32 }} className="bg-slate-50">
+                          {/* Month labels */}
+                          {Array.from({ length: Math.ceil(totalDays / 30) + 1 }, (_, i) => {
+                            const d = new Date(gStart); d.setDate(d.getDate() + i * 30);
+                            return (
+                              <div key={i} className="absolute top-0 h-full flex items-center" style={{ left: i * 30 * ppd }}>
+                                <div className="border-l border-slate-200 h-full"/>
+                                <span className="text-[10px] text-slate-400 pl-1 whitespace-nowrap">{d.toLocaleDateString('tr-TR', { month: 'short', year: '2-digit' })}</span>
+                              </div>
+                            );
+                          })}
+                          {/* Today line */}
+                          {todayOffset >= 0 && todayOffset <= totalDays && (
+                            <div className="absolute top-0 h-full border-l-2 border-rose-500 z-10" style={{ left: todayOffset * ppd }}>
+                              <span className="absolute -top-px left-1 text-[9px] text-rose-600 font-bold">Bugün</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    {/* Task rows */}
+                    <div className="divide-y divide-slate-100">
+                      {items.map(item => {
+                        const left = Math.max(0, diffDays(gStart, item.startDate)) * ppd;
+                        const width = Math.max(ppd, diffDays(item.startDate, item.endDate) * ppd);
+                        const delayed = isDelayed(item);
+                        return (
+                          <div key={item.id} className="flex hover:bg-slate-50 transition-colors group">
+                            {/* Left: task info */}
+                            <div className="w-56 shrink-0 px-4 py-2.5 border-r border-slate-100 flex items-start gap-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold text-slate-800 truncate">{item.name}</p>
+                                {item.group && <p className="text-[10px] text-slate-400 truncate">{item.group}</p>}
+                                <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                                  {delayed && <span className="text-[9px] bg-rose-100 text-rose-700 px-1 rounded font-bold">GECİKİYOR</span>}
+                                  <span className="text-[9px] text-slate-400">{item.progress}%</span>
+                                </div>
+                                {delayed && item.delayReason && <p className="text-[9px] text-rose-500 mt-0.5 truncate" title={item.delayReason}>⚠ {item.delayReason}</p>}
+                              </div>
+                              <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                <button onClick={() => openTimelineModal(item)} className="p-0.5 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-600"><Pencil className="w-3 h-3"/></button>
+                                <button onClick={() => deleteTimeline(item.id)} className="p-0.5 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-600"><Trash2 className="w-3 h-3"/></button>
+                              </div>
+                            </div>
+                            {/* Right: Gantt bar */}
+                            <div className="flex-1 overflow-x-auto">
+                              <div style={{ width: totalDays * ppd, position: 'relative', height: 44, paddingTop: 10 }}>
+                                {/* Today line */}
+                                {todayOffset >= 0 && <div className="absolute top-0 h-full border-l border-rose-200" style={{ left: todayOffset * ppd }} />}
+                                {/* Bar */}
+                                <div
+                                  style={{ left, width, background: item.color, position: 'absolute', top: 10, height: 22, borderRadius: 6, overflow: 'hidden', opacity: item.progress===100?0.6:1 }}
+                                  className={`${delayed ? 'ring-2 ring-rose-500 ring-offset-1' : ''}`}
+                                  title={`${item.startDate} → ${item.endDate}`}
+                                >
+                                  {/* Progress fill */}
+                                  <div style={{ width: `${item.progress}%`, background: 'rgba(255,255,255,0.35)', height: '100%' }} />
+                                  <span className="absolute inset-0 flex items-center justify-center text-[9px] text-white font-bold">{item.name.length > 12 ? item.name.substring(0,10)+'…' : item.name}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* DASHBOARD TAB */}
           {activeTab === 'dashboard' && (
             <div className="space-y-6">
@@ -935,22 +1146,49 @@ TALİMATLAR (ÇOK ÖNEMLİ):
               {activeProject.actions.length === 0 ? (
                 <div className="text-center py-16 text-slate-400"><ListChecks className="w-10 h-10 mx-auto mb-3 opacity-30"/><p>Henüz aksiyon eklenmemiş.</p></div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {activeProject.actions.map(a => {
                     const od = isOverdue(a);
                     return (
-                      <div key={a.id} className={`bg-white rounded-xl border p-4 shadow-sm flex items-start gap-4 ${od?'border-l-4 border-l-rose-400 bg-rose-50/20':''}`}>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${a.status==='Tamamlandı'?'bg-emerald-100 text-emerald-800 border-emerald-200':a.status==='Devam Ediyor'?'bg-blue-100 text-blue-800 border-blue-200':'bg-slate-100 text-slate-700 border-slate-200'}`}>{a.status}</span>
-                            {od && <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 flex items-center gap-1"><Clock className="w-3 h-3"/>Gecikmiş</span>}
+                      <div key={a.id} className={`bg-white rounded-xl border shadow-sm ${od?'border-l-4 border-l-rose-400':'border-slate-200'}`}>
+                        <div className="p-4 flex items-start gap-3">
+                          {/* Quick status cycle button */}
+                          <button
+                            onClick={() => cycleActionStatus(a.id)}
+                            title="Durumu değiştirmek için tıkla"
+                            className={`shrink-0 mt-0.5 text-xs font-bold px-2 py-1 rounded-full border cursor-pointer hover:opacity-80 transition-opacity ${
+                              a.status==='Tamamlandı'?'bg-emerald-100 text-emerald-800 border-emerald-200':
+                              a.status==='Devam Ediyor'?'bg-blue-100 text-blue-800 border-blue-200':
+                              'bg-slate-100 text-slate-700 border-slate-200'
+                            }`}
+                          >
+                            {a.status}
+                          </button>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              {od && <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 flex items-center gap-1"><Clock className="w-3 h-3"/>Gecikmiş</span>}
+                            </div>
+                            <p className={`font-semibold ${a.status==='Tamamlandı'?'line-through text-slate-400':'text-slate-800'}`}>{a.title}</p>
+                            <p className="text-xs text-slate-400 mt-0.5">Sorumlu: {a.owner||'—'} · Tarih: {a.dueDate||'—'}{a.source?` · Kaynak: ${a.source}`:''}</p>
+                            {/* Notes expand */}
+                            <button onClick={() => toggleActionNotes(a.id)} className="text-xs text-slate-400 hover:text-slate-600 mt-1 flex items-center gap-1">
+                              <ChevronDown className={`w-3 h-3 transition-transform ${expandedActionNotes[a.id]?'rotate-180':''}`}/>
+                              {a.notes ? 'Notu gör' : 'Not ekle'}
+                            </button>
+                            {expandedActionNotes[a.id] && (
+                              <textarea
+                                value={a.notes||''}
+                                onChange={e => updateActionNotes(a.id, e.target.value)}
+                                placeholder="Aksiyon notu..."
+                                rows={2}
+                                className="mt-1 w-full text-xs border border-slate-200 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-300 resize-none"
+                              />
+                            )}
                           </div>
-                          <p className={`font-semibold ${a.status==='Tamamlandı'?'line-through text-slate-400':'text-slate-800'}`}>{a.title}</p>
-                          <p className="text-xs text-slate-400 mt-1">Sorumlu: {a.owner||'—'} · Tarih: {a.dueDate||'—'}{a.source?` · Kaynak: ${a.source}`:''}</p>
-                        </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button onClick={()=>openActionModal(a)} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4"/></button>
-                          <button onClick={()=>deleteAction(a.id)} className="p-1.5 hover:bg-rose-50 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4"/></button>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button onClick={()=>openActionModal(a)} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4"/></button>
+                            <button onClick={()=>deleteAction(a.id)} className="p-1.5 hover:bg-rose-50 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4"/></button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -1115,6 +1353,9 @@ TALİMATLAR (ÇOK ÖNEMLİ):
                           <div key={n.id} className={`flex items-start gap-2 p-2.5 rounded-lg border text-sm ${NOTE_TYPE_COLORS[n.type]}`}>
                             <span className="text-xs font-bold whitespace-nowrap shrink-0 mt-0.5">{n.type}</span>
                             <span className="flex-1">{n.text}</span>
+                            {n.type === 'Aksiyon' && (
+                              <button onClick={() => addNoteAsAction(selectedMeeting, n)} className="shrink-0 text-[9px] bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-medium transition-colors whitespace-nowrap" title="Aksiyonlara ekle">+ Aksiyon</button>
+                            )}
                             <button onClick={()=>deleteNote(n.id)} className="shrink-0 opacity-50 hover:opacity-100 transition-opacity"><X className="w-3.5 h-3.5"/></button>
                           </div>
                         ))}
@@ -1427,6 +1668,70 @@ TALİMATLAR (ÇOK ÖNEMLİ):
 
         </div>
       </main>
+
+      {/* TIMELINE MODAL */}
+      {showTimelineModal && (
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl p-6 max-w-lg w-full">
+            <h3 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2"><CalendarDays className="text-blue-500 w-5 h-5"/>{editingTimeline?'G\u00f6revi D\u00fczenle':'Yeni G\u00f6rev / A\u015fama'}</h3>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <input value={timelineForm.name} onChange={e=>setTimelineForm({...timelineForm,name:e.target.value})} placeholder="G\u00f6rev ad\u0131*" className="col-span-2 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"/>
+                <input value={timelineForm.group} onChange={e=>setTimelineForm({...timelineForm,group:e.target.value})} placeholder="Grup / Faz (iste\u011fe ba\u011fl\u0131)" className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-slate-500 shrink-0">Renk</label>
+                  <div className="flex gap-1 flex-wrap">
+                    {TIMELINE_COLORS.map(c => (
+                      <button key={c} onClick={() => setTimelineForm({...timelineForm,color:c})} className={`w-5 h-5 rounded-full border-2 transition-all ${timelineForm.color===c?'border-slate-700 scale-110':'border-transparent'}`} style={{background:c}}/>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs text-slate-500 block mb-1">Ba\u015flang\u0131\u00e7</label><input type="date" value={timelineForm.startDate} onChange={e=>setTimelineForm({...timelineForm,startDate:e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/></div>
+                <div><label className="text-xs text-slate-500 block mb-1">Biti\u015f</label><input type="date" value={timelineForm.endDate} onChange={e=>setTimelineForm({...timelineForm,endDate:e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"/></div>
+              </div>
+              <div><label className="text-xs text-slate-500 block mb-1">Tamamlanma: {timelineForm.progress}%</label>
+                <input type="range" min="0" max="100" step="5" value={timelineForm.progress} onChange={e=>setTimelineForm({...timelineForm,progress:Number(e.target.value)})} className="w-full accent-blue-600"/>
+              </div>
+              {(timelineForm.endDate < today && timelineForm.progress < 100) && (
+                <div className="bg-rose-50 border border-rose-200 rounded-lg p-3">
+                  <p className="text-xs text-rose-700 font-medium mb-1">⚠ Bu g\u00f6rev gecikmeli g\u00f6r\u00fcn\u00fcyor. Neden gecikti?</p>
+                  <input value={timelineForm.delayReason} onChange={e=>setTimelineForm({...timelineForm,delayReason:e.target.value})} placeholder="Gecikme nedeni..." className="w-full text-xs border border-rose-200 rounded-md px-2 py-1.5 focus:outline-none bg-white"/>
+                </div>
+              )}
+              <textarea value={timelineForm.notes} onChange={e=>setTimelineForm({...timelineForm,notes:e.target.value})} placeholder="Notlar..." rows="2" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none"/>
+            </div>
+            <div className="flex justify-end gap-3 mt-5">
+              <button onClick={()=>setShowTimelineModal(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">\u0130ptal</button>
+              <button onClick={saveTimeline} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium">Kaydet</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DOC UPLOAD MODAL */}
+      {showDocModal && (
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full">
+            <h3 className="font-bold text-lg text-slate-800 mb-2 flex items-center gap-2"><Upload className="text-purple-500 w-5 h-5"/>Proje Dok\u00fcman\u0131 Y\u00fckle</h3>
+            <p className="text-sm text-slate-500 mb-4">Dok\u00fcman\u0131n\u0131z\u0131 y\u00fckleyin; AI BABOK v3 perspektifinden de\u011ferlendirecek ve eksik alanlar\u0131 belirtecek.</p>
+            <label className="block border-2 border-dashed border-purple-200 rounded-xl p-6 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-colors mb-4">
+              <Upload className="w-8 h-8 mx-auto mb-2 text-purple-400"/>
+              <p className="text-sm font-medium text-slate-700">{docFileName || 'Dosya se\u00e7mek i\u00e7in t\u0131klay\u0131n'}</p>
+              <p className="text-xs text-slate-400 mt-1">.txt, .md desteklenir (8000 karakter limit)</p>
+              <input type="file" accept=".txt,.md,.csv" onChange={handleDocFile} className="hidden"/>
+            </label>
+            {docContent && <p className="text-xs text-emerald-600 mb-4">✓ {docContent.length} karakter y\u00fcklendi</p>}
+            <div className="flex justify-end gap-3">
+              <button onClick={()=>{setShowDocModal(false);setDocContent('');setDocFileName('');}} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">\u0130ptal</button>
+              <button onClick={evaluateDocWithAI} disabled={!docContent} className="px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-md font-medium flex items-center gap-2">
+                <Sparkles className="w-4 h-4"/> AI ile De\u011ferlendir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* RESET CONFIRM */}
       {showResetConfirm && (
