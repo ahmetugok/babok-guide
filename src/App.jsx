@@ -15,7 +15,7 @@ const babokData = [
     title: 'Strateji Analizi',
     description: 'Bir ihtiyacı tanımlama, mevcut durumu anlama ve istenen gelecekteki duruma ulaşmak için bir değişim stratejisi önerme.',
     icon: <Target className="w-6 h-6 text-purple-500" />,
-    color: 'border-purple-200 bg-purple-50',
+    color: 'border-purple-200 bg-purple-500/10',
     headerColor: 'text-purple-700',
     tasks: [
       {
@@ -76,7 +76,7 @@ const babokData = [
     title: 'İş Analizi Planlama ve İzleme',
     description: 'İş analistinin görevlerini nasıl organize edeceğini, kimlerle çalışacağını ve süreci nasıl yöneteceğini belirleme.',
     icon: <BookOpen className="w-6 h-6 text-blue-500" />,
-    color: 'border-blue-200 bg-blue-50',
+    color: 'border-blue-500/20 bg-blue-500/10',
     headerColor: 'text-blue-700',
     tasks: [
       {
@@ -136,7 +136,7 @@ const babokData = [
     title: 'Ortaya Çıkarma ve İşbirliği',
     description: 'Paydaşlardan, dokümanlardan veya sistemlerden bilgi toplama ve sürekli iletişimi sağlama süreci.',
     icon: <Users className="w-6 h-6 text-orange-500" />,
-    color: 'border-orange-200 bg-orange-50',
+    color: 'border-orange-200 bg-orange-500/10',
     headerColor: 'text-orange-700',
     tasks: [
       {
@@ -197,7 +197,7 @@ const babokData = [
     title: 'Gereksinim Analizi ve Tasarım Tanımlama',
     description: 'Ortaya çıkarılan karmaşık bilgileri yapılandırma, modelleme ve geliştiriciler için net gereksinimlere dönüştürme.',
     icon: <Layers className="w-6 h-6 text-teal-500" />,
-    color: 'border-teal-200 bg-teal-50',
+    color: 'border-teal-200 bg-teal-500/10',
     headerColor: 'text-teal-700',
     tasks: [
       {
@@ -259,7 +259,7 @@ const babokData = [
     title: 'Gereksinim Yaşam Döngüsü Yönetimi',
     description: 'Projenin başlangıcından bitişine kadar gereksinimlerdeki değişimleri, onayları ve izlenebilirliği yönetme.',
     icon: <RefreshCw className="w-6 h-6 text-indigo-500" />,
-    color: 'border-indigo-200 bg-indigo-50',
+    color: 'border-indigo-500/20 bg-indigo-500/10',
     headerColor: 'text-indigo-700',
     tasks: [
       {
@@ -321,7 +321,7 @@ const babokData = [
     title: 'Çözüm Değerlendirme',
     description: 'Geliştirilen çözümün (veya canlıya alınan ürünün) gerçekten hedeflenen değeri yaratıp yaratmadığını ölçme.',
     icon: <Activity className="w-6 h-6 text-emerald-500" />,
-    color: 'border-emerald-200 bg-emerald-50',
+    color: 'border-emerald-500/20 bg-emerald-500/10',
     headerColor: 'text-emerald-700',
     tasks: [
       {
@@ -400,9 +400,9 @@ const DEFAULT_PROJECT = {
 const PROB_LABELS = ['', 'Düşük', 'Orta', 'Yüksek'];
 const IMPACT_LABELS = ['', 'Düşük', 'Orta', 'Yüksek'];
 const RACI_LABELS = { R: 'Sorumlu', A: 'Onaylayan', C: 'Danışılan', I: 'Bilgilendirilen' };
-const RACI_COLORS = { R: 'bg-blue-100 text-blue-800', A: 'bg-purple-100 text-purple-800', C: 'bg-amber-100 text-amber-800', I: 'bg-slate-100 text-slate-700' };
-const REQ_STATUS_COLORS = { 'Taslak': 'bg-slate-100 text-slate-700', 'İncelemede': 'bg-amber-100 text-amber-800', 'Onaylandı': 'bg-blue-100 text-blue-800', 'Geliştiriliyor': 'bg-purple-100 text-purple-800', 'Test': 'bg-orange-100 text-orange-800', 'Canlıda': 'bg-emerald-100 text-emerald-800' };
-const NOTE_TYPE_COLORS = { 'Karar': 'bg-blue-100 text-blue-800 border-blue-200', 'Açık Nokta': 'bg-rose-100 text-rose-800 border-rose-200', 'Aksiyon': 'bg-amber-100 text-amber-800 border-amber-200' };
+const RACI_COLORS = { R: 'bg-blue-100 text-blue-800', A: 'bg-purple-100 text-purple-800', C: 'bg-amber-100 text-amber-800', I: 'bg-white/10 text-slate-300' };
+const REQ_STATUS_COLORS = { 'Taslak': 'bg-white/10 text-slate-300', 'İncelemede': 'bg-amber-500/15 text-amber-300', 'Onaylandı': 'bg-blue-500/15 text-blue-300', 'Geliştiriliyor': 'bg-purple-500/15 text-purple-300', 'Test': 'bg-orange-500/15 text-orange-300', 'Canlıda': 'bg-emerald-500/15 text-emerald-300' };
+const NOTE_TYPE_COLORS = { 'Karar': 'bg-blue-500/15 text-blue-300 border-blue-500/20', 'Açık Nokta': 'bg-rose-500/15 text-rose-300 border-rose-500/20', 'Aksiyon': 'bg-amber-500/15 text-amber-300 border-amber-500/20' };
 
 // --- BABOK UNDERLYING COMPETENCIES DATA ---
 const competenciesData = [
@@ -586,9 +586,9 @@ export default function App() {
   // --- RISK ---
   const getRiskLevel = (prob, impact) => {
     const s = prob * impact;
-    if (s >= 7) return { label: 'Kritik', cls: 'text-rose-700 bg-rose-100 border-rose-300', dot: 'bg-rose-500' };
-    if (s >= 4) return { label: 'Orta', cls: 'text-amber-700 bg-amber-100 border-amber-300', dot: 'bg-amber-500' };
-    return { label: 'Düşük', cls: 'text-emerald-700 bg-emerald-100 border-emerald-300', dot: 'bg-emerald-500' };
+    if (s >= 7) return { label: 'Kritik', cls: 'text-rose-700 bg-rose-100 border-rose-500/30', dot: 'bg-rose-500/100' };
+    if (s >= 4) return { label: 'Orta', cls: 'text-amber-700 bg-amber-100 border-amber-500/30', dot: 'bg-amber-500/100' };
+    return { label: 'Düşük', cls: 'text-emerald-700 bg-emerald-100 border-emerald-500/30', dot: 'bg-emerald-500/100' };
   };
   const openRiskModal = (risk = null) => { setEditingRisk(risk); setRiskForm(risk || { title: '', category: 'Teknik', probability: 2, impact: 2, owner: '', mitigation: '', status: 'Açık' }); setShowRiskModal(true); };
   const saveRisk = () => {
@@ -818,8 +818,8 @@ Yanıtın tamamı Türkçe olmalıdır.
       .replace(/\*\*(.*?)\*\*/g, '<strong class="text-indigo-900">$1</strong>') // Kalın
       .replace(/\*(.*?)\*/g, '<em>$1</em>') // İtalik
       .replace(/^### (.*$)/gim, '<h3 class="text-lg font-bold mt-6 mb-2 text-indigo-700">$1</h3>') // Başlık 3
-      .replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold mt-8 mb-3 text-indigo-800 border-b border-indigo-100 pb-2">$1</h2>') // Başlık 2
-      .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-6 mb-4 text-indigo-900 border-b-2 border-indigo-200 pb-2">$1</h1>') // Başlık 1
+      .replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold mt-8 mb-3 text-indigo-800 border-b border-indigo-500/15 pb-2">$1</h2>') // Başlık 2
+      .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-6 mb-4 text-indigo-900 border-b-2 border-indigo-500/20 pb-2">$1</h1>') // Başlık 1
       .replace(/^- (.*$)/gim, '<li class="ml-5 list-disc mb-1.5">$1</li>') // Liste
       .replace(/^\* (.*$)/gim, '<li class="ml-5 list-disc mb-1.5">$1</li>') // Liste (Alternatif)
       .replace(/\n/g, '<br />'); // Yeni satırlar
@@ -833,253 +833,492 @@ Yanıtın tamamı Türkçe olmalıdır.
 
   };
 
-  return (
-    <div className={`min-h-screen font-sans pb-12 transition-colors duration-300 ${darkMode ? 'dark bg-slate-900 text-slate-200' : 'bg-slate-50 text-slate-800'}`}>
-      {/* HEADER */}
-      <header className={`sticky top-0 z-10 shadow-sm border-b transition-colors duration-300 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4 flex-wrap">
-          {/* Left: Title + Project Controls */}
-          <div className="flex-1 min-w-0">
-            <h1 className={`text-xl font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-              <Layers className="text-blue-600 shrink-0" />
-              <span>BABOK v3</span>
-              <span className={`font-light ${darkMode ? 'text-slate-600' : 'text-slate-300'}`}>·</span>
-              <span className="text-blue-600 truncate max-w-[180px]">{activeProject.name}</span>
-            </h1>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <select
-                value={activeProjectId}
-                onChange={e => setActiveProjectId(e.target.value)}
-                className={`text-xs border rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 max-w-[180px] ${darkMode ? 'bg-slate-700 border-slate-600 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'}`}
-              >
-                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-              <button onClick={() => setShowProjectModal(true)} className={`text-xs px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${darkMode ? 'bg-blue-900/40 hover:bg-blue-900/60 text-blue-300' : 'bg-blue-50 hover:bg-blue-100 text-blue-700'}`} title="Yeni Proje">
-                <FolderPlus className="w-3 h-3" /> Yeni
-              </button>
-              <button onClick={importProject} className={`text-xs px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${darkMode ? 'bg-emerald-900/40 hover:bg-emerald-900/60 text-emerald-300' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700'}`} title="Proje İçe Aktar (.json)">
-                <Upload className="w-3 h-3" /> İçe Aktar
-              </button>
-              <button onClick={exportProjectJSON} className={`text-xs px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-slate-300' : 'bg-slate-50 hover:bg-slate-100 text-slate-600'}`} title="Projeyi JSON olarak dışa aktar">
-                <Download className="w-3 h-3" /> Yedekle
-              </button>
-              {projects.length > 1 && (
-                <button onClick={() => { if (window.confirm(`"${activeProject.name}" projesini silmek istiyor musunuz?`)) deleteProject(activeProjectId); }} className={`text-xs px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${darkMode ? 'bg-rose-900/40 hover:bg-rose-900/60 text-rose-300' : 'bg-rose-50 hover:bg-rose-100 text-rose-600'}`}>
-                  <Trash2 className="w-3 h-3" /> Sil
-                </button>
-              )}
-              <button onClick={() => setShowResetConfirm(true)} title="İlerlemeyi sıfırla" className={`text-xs px-1 py-1 rounded transition-colors ${darkMode ? 'text-slate-500 hover:text-rose-400' : 'text-slate-400 hover:text-rose-500'}`}>
-                <RotateCcw className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-          {/* Right: Dark mode toggle + Progress */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className={`p-1.5 rounded-lg transition-all duration-300 ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-amber-400' : 'bg-slate-100 hover:bg-slate-200 text-slate-500'}`}
-              title={darkMode ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
-            >
-              {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
-            <div className="flex flex-col items-end w-44">
-              <div className="flex justify-between w-full mb-1">
-                <span className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Genel İlerleme</span>
-                <span className="text-xs font-bold text-blue-600">{overallProgress}%</span>
-              </div>
-              <div className={`w-full rounded-full h-2.5 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out" style={{ width: `${overallProgress}%` }}></div>
-              </div>
-              <span className={`text-[10px] mt-0.5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{completedTasks.length}/{totalTasks} Ana · {completedSubTasks.length}/{totalSubTasks} Alt Görev</span>
-            </div>
-          </div>
-        </div>
-        {/* TAB NAVIGATION */}
-        <div className={`max-w-7xl mx-auto px-4 sm:px-6 flex gap-0.5 overflow-x-auto pb-px scrollbar-hide border-t ${darkMode ? 'border-slate-700' : 'border-slate-100'}`}>
-          {[['dashboard', 'Dashboard'], ['knowledge_areas', 'Checklistler'], ['risks', 'Riskler'], ['actions', 'Aksiyonlar'], ['stakeholders', 'Paydaşlar'], ['requirements', 'Gereksinimler'], ['meetings', 'Toplantılar'], ['gantt', 'Gantt'], ['techniques', 'Teknikler'], ['templates', 'Dokümanlar'], ['competencies', 'Yetkinlikler']].map(([tab, label]) => {
-            const icons = { dashboard: LayoutDashboard, knowledge_areas: LayoutGrid, risks: AlertTriangle, actions: ListChecks, stakeholders: Users, requirements: BookMarked, meetings: MessageSquare, gantt: CalendarDays, techniques: Wrench, templates: FileStack, competencies: BrainCircuit };
-            const Icon = icons[tab];
-            return (
-              <button key={tab} onClick={() => { setActiveTab(tab); setShowDashboardDetail(null); }} className={`pb-2.5 pt-2 px-3 font-medium text-[13px] flex items-center gap-1.5 whitespace-nowrap border-b-2 transition-all ${activeTab === tab
-                ? (darkMode ? 'border-blue-400 text-blue-300 bg-blue-900/30' : 'border-blue-600 text-blue-700 bg-blue-50/60')
-                : (darkMode ? 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700/50' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50')
-                }`}>
-                <Icon className="w-4 h-4" />
-                {label}
-              </button>
-            );
-          })}
-        </div>
-      </header>
-      {/* MAIN CONTENT */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col lg:flex-row gap-6">
+  // Mobile fab menu
+  const [showFabMenu, setShowFabMenu] = useState(false);
 
-        <div className="flex-1 space-y-4 min-w-0">
+  // Tab definitions with icons
+  const TAB_ITEMS = [
+    { id: 'dashboard', label: 'Dashboard', Icon: LayoutDashboard },
+    { id: 'knowledge_areas', label: 'Checklistler', Icon: LayoutGrid },
+    { id: 'risks', label: 'Riskler', Icon: AlertTriangle },
+    { id: 'actions', label: 'Aksiyonlar', Icon: ListChecks },
+    { id: 'stakeholders', label: 'Paydaşlar', Icon: Users },
+    { id: 'requirements', label: 'Gereksinimler', Icon: BookMarked },
+    { id: 'meetings', label: 'Toplantılar', Icon: MessageSquare },
+    { id: 'gantt', label: 'Timeline', Icon: CalendarDays },
+    { id: 'techniques', label: 'Teknikler', Icon: Wrench },
+    { id: 'templates', label: 'Dokümanlar', Icon: FileStack },
+    { id: 'competencies', label: 'Yetkinlikler', Icon: BrainCircuit },
+  ];
+  const MOBILE_TABS = TAB_ITEMS.filter(t => ['dashboard','risks','actions','gantt','meetings'].includes(t.id));
+
+  // Ring Chart SVG component
+  const RingChart = ({ progress, size = 160, stroke = 10 }) => {
+    const r = (size - stroke) / 2;
+    const circ = 2 * Math.PI * r;
+    const offset = circ - (progress / 100) * circ;
+    return (
+      <div className="ring-chart">
+        <svg width={size} height={size} className="transform -rotate-90">
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(148,163,184,0.08)" strokeWidth={stroke} />
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="url(#ringGrad)" strokeWidth={stroke}
+            strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+            style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1)' }} />
+          <defs><linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#22d3ee" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient></defs>
+        </svg>
+        <div className="ring-chart-label">
+          <span className="font-stat text-3xl font-bold neon-cyan">{progress}%</span>
+          <span className="text-[10px] text-slate-400 mt-0.5">{activeProject.name}</span>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className={`aura-void min-h-screen font-sans ${darkMode ? 'theme-dark text-slate-200' : 'theme-light text-slate-800'}`}>
+      {/* Void Background Beams */}
+      <div className="void-beam void-beam-1" />
+      <div className="void-beam void-beam-2" />
+      <div className="void-beam void-beam-3" />
+
+      {/* ===== FLOATING DOCK NAVIGATION (Desktop) ===== */}
+      <nav className="aura-dock hidden lg:flex">
+        {TAB_ITEMS.map(({ id, label, Icon }) => (
+          <button key={id} onClick={() => { setActiveTab(id); setShowDashboardDetail(null); }}
+            className={`aura-dock-item ${activeTab === id ? 'active' : ''}`} title={label}>
+            <Icon className="w-[18px] h-[18px]" />
+            <span className="dock-label">{label}</span>
+          </button>
+        ))}
+        <div className="w-6 h-px bg-slate-700/50 my-1" />
+        <button onClick={exportProjectJSON} className="aura-dock-item" title="Yedekle">
+          <Download className="w-[18px] h-[18px]" />
+          <span className="dock-label">Yedekle</span>
+        </button>
+      </nav>
+
+      {/* ===== MAIN CONTENT AREA ===== */}
+      <div className="lg:ml-[78px] relative z-[1]">
+
+        {/* Glass Header */}
+        <header className="glass-panel sticky top-2 mx-3 lg:mx-5 mb-2 z-10">
+          <div className="px-4 py-2 flex items-center justify-between gap-3 flex-wrap">
+            {/* Left: Project Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 flex items-center justify-center border border-cyan-500/10">
+                  <Layers className="w-5 h-5 text-cyan-400" />
+                </div>
+                <div className="min-w-0">
+                  <h1 className="text-base font-bold text-white flex items-center gap-2">
+                    <span>BABOK v3</span>
+                    <span className="text-slate-400">·</span>
+                    <span className="neon-cyan truncate max-w-[200px]">{activeProject.name}</span>
+                  </h1>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <select value={activeProjectId} onChange={e => setActiveProjectId(e.target.value)}
+                      className="text-xs rounded-lg px-2 py-0.5 max-w-[160px] border-none !bg-transparent !text-slate-400 focus:!text-slate-200 cursor-pointer">
+                      {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                    <button onClick={() => setShowProjectModal(true)} className="text-xs text-cyan-400/70 hover:text-cyan-300 transition-colors" title="Yeni Proje"><FolderPlus className="w-3.5 h-3.5" /></button>
+                    <button onClick={importProject} className="text-xs text-emerald-400/70 hover:text-emerald-300 transition-colors" title="İçe Aktar"><Upload className="w-3.5 h-3.5" /></button>
+                    {projects.length > 1 && (
+                      <button onClick={() => { if (window.confirm(`"${activeProject.name}" projesini silmek istiyor musunuz?`)) deleteProject(activeProjectId); }} className="text-xs text-rose-400/60 hover:text-rose-400 transition-colors"><Trash2 className="w-3 h-3" /></button>
+                    )}
+                    <button onClick={() => setShowResetConfirm(true)} title="İlerlemeyi sıfırla" className="text-xs text-slate-400 hover:text-rose-400 transition-colors"><RotateCcw className="w-3 h-3" /></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Right: Theme Toggle + Progress Ring */}
+            <div className="flex items-center gap-3">
+              <button onClick={() => setDarkMode(!darkMode)} className="theme-toggle" title={darkMode ? 'Açık Tema' : 'Koyu Tema'}>
+                {darkMode ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
+              </button>
+              <div className="hidden sm:flex flex-col items-end gap-0.5">
+                <span className="text-[10px] text-slate-500 uppercase tracking-wider">İlerleme</span>
+                <span className="text-xs text-slate-400">{completedTasks.length + completedSubTasks.length}/{totalTasks + totalSubTasks}</span>
+              </div>
+              <div className="relative w-14 h-14">
+                <svg width={56} height={56} className="transform -rotate-90">
+                  <circle cx={28} cy={28} r={22} fill="none" stroke="rgba(148,163,184,0.08)" strokeWidth={5} />
+                  <circle cx={28} cy={28} r={22} fill="none" stroke="url(#headerRingGrad)" strokeWidth={5}
+                    strokeDasharray={138.23} strokeDashoffset={138.23 - (overallProgress / 100) * 138.23} strokeLinecap="round"
+                    style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1)' }} />
+                  <defs><linearGradient id="headerRingGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#22d3ee" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient></defs>
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="font-stat text-sm font-bold neon-cyan">{overallProgress}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Content */}
+        <main className="px-3 lg:px-5 pb-20 lg:pb-3">
+
+        <div className="flex-1 space-y-3 min-w-0 aura-content-enter">
 
 
                                       {/* DASHBOARD TAB */}
-                                      {activeTab === 'dashboard' && (
-                                        <div className="space-y-6">
-                                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                                            {[
-                                              { key: 'progress', label: 'Genel İlerleme', value: `${overallProgress}%`, sub: `${completedTasks.length + completedSubTasks.length}/${totalTasks + totalSubTasks} görev`, color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200 hover:border-blue-400', icon: <TrendingUp className="w-5 h-5 text-blue-400" /> },
-                                              { key: 'risks', label: 'Açık Riskler', value: activeProject.risks.filter(r => r.status === 'Açık').length, sub: `${activeProject.risks.length} toplam risk`, color: 'text-rose-700', bg: 'bg-rose-50 border-rose-200 hover:border-rose-400', icon: <AlertTriangle className="w-5 h-5 text-rose-400" /> },
-                                              { key: 'actions', label: 'Bekleyen Aksiyonlar', value: activeProject.actions.filter(a => a.status !== 'Tamamlandı').length, sub: `${activeProject.actions.filter(isOverdue).length} gecikmiş`, color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200 hover:border-amber-400', icon: <ListChecks className="w-5 h-5 text-amber-400" /> },
-                                              { key: 'requirements', label: 'Gereksinimler', value: activeProject.requirements.length, sub: `${activeProject.requirements.filter(r => r.status === 'Canlıda').length} canlıda`, color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200 hover:border-emerald-400', icon: <BookMarked className="w-5 h-5 text-emerald-400" /> },
-                                            ].map((s, i) => (
-                                              <div key={i} onClick={() => setShowDashboardDetail(showDashboardDetail === s.key ? null : s.key)} className={`p-4 rounded-xl border ${s.bg} flex flex-col cursor-pointer transition-all ${showDashboardDetail === s.key ? 'ring-2 ring-offset-1 ring-blue-300 scale-[1.02]' : ''}`}>
-                                                <div className="flex items-center justify-between mb-1">
-                                                  <span className="text-xs text-slate-500 font-medium">{s.label}</span>
-                                                  {s.icon}
-                                                </div>
-                                                <span className={`text-3xl font-black ${s.color}`}>{s.value}</span>
-                                                <span className="text-[11px] text-slate-400 mt-1">{s.sub}</span>
-                                                <span className="text-[10px] text-blue-500 mt-1.5 font-medium">Detay için tıklayın →</span>
+                                      {activeTab === 'dashboard' && (() => {
+                                        const openRisks = activeProject.risks.filter(r => r.status === 'Açık');
+                                        const highRisks = openRisks.filter(r => getRiskLevel(r.probability, r.impact).label === 'Yüksek' || getRiskLevel(r.probability, r.impact).label === 'Kritik');
+                                        const pendingActions = activeProject.actions.filter(a => a.status !== 'Tamamlandı');
+                                        const overdueActions = pendingActions.filter(isOverdue);
+                                        const reqs = activeProject.requirements;
+                                        const ganttTasks = activeProject.ganttTasks || [];
+                                        const overdueTasks = ganttTasks.filter(gt => gt.progress < 100 && gt.endDate && new Date(gt.endDate) < new Date());
+                                        const stakeholderCount = activeProject.stakeholders?.length || 0;
+                                        const meetingCount = activeProject.meetings?.length || 0;
+
+                                        return (
+                                        <div className="space-y-3">
+
+                                          {/* ── ROW 1: Hero Progress ── */}
+                                          <div className="glass-card p-4 relative overflow-hidden">
+                                            <div className="absolute -top-16 -right-16 w-48 h-48 bg-cyan-500/5 rounded-full blur-3xl" />
+                                            <div className="flex items-center gap-5">
+                                              {/* Ring Chart */}
+                                              <div className="relative flex-shrink-0">
+                                                <RingChart progress={overallProgress} size={110} stroke={10} />
                                               </div>
-                                            ))}
+                                              {/* Stats Grid */}
+                                              <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1.5">
+                                                  <h2 className="text-lg font-bold text-white">Proje Özeti</h2>
+                                                  <span className="text-sm text-slate-500">· {activeProject.name}</span>
+                                                </div>
+                                                <div className="grid grid-cols-4 gap-2.5">
+                                                  <div className="bg-white/5 rounded-lg p-2.5 border border-white/5">
+                                                    <span className="text-xs text-slate-500 uppercase tracking-wider block mb-0.5">Ana Görev</span>
+                                                    <span className="font-stat text-xl font-bold text-white">{completedTasks.length}<span className="text-sm text-slate-500">/{totalTasks}</span></span>
+                                                  </div>
+                                                  <div className="bg-white/5 rounded-lg p-2.5 border border-white/5">
+                                                    <span className="text-xs text-slate-500 uppercase tracking-wider block mb-0.5">Alt Görev</span>
+                                                    <span className="font-stat text-xl font-bold text-white">{completedSubTasks.length}<span className="text-sm text-slate-500">/{totalSubTasks}</span></span>
+                                                  </div>
+                                                  <div className="bg-white/5 rounded-lg p-2.5 border border-white/5">
+                                                    <span className="text-xs text-slate-500 uppercase tracking-wider block mb-0.5">Paydaş</span>
+                                                    <span className="font-stat text-xl font-bold text-white">{stakeholderCount}</span>
+                                                  </div>
+                                                  <div className="bg-white/5 rounded-lg p-2.5 border border-white/5">
+                                                    <span className="text-xs text-slate-500 uppercase tracking-wider block mb-0.5">Toplantı</span>
+                                                    <span className="font-stat text-xl font-bold text-white">{meetingCount}</span>
+                                                  </div>
+                                                </div>
+                                                <div className="mt-2">
+                                                  <div className="liquid-bar w-full h-1.5">
+                                                    <div className="liquid-bar-fill bg-gradient-to-r from-cyan-500 to-cyan-400" style={{ width: `${overallProgress}%` }} />
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
                                           </div>
 
-                                          {/* Dashboard detail panels */}
-                                          {showDashboardDetail === 'progress' && (
-                                            <div ref={el => el && setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)} className="bg-white rounded-xl border-2 border-blue-300 p-5 shadow-md space-y-3">
-                                              <div className="flex items-center justify-between">
-                                                <h3 className="font-bold text-blue-800 flex items-center gap-2"><TrendingUp className="w-5 h-5" />İlerleme Detayları</h3>
-                                                <button onClick={() => setShowDashboardDetail(null)} className="p-1 hover:bg-blue-100 rounded-full text-blue-400 hover:text-blue-600"><X className="w-4 h-4" /></button>
-                                              </div>
-                                              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                                {babokData.map(ka => {
-                                                  const done = ka.tasks.filter(t => completedTasks.includes(t.id)).length;
-                                                  const pct = Math.round((done / ka.tasks.length) * 100);
-                                                  return <div key={ka.id} className="flex items-center gap-2 text-sm"><div className="w-full bg-slate-100 rounded-full h-2 flex-1"><div className={`h-2 rounded-full ${pct === 100 ? 'bg-green-500' : 'bg-blue-500'}`} style={{ width: `${pct}%` }} /></div><span className="text-xs text-slate-500 w-8 text-right">{pct}%</span><span className="text-xs text-slate-700 truncate">{ka.title.split(' ')[0]}</span></div>;
-                                                })}
-                                              </div>
-                                            </div>
-                                          )}
-                                          {showDashboardDetail === 'risks' && (
-                                            <div ref={el => el && setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)} className="bg-white rounded-xl border-2 border-rose-300 p-5 shadow-md space-y-2">
-                                              <div className="flex items-center justify-between">
-                                                <h3 className="font-bold text-rose-800 flex items-center gap-2"><AlertTriangle className="w-5 h-5" />Açık Riskler</h3>
-                                                <button onClick={() => setShowDashboardDetail(null)} className="p-1 hover:bg-rose-100 rounded-full text-rose-400 hover:text-rose-600"><X className="w-4 h-4" /></button>
-                                              </div>
-                                              {activeProject.risks.filter(r => r.status === 'Açık').length === 0 ? <p className="text-sm text-slate-400">Açık risk bulunmuyor.</p> : activeProject.risks.filter(r => r.status === 'Açık').map(r => (
-                                                <div key={r.id} className="flex items-center gap-3 text-sm p-2 rounded-lg bg-rose-50">
-                                                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${getRiskLevel(r.probability, r.impact).cls}`}>{getRiskLevel(r.probability, r.impact).label}</span>
-                                                  <span className="font-medium text-slate-700 flex-1">{r.title}</span>
-                                                  <span className="text-xs text-slate-400">{r.owner || '—'}</span>
-                                                  <button onClick={() => { setActiveTab('risks'); }} className="text-xs text-rose-600 hover:underline">Git →</button>
+                                          {/* ── ROW 2: 4 Stat Cards ── */}
+                                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+                                            {/* Open Risks */}
+                                            <div onClick={() => setActiveTab('risks')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform neon-border-crimson group">
+                                              <div className="flex items-center justify-between mb-2">
+                                                <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center border border-rose-500/10">
+                                                  <AlertTriangle className="w-5 h-5 text-rose-400" />
                                                 </div>
-                                              ))}
-                                            </div>
-                                          )}
-                                          {showDashboardDetail === 'actions' && (
-                                            <div ref={el => el && setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)} className="bg-white rounded-xl border-2 border-amber-300 p-5 shadow-md space-y-2">
-                                              <div className="flex items-center justify-between">
-                                                <h3 className="font-bold text-amber-800 flex items-center gap-2"><ListChecks className="w-5 h-5" />Bekleyen Aksiyonlar</h3>
-                                                <button onClick={() => setShowDashboardDetail(null)} className="p-1 hover:bg-amber-100 rounded-full text-amber-400 hover:text-amber-600"><X className="w-4 h-4" /></button>
+                                                {highRisks.length > 0 && <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold animate-pulse">{highRisks.length} kritik</span>}
                                               </div>
-                                              {activeProject.actions.filter(a => a.status !== 'Tamamlandı').length === 0 ? <p className="text-sm text-slate-400">Bekleyen aksiyon yok.</p> : activeProject.actions.filter(a => a.status !== 'Tamamlandı').map(a => (
-                                                <div key={a.id} className={`flex items-center gap-3 text-sm p-2 rounded-lg ${isOverdue(a) ? 'bg-rose-50' : 'bg-amber-50'}`}>
-                                                  {isOverdue(a) && <span className="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded-full font-bold">Gecikmiş</span>}
-                                                  <span className="font-medium text-slate-700 flex-1">{a.title}</span>
-                                                  <span className="text-xs text-slate-400">{a.owner || '—'}</span>
-                                                  <span className="text-xs text-slate-400">{a.dueDate || '—'}</span>
-                                                  <button onClick={() => { setActiveTab('actions'); }} className="text-xs text-amber-600 hover:underline">Git →</button>
+                                              <span className="font-stat text-3xl font-black neon-crimson">{openRisks.length}</span>
+                                              <span className="text-sm text-slate-400 block mt-0.5">Açık Risk</span>
+                                              <span className="text-xs text-slate-500 block">{activeProject.risks.length} toplam</span>
+                                            </div>
+                                            {/* Pending Actions */}
+                                            <div onClick={() => setActiveTab('actions')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform neon-border-amethyst group">
+                                              <div className="flex items-center justify-between mb-2">
+                                                <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center border border-violet-500/10">
+                                                  <ListChecks className="w-5 h-5 text-violet-400" />
                                                 </div>
-                                              ))}
-                                            </div>
-                                          )}
-                                          {showDashboardDetail === 'requirements' && (
-                                            <div ref={el => el && setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)} className="bg-white rounded-xl border-2 border-emerald-300 p-5 shadow-md space-y-2">
-                                              <div className="flex items-center justify-between">
-                                                <h3 className="font-bold text-emerald-800 flex items-center gap-2"><BookMarked className="w-5 h-5" />Gereksinim Durumu</h3>
-                                                <button onClick={() => setShowDashboardDetail(null)} className="p-1 hover:bg-emerald-100 rounded-full text-emerald-400 hover:text-emerald-600"><X className="w-4 h-4" /></button>
+                                                {overdueActions.length > 0 && <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold animate-pulse">{overdueActions.length} gecikmiş</span>}
                                               </div>
-                                              {activeProject.requirements.length === 0 ? <p className="text-sm text-slate-400">Henüz gereksinim eklenmemiş.</p> : (
-                                                <div className="flex flex-wrap gap-2">
-                                                  {Object.keys(REQ_STATUS_COLORS).map(st => {
-                                                    const cnt = activeProject.requirements.filter(r => r.status === st).length;
-                                                    return cnt > 0 ? <div key={st} className={`text-xs px-3 py-1.5 rounded-full font-medium ${REQ_STATUS_COLORS[st]}`}>{st}: {cnt}</div> : null;
+                                              <span className="font-stat text-3xl font-black neon-amethyst">{pendingActions.length}</span>
+                                              <span className="text-sm text-slate-400 block mt-0.5">Bekleyen Aksiyon</span>
+                                              <span className="text-xs text-slate-500 block">{activeProject.actions.length} toplam</span>
+                                            </div>
+                                            {/* Requirements */}
+                                            <div onClick={() => setActiveTab('requirements')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform neon-border-cyan group">
+                                              <div className="flex items-center justify-between mb-2">
+                                                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/10">
+                                                  <BookMarked className="w-5 h-5 text-cyan-400" />
+                                                </div>
+                                                {reqs.filter(r => r.status === 'Canlıda').length > 0 && <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-medium">{reqs.filter(r => r.status === 'Canlıda').length} canlıda</span>}
+                                              </div>
+                                              <span className="font-stat text-3xl font-black neon-cyan">{reqs.length}</span>
+                                              <span className="text-sm text-slate-400 block mt-0.5">Gereksinim</span>
+                                              <span className="text-xs text-slate-500 block">{Object.entries(REQ_STATUS_COLORS).map(([st]) => reqs.filter(r => r.status === st).length > 0 ? st.slice(0,3) + ':' + reqs.filter(r => r.status === st).length : null).filter(Boolean).join(' · ')}</span>
+                                            </div>
+                                            {/* Gantt */}
+                                            <div onClick={() => setActiveTab('gantt')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform group" style={{ borderLeft: '2px solid rgba(251,191,36,0.3)' }}>
+                                              <div className="flex items-center justify-between mb-2">
+                                                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/10">
+                                                  <CalendarDays className="w-5 h-5 text-amber-400" />
+                                                </div>
+                                                {overdueTasks.length > 0 && <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold animate-pulse">{overdueTasks.length} gecikmiş</span>}
+                                              </div>
+                                              <span className="font-stat text-3xl font-black text-amber-400">{ganttTasks.length}</span>
+                                              <span className="text-sm text-slate-400 block mt-0.5">Timeline Görevi</span>
+                                              <span className="text-xs text-slate-500 block">{ganttTasks.filter(gt => gt.progress === 100).length} tamamlandı</span>
+                                            </div>
+                                          </div>
+
+                                          {/* ── ROW 3: Open Risks & Actions ── */}
+                                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
+                                            {/* Open Risks List */}
+                                            <div className="glass-card p-4">
+                                              <div className="flex items-center justify-between mb-3">
+                                                <h3 className="font-bold text-sm text-white flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-rose-400" />Açık Riskler</h3>
+                                                <button onClick={() => setActiveTab('risks')} className="text-xs text-rose-400 hover:text-rose-300 transition-colors">Tümünü gör →</button>
+                                              </div>
+                                              {openRisks.length === 0 ? (
+                                                <div className="text-center py-4 text-slate-500"><Shield className="w-7 h-7 mx-auto mb-1.5 opacity-30" /><p className="text-xs">Açık risk bulunmuyor 🎉</p></div>
+                                              ) : (
+                                                <div className="space-y-1.5 max-h-[130px] overflow-y-auto pr-1">
+                                                  {openRisks.slice(0, 5).map(r => {
+                                                    const lvl = getRiskLevel(r.probability, r.impact);
+                                                    return (
+                                                      <div key={r.id} className="flex items-center gap-2.5 p-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group/item">
+                                                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full border whitespace-nowrap ${lvl.cls}`}>{lvl.label}</span>
+                                                        <span className="text-sm text-slate-300 flex-1 truncate">{r.title}</span>
+                                                        <span className="text-xs text-slate-500 hidden sm:inline">{r.owner || '—'}</span>
+                                                      </div>
+                                                    );
                                                   })}
+                                                  {openRisks.length > 5 && <p className="text-[10px] text-slate-500 text-center pt-1">+{openRisks.length - 5} daha</p>}
                                                 </div>
                                               )}
-                                              {activeProject.requirements.slice(0, 5).map(r => (
-                                                <div key={r.id} className="flex items-center gap-3 text-sm p-2 rounded-lg bg-emerald-50">
-                                                  <span className="text-xs font-mono text-slate-400">{r.reqId}</span>
-                                                  <span className="font-medium text-slate-700 flex-1">{r.name}</span>
-                                                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${REQ_STATUS_COLORS[r.status] || ''}`}>{r.status}</span>
-                                                </div>
-                                              ))}
-                                              {activeProject.requirements.length > 5 && <button onClick={() => setActiveTab('requirements')} className="text-xs text-emerald-600 hover:underline">Tümünü gör ({activeProject.requirements.length}) →</button>}
                                             </div>
-                                          )}
 
-                                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            {babokData.map(ka => {
-                                              const done = ka.tasks.filter(t => completedTasks.includes(t.id)).length;
-                                              const subDone = ka.tasks.flatMap(t => t.checklist).filter(c => completedSubTasks.includes(c.id)).length;
-                                              const subTotal = ka.tasks.reduce((a, t) => a + t.checklist.length, 0);
-                                              const pct = Math.round((done / ka.tasks.length) * 100);
-                                              return (
-                                                <div key={ka.id} onClick={() => { setActiveTab('knowledge_areas'); setExpandedKA(ka.id); }} className={`bg-white rounded-xl border p-4 shadow-sm cursor-pointer hover:shadow-md transition-all ${done === ka.tasks.length ? 'border-green-200' : 'border-slate-200 hover:border-blue-200'}`}>
-                                                  <div className="flex items-center gap-2 mb-3">
-                                                    <div className={`p-1.5 rounded-lg ${ka.color} ${done === ka.tasks.length ? '!bg-green-100 !border-green-200' : ''}`}>
-                                                      {done === ka.tasks.length ? <CheckCircle2 className="w-4 h-4 text-green-600" /> : ka.icon}
+                                            {/* Requirements Summary */}
+                                            <div className="glass-card p-4">
+                                              <div className="flex items-center justify-between mb-3">
+                                                <h3 className="font-bold text-sm text-white flex items-center gap-2"><BookMarked className="w-4 h-4 text-cyan-400" />Gereksinimler</h3>
+                                                <button onClick={() => setActiveTab('requirements')} className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors">Tümünü gör →</button>
+                                              </div>
+                                              {reqs.length === 0 ? (
+                                                <div className="text-center py-4 text-slate-500"><BookMarked className="w-7 h-7 mx-auto mb-1.5 opacity-30" /><p className="text-xs">Henüz gereksinim eklenmemiş</p></div>
+                                              ) : (
+                                                <>
+                                                  {/* Status pills */}
+                                                  <div className="flex flex-wrap gap-1.5 mb-3">
+                                                    {Object.keys(REQ_STATUS_COLORS).map(st => {
+                                                      const cnt = reqs.filter(r => r.status === st).length;
+                                                      return cnt > 0 ? <span key={st} className={`text-xs px-2.5 py-1 rounded-full font-medium ${REQ_STATUS_COLORS[st]}`}>{st}: {cnt}</span> : null;
+                                                    })}
+                                                  </div>
+                                                  {/* Requirement list */}
+                                                  <div className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
+                                                    {reqs.slice(0, 6).map(r => (
+                                                      <div key={r.id} className="flex items-center gap-2 p-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                                                        <span className="text-xs font-mono text-slate-500 w-14">{r.reqId}</span>
+                                                        <span className="text-sm text-slate-300 flex-1 truncate">{r.name}</span>
+                                                        <span className={`text-xs px-2 py-0.5 rounded-full ${REQ_STATUS_COLORS[r.status] || 'bg-white/10 text-slate-400'}`}>{r.status}</span>
+                                                      </div>
+                                                    ))}
+                                                    {reqs.length > 6 && <p className="text-[10px] text-slate-500 text-center pt-1">+{reqs.length - 6} daha</p>}
+                                                  </div>
+                                                </>
+                                              )}
+                                            </div>
+                                          </div>
+
+                                          {/* ── ROW 4: Pending Actions & Timeline ── */}
+                                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
+                                            {/* Pending Actions List */}
+                                            <div className="glass-card p-4">
+                                              <div className="flex items-center justify-between mb-3">
+                                                <h3 className="font-bold text-sm text-white flex items-center gap-2"><ListChecks className="w-4 h-4 text-violet-400" />Bekleyen Aksiyonlar</h3>
+                                                <button onClick={() => setActiveTab('actions')} className="text-xs text-violet-400 hover:text-violet-300 transition-colors">Tümünü gör →</button>
+                                              </div>
+                                              {pendingActions.length === 0 ? (
+                                                <div className="text-center py-4 text-slate-500"><CheckCircle2 className="w-7 h-7 mx-auto mb-1.5 opacity-30" /><p className="text-xs">Tüm aksiyonlar tamamlandı 🎉</p></div>
+                                              ) : (
+                                                <div className="space-y-1.5 max-h-[130px] overflow-y-auto pr-1">
+                                                  {pendingActions.slice(0, 5).map(a => (
+                                                    <div key={a.id} className={`flex items-center gap-2.5 p-2.5 rounded-lg transition-colors ${isOverdue(a) ? 'bg-rose-500/10 hover:bg-rose-500/15' : 'bg-white/5 hover:bg-white/10'}`}>
+                                                      {isOverdue(a) && <span className="text-[10px] bg-rose-500/25 text-rose-300 px-1.5 py-0.5 rounded-full font-bold whitespace-nowrap">GECİKMİŞ</span>}
+                                                      <span className="text-sm text-slate-300 flex-1 truncate">{a.title}</span>
+                                                      <span className="text-xs text-slate-500 hidden sm:inline">{a.owner || '—'}</span>
+                                                      {a.dueDate && <span className={`text-xs ${isOverdue(a) ? 'text-rose-400' : 'text-slate-500'}`}>{a.dueDate}</span>}
                                                     </div>
-                                                    <h3 className={`font-bold text-sm ${ka.headerColor}`}>{ka.title}</h3>
-                                                  </div>
-                                                  <div className="w-full bg-slate-100 rounded-full h-2.5 mb-1">
-                                                    <div className={`h-2.5 rounded-full transition-all ${done === ka.tasks.length ? 'bg-green-500' : 'bg-blue-500'}`} style={{ width: `${pct}%` }}></div>
-                                                  </div>
-                                                  <div className="flex justify-between text-[11px] text-slate-400">
-                                                    <span>{done}/{ka.tasks.length} Ana Görev ({pct}%)</span>
-                                                    <span>{subDone}/{subTotal} Alt</span>
-                                                  </div>
+                                                  ))}
+                                                  {pendingActions.length > 5 && <p className="text-[10px] text-slate-500 text-center pt-1">+{pendingActions.length - 5} daha</p>}
                                                 </div>
-                                              );
-                                            })}
+                                              )}
+                                            </div>
+
+                                            {/* Gantt Mini Chart */}
+                                            <div className="glass-card p-4">
+                                              <div className="flex items-center justify-between mb-3">
+                                                <h3 className="font-bold text-sm text-white flex items-center gap-2"><CalendarDays className="w-4 h-4 text-amber-400" />Timeline</h3>
+                                                <button onClick={() => setActiveTab('gantt')} className="text-xs text-amber-400 hover:text-amber-300 transition-colors">Tam ekran →</button>
+                                              </div>
+                                              {ganttTasks.length === 0 ? (
+                                                <div className="text-center py-4 text-slate-500"><CalendarDays className="w-7 h-7 mx-auto mb-1.5 opacity-30" /><p className="text-xs">Henüz timeline görevi eklenmemiş</p></div>
+                                              ) : (() => {
+                                                const gt = ganttTasks;
+                                                const gStarts = gt.map(t => new Date(t.startDate).getTime());
+                                                const gEnds = gt.map(t => new Date(t.endDate).getTime());
+                                                const gRangeStart = new Date(Math.min(...gStarts));
+                                                const gRangeEnd = new Date(Math.max(...gEnds));
+                                                gRangeStart.setDate(gRangeStart.getDate() - 3);
+                                                gRangeEnd.setDate(gRangeEnd.getDate() + 3);
+                                                const gTotalDays = Math.max(Math.round((gRangeEnd - gRangeStart) / 86400000) + 1, 7);
+                                                const gToday = new Date(); gToday.setHours(0,0,0,0);
+                                                const gTodayPct = Math.max(0, Math.min(100, ((gToday - gRangeStart) / (gRangeEnd - gRangeStart)) * 100));
+
+                                                // Month labels
+                                                const gMonths = [];
+                                                const gMCur = new Date(gRangeStart.getFullYear(), gRangeStart.getMonth(), 1);
+                                                while (gMCur <= gRangeEnd) {
+                                                  const mS = gMCur < gRangeStart ? gRangeStart : new Date(gMCur);
+                                                  const leftPct = ((mS - gRangeStart) / (gRangeEnd - gRangeStart)) * 100;
+                                                  gMonths.push({ label: gMCur.toLocaleDateString('tr-TR', { month: 'short', year: '2-digit' }), left: leftPct });
+                                                  gMCur.setMonth(gMCur.getMonth() + 1);
+                                                }
+
+                                                return (
+                                                  <div className="space-y-1">
+                                                    {/* Month header row */}
+                                                    <div className="relative h-5 mb-2 border-b border-white/5">
+                                                      {gMonths.map((m, i) => (
+                                                        <span key={i} className="absolute text-[10px] text-slate-500 font-medium capitalize" style={{ left: `${m.left}%` }}>{m.label}</span>
+                                                      ))}
+                                                    </div>
+                                                    {/* Task bars */}
+                                                    <div className="relative space-y-1.5">
+                                                      {/* Today marker */}
+                                                      {gTodayPct > 0 && gTodayPct < 100 && (
+                                                        <div className="absolute top-0 bottom-0 w-px bg-rose-500/60 z-10 pointer-events-none" style={{ left: `${gTodayPct}%` }}>
+                                                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-[7px] bg-rose-500/80 text-white px-1 rounded-sm font-bold">Bugün</div>
+                                                        </div>
+                                                      )}
+                                                      {gt.slice(0, 12).map(task => {
+                                                        const s = new Date(task.startDate); s.setHours(0,0,0,0);
+                                                        const e = new Date(task.endDate); e.setHours(0,0,0,0);
+                                                        const leftPct = Math.max(0, ((s - gRangeStart) / (gRangeEnd - gRangeStart)) * 100);
+                                                        const widthPct = Math.max(2, ((e - s + 86400000) / (gRangeEnd - gRangeStart)) * 100);
+                                                        const isLate = task.progress < 100 && e < gToday;
+                                                        return (
+                                                          <div key={task.id} className="flex items-center gap-2 group/bar">
+                                                            <span className="text-xs text-slate-400 w-20 truncate flex-shrink-0" title={task.name}>{task.name}</span>
+                                                            <div className="flex-1 relative h-5 rounded bg-white/5">
+                                                              <div
+                                                                className={`absolute top-0.5 bottom-0.5 rounded-sm transition-all ${isLate ? 'ring-1 ring-rose-400/50' : ''}`}
+                                                                style={{ left: `${leftPct}%`, width: `${widthPct}%`, backgroundColor: task.color || '#3b82f6', opacity: 0.85 }}
+                                                                title={`${task.name} (${task.startDate} → ${task.endDate}) %${task.progress}`}
+                                                              >
+                                                                {/* Progress fill inside bar */}
+                                                                <div className="absolute inset-0 rounded-sm overflow-hidden">
+                                                                  <div className="h-full bg-white/20" style={{ width: `${task.progress}%` }} />
+                                                                </div>
+                                                                {widthPct > 10 && <span className="absolute inset-0 flex items-center justify-center text-[8px] text-white font-bold drop-shadow">{task.progress}%</span>}
+                                                              </div>
+                                                              {isLate && <span className="absolute text-[8px] text-rose-400 font-bold" style={{ left: `${leftPct + widthPct + 0.5}%`, top: '2px' }}>⚠️</span>}
+                                                            </div>
+                                                          </div>
+                                                        );
+                                                      })}
+                                                      {gt.length > 12 && <p className="text-[10px] text-slate-500 text-center pt-1">+{gt.length - 12} görev daha</p>}
+                                                    </div>
+                                                    {/* Mini summary */}
+                                                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-white/5">
+                                                      <span className="text-xs text-slate-500">{gt.length} görev · Ort. %{gt.length > 0 ? Math.round(gt.reduce((a, t) => a + (t.progress || 0), 0) / gt.length) : 0}</span>
+                                                      {gt.filter(t => t.progress < 100 && t.endDate && new Date(t.endDate) < gToday).length > 0 && (
+                                                        <span className="text-xs text-rose-400 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" />{gt.filter(t => t.progress < 100 && t.endDate && new Date(t.endDate) < gToday).length} gecikmiş</span>
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })()}
+                                            </div>
                                           </div>
-                                          <div className="flex gap-3 flex-wrap">
-                                            <button onClick={exportMarkdown} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm">
-                                              <Download className="w-4 h-4" /> Dışa Aktar (.md)
-                                            </button>
-                                            <button onClick={exportProjectJSON} className="flex items-center gap-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm">
-                                              <Download className="w-4 h-4" /> JSON Yedek
-                                            </button>
+
+                                          {/* ── ROW 5: 6 BABOK Döngü Kartları ── */}
+                                          <div>
+                                            <h3 className="text-base font-bold text-white mb-2.5 flex items-center gap-2"><LayoutGrid className="w-5 h-5 text-cyan-400" />BABOK Bilgi Alanları</h3>
+                                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                                              {babokData.map(ka => {
+                                                const done = ka.tasks.filter(t => completedTasks.includes(t.id)).length;
+                                                const subDone = ka.tasks.flatMap(t => t.checklist).filter(c => completedSubTasks.includes(c.id)).length;
+                                                const subTotal = ka.tasks.reduce((a, t) => a + t.checklist.length, 0);
+                                                const totalItems = ka.tasks.length + subTotal;
+                                                const doneItems = done + subDone;
+                                                const pct = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
+                                                const isComplete = totalItems > 0 && doneItems === totalItems;
+                                                return (
+                                                  <div key={ka.id} onClick={() => { setActiveTab('knowledge_areas'); setExpandedKA(ka.id); }}
+                                                    className={`glass-card p-4 cursor-pointer hover:scale-[1.02] transition-all group ${isComplete ? 'neon-border-cyan' : 'hover:border-white/20'}`}>
+                                                    <div className="flex items-center gap-3 mb-3">
+                                                      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${isComplete ? 'bg-emerald-500/15 border border-emerald-500/20' : ka.color}`}>
+                                                        {isComplete ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : React.cloneElement(ka.icon, { className: 'w-5 h-5' })}
+                                                      </div>
+                                                      <div className="flex-1 min-w-0">
+                                                        <h4 className={`font-bold text-sm truncate ${isComplete ? 'text-emerald-400' : 'text-white'}`}>{ka.title}</h4>
+                                                        <span className="text-xs text-slate-500">{doneItems}/{totalItems} görev</span>
+                                                      </div>
+                                                      {isComplete && <span className="text-[9px] bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full font-bold">✓</span>}
+                                                    </div>
+                                                    <div className="liquid-bar w-full h-2 mb-1.5">
+                                                      <div className={`liquid-bar-fill ${isComplete ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-cyan-500 to-blue-500'}`} style={{ width: `${pct}%` }} />
+                                                    </div>
+                                                    <div className="flex justify-between items-center">
+                                                      <span className="font-stat font-bold text-base text-slate-300">{pct}%</span>
+                                                      <span className="text-xs text-slate-500">{done}/{ka.tasks.length} ana · {subDone}/{subTotal} alt</span>
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
                                           </div>
+
                                         </div>
-                                      )}
+                                        );
+                                      })()}
 
                                       {/* RISK REGISTER TAB */}
                                       {activeTab === 'risks' && (
                                         <div className="space-y-4">
                                           <div className="flex items-center justify-between">
                                             <div>
-                                              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2"><AlertTriangle className="text-rose-500 w-5 h-5" />Risk Kayıt Defteri</h2>
-                                              <p className="text-sm text-slate-500">{activeProject.risks.length} risk kayıtlı · {activeProject.risks.filter(r => getRiskLevel(r.probability, r.impact).label === 'Kritik').length} kritik</p>
+                                              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><AlertTriangle className="text-rose-500 w-5 h-5" />Risk Kayıt Defteri</h2>
+                                              <p className="text-sm text-slate-400">{activeProject.risks.length} risk kayıtlı · {activeProject.risks.filter(r => getRiskLevel(r.probability, r.impact).label === 'Kritik').length} kritik</p>
                                             </div>
-                                            <button onClick={() => openRiskModal()} className="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"><Plus className="w-4 h-4" />Risk Ekle</button>
+                                            <button onClick={() => openRiskModal()} className="bg-rose-600/80 hover:bg-rose-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Risk Ekle</button>
                                           </div>
                                           {activeProject.risks.length === 0 ? (
-                                            <div className="text-center py-16 text-slate-400"><AlertTriangle className="w-10 h-10 mx-auto mb-3 opacity-30" /><p>Henüz risk eklenmemiş.</p></div>
+                                            <div className="text-center py-20 glass-card p-8">
+                                              <AlertTriangle className="w-14 h-14 mx-auto mb-4 text-rose-500/20 empty-state-icon" />
+                                              <p className="text-slate-300 font-medium">Risk radarı temiz görünüyor.</p>
+                                              <p className="text-xs text-slate-400 mt-2">Sahada her şey yolunda mı? İlk riski tespit et.</p>
+                                              <button onClick={() => openRiskModal()} className="mt-4 text-xs text-rose-400 hover:text-rose-300 transition-colors">+ Risk Ekle</button>
+                                            </div>
                                           ) : (
                                             <div className="space-y-3">
                                               {activeProject.risks.map(r => {
                                                 const lvl = getRiskLevel(r.probability, r.impact);
                                                 return (
-                                                  <div key={r.id} className={`bg-white rounded-xl border p-4 shadow-sm flex items-start gap-4 ${lvl.cls.includes('rose') ? 'border-l-4 border-l-rose-400' : lvl.cls.includes('amber') ? 'border-l-4 border-l-amber-400' : 'border-l-4 border-l-emerald-400'}`}>
+                                                  <div key={r.id} className={`bg-white/5 rounded-xl border p-4 shadow-lg shadow-black/20 flex items-start gap-4 ${lvl.cls.includes('rose') ? 'border-l-4 border-l-rose-400' : lvl.cls.includes('amber') ? 'border-l-4 border-l-amber-400' : 'border-l-4 border-l-emerald-400'}`}>
                                                     <div className="flex-1 min-w-0">
                                                       <div className="flex items-center gap-2 flex-wrap mb-1">
                                                         <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${lvl.cls}`}>{lvl.label}</span>
-                                                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{r.category}</span>
-                                                        <span className={`text-xs px-2 py-0.5 rounded-full ${r.status === 'Açık' ? 'bg-rose-50 text-rose-700' : r.status === 'Azaltıldı' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>{r.status}</span>
+                                                        <span className="text-xs bg-white/10 text-slate-400 px-2 py-0.5 rounded-full">{r.category}</span>
+                                                        <span className={`text-xs px-2 py-0.5 rounded-full ${r.status === 'Açık' ? 'bg-rose-500/10 text-rose-700' : r.status === 'Azaltıldı' ? 'bg-amber-500/10 text-amber-700' : 'bg-emerald-500/10 text-emerald-700'}`}>{r.status}</span>
                                                       </div>
-                                                      <p className="font-semibold text-slate-800">{r.title}</p>
-                                                      {r.mitigation && <p className="text-xs text-slate-500 mt-1">Azaltma: {r.mitigation}</p>}
+                                                      <p className="font-semibold text-slate-100">{r.title}</p>
+                                                      {r.mitigation && <p className="text-xs text-slate-400 mt-1">Azaltma: {r.mitigation}</p>}
                                                       <p className="text-xs text-slate-400 mt-1">Sorumlu: {r.owner || '—'} · Olas.: {PROB_LABELS[r.probability]} · Etki: {IMPACT_LABELS[r.impact]} · Skor: {r.probability * r.impact}</p>
                                                     </div>
                                                     <div className="flex items-center gap-1 shrink-0">
-                                                      <button onClick={() => openRiskModal(r)} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
-                                                      <button onClick={() => deleteRisk(r.id)} className="p-1.5 hover:bg-rose-50 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                                      <button onClick={() => openRiskModal(r)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
+                                                      <button onClick={() => deleteRisk(r.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                                                     </div>
                                                   </div>
                                                 );
@@ -1094,38 +1333,43 @@ Yanıtın tamamı Türkçe olmalıdır.
                                         <div className="space-y-4">
                                           <div className="flex items-center justify-between">
                                             <div>
-                                              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2"><ListChecks className="text-indigo-500 w-5 h-5" />Aksiyon Takip Listesi</h2>
-                                              <p className="text-sm text-slate-500">{activeProject.actions.length} aksiyon · {activeProject.actions.filter(isOverdue).length} gecikmiş</p>
+                                              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><ListChecks className="text-indigo-500 w-5 h-5" />Aksiyon Takip Listesi</h2>
+                                              <p className="text-sm text-slate-400">{activeProject.actions.length} aksiyon · {activeProject.actions.filter(isOverdue).length} gecikmiş</p>
                                             </div>
-                                            <button onClick={() => openActionModal()} className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"><Plus className="w-4 h-4" />Aksiyon Ekle</button>
+                                            <button onClick={() => openActionModal()} className="bg-indigo-600/80 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Aksiyon Ekle</button>
                                           </div>
                                           {activeProject.actions.length === 0 ? (
-                                            <div className="text-center py-16 text-slate-400"><ListChecks className="w-10 h-10 mx-auto mb-3 opacity-30" /><p>Henüz aksiyon eklenmemiş.</p></div>
+                                            <div className="text-center py-20 glass-card p-8">
+                                              <ListChecks className="w-14 h-14 mx-auto mb-4 text-violet-500/20 empty-state-icon" />
+                                              <p className="text-slate-300 font-medium">Aksiyon listesi boş.</p>
+                                              <p className="text-xs text-slate-400 mt-2">Yapılması gerekeni not düş, takipte kal.</p>
+                                              <button onClick={() => openActionModal()} className="mt-4 text-xs text-violet-400 hover:text-violet-300 transition-colors">+ Aksiyon Ekle</button>
+                                            </div>
                                           ) : (
                                             <div className="space-y-3">
                                               {activeProject.actions.map(a => {
                                                 const od = isOverdue(a);
                                                 return (
-                                                  <div key={a.id} className={`bg-white rounded-xl border p-4 shadow-sm ${od ? 'border-l-4 border-l-rose-400 bg-rose-50/20' : ''}`}>
+                                                  <div key={a.id} className={`bg-white/5 rounded-xl border p-4 shadow-lg shadow-black/20 ${od ? 'border-l-4 border-l-rose-400 bg-rose-500/10' : ''}`}>
                                                     <div className="flex items-start gap-4">
                                                       <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-2 flex-wrap mb-1">
-                                                          <select value={a.status} onChange={e => quickUpdateActionStatus(a.id, e.target.value)} className={`text-xs font-bold px-2 py-1 rounded-full border cursor-pointer appearance-none text-center focus:outline-none focus:ring-2 focus:ring-indigo-300 ${a.status === 'Tamamlandı' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : a.status === 'Devam Ediyor' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-slate-100 text-slate-700 border-slate-200'}`} style={{ minWidth: 110 }}>
+                                                          <select value={a.status} onChange={e => quickUpdateActionStatus(a.id, e.target.value)} className={`text-xs font-bold px-2 py-1 rounded-full border cursor-pointer appearance-none text-center focus:outline-none focus:ring-2 focus:ring-indigo-300 ${a.status === 'Tamamlandı' ? 'bg-emerald-100 text-emerald-800 border-emerald-500/20' : a.status === 'Devam Ediyor' ? 'bg-blue-100 text-blue-800 border-blue-500/20' : 'bg-white/10 text-slate-300 border-white/10'}`} style={{ minWidth: 110 }}>
                                                             {['Bekliyor', 'Devam Ediyor', 'Tamamlandı'].map(s => <option key={s} value={s}>{s}</option>)}
                                                           </select>
-                                                          {od && <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 flex items-center gap-1"><Clock className="w-3 h-3" />Gecikmiş</span>}
+                                                          {od && <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full border border-rose-500/20 flex items-center gap-1"><Clock className="w-3 h-3" />Gecikmiş</span>}
                                                         </div>
-                                                        <p className={`font-semibold ${a.status === 'Tamamlandı' ? 'line-through text-slate-400' : 'text-slate-800'}`}>{a.title}</p>
+                                                        <p className={`font-semibold ${a.status === 'Tamamlandı' ? 'line-through text-slate-400' : 'text-slate-100'}`}>{a.title}</p>
                                                         <p className="text-xs text-slate-400 mt-1">Sorumlu: {a.owner || '—'} · Tarih: {a.dueDate || '—'}{a.source ? ` · Kaynak: ${a.source}` : ''}</p>
                                                       </div>
                                                       <div className="flex items-center gap-1 shrink-0">
-                                                        <button onClick={() => openActionModal(a)} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
-                                                        <button onClick={() => deleteAction(a.id)} className="p-1.5 hover:bg-rose-50 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                                        <button onClick={() => openActionModal(a)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
+                                                        <button onClick={() => deleteAction(a.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                                                       </div>
                                                     </div>
                                                     {a.notes && (
-                                                      <div className="mt-2 pt-2 border-t border-slate-100">
-                                                        <p className="text-xs text-slate-500"><span className="font-medium text-slate-600">Not:</span> {a.notes}</p>
+                                                      <div className="mt-2 pt-2 border-t border-white/10">
+                                                        <p className="text-xs text-slate-400"><span className="font-medium text-slate-400">Not:</span> {a.notes}</p>
                                                       </div>
                                                     )}
                                                   </div>
@@ -1141,31 +1385,31 @@ Yanıtın tamamı Türkçe olmalıdır.
                                         <div className="space-y-4">
                                           <div className="flex items-center justify-between">
                                             <div>
-                                              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2"><UserPlus className="text-orange-500 w-5 h-5" />Paydaş Yönetimi</h2>
-                                              <p className="text-sm text-slate-500">{activeProject.stakeholders.length} paydaş kayıtlı</p>
+                                              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><UserPlus className="text-orange-500 w-5 h-5" />Paydaş Yönetimi</h2>
+                                              <p className="text-sm text-slate-400">{activeProject.stakeholders.length} paydaş kayıtlı</p>
                                             </div>
-                                            <button onClick={() => openStakeholderModal()} className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"><Plus className="w-4 h-4" />Paydaş Ekle</button>
+                                            <button onClick={() => openStakeholderModal()} className="bg-orange-500/100 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Paydaş Ekle</button>
                                           </div>
                                           {activeProject.stakeholders.length > 0 && (
-                                            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                                            <div className="bg-white/5 rounded-xl border border-white/10 p-5 shadow-lg shadow-black/20">
                                               <div className="flex items-center justify-between mb-4">
-                                                <h3 className="text-sm font-bold text-slate-700">İlgi / Etki Matrisi</h3>
+                                                <h3 className="text-sm font-bold text-slate-300">İlgi / Etki Matrisi</h3>
                                                 <div className="flex gap-3">
                                                   {Object.entries(RACI_LABELS).map(([k, v]) => (
                                                     <div key={k} className="flex items-center gap-1.5">
                                                       <div className="w-3 h-3 rounded-full" style={{ background: k === 'R' ? '#3b82f6' : k === 'A' ? '#8b5cf6' : k === 'C' ? '#f59e0b' : '#94a3b8' }} />
-                                                      <span className="text-[10px] text-slate-500 font-medium">{k} — {v}</span>
+                                                      <span className="text-[10px] text-slate-400 font-medium">{k} — {v}</span>
                                                     </div>
                                                   ))}
                                                 </div>
                                               </div>
-                                              <div className="relative border border-slate-200 rounded-xl overflow-hidden" style={{ height: Math.max(260, activeProject.stakeholders.length > 6 ? 340 : 280) }}>
+                                              <div className="relative border border-white/10 rounded-xl overflow-hidden" style={{ height: Math.max(260, activeProject.stakeholders.length > 6 ? 340 : 280) }}>
                                                 {/* Quadrant backgrounds */}
                                                 <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
-                                                  <div className="bg-amber-50/40 border-r border-b border-dashed border-slate-300" />
-                                                  <div className="bg-rose-50/40 border-b border-dashed border-slate-300" />
-                                                  <div className="bg-emerald-50/30 border-r border-dashed border-slate-300" />
-                                                  <div className="bg-blue-50/40" />
+                                                  <div className="bg-amber-500/15 border-r border-b border-dashed border-white/15" />
+                                                  <div className="bg-rose-500/15 border-b border-dashed border-white/15" />
+                                                  <div className="bg-emerald-500/10 border-r border-dashed border-white/15" />
+                                                  <div className="bg-blue-500/15" />
                                                 </div>
                                                 {/* Quadrant labels */}
                                                 <span className="absolute top-2 left-3 text-[10px] font-bold text-amber-600/70">İzle</span>
@@ -1213,7 +1457,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                     return (
                                                       <div key={s.id} className="absolute flex flex-col items-center z-[1] transition-all duration-200" style={{ left: `${finalX}%`, top: `${finalY}%`, transform: 'translate(-50%,-50%)' }}>
                                                         <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-md ring-2 ring-white" style={{ background: s.raci === 'R' ? '#3b82f6' : s.raci === 'A' ? '#8b5cf6' : s.raci === 'C' ? '#f59e0b' : '#94a3b8' }} title={`${s.name} — İlgi: ${PROB_LABELS[s.interest]}, Etki: ${PROB_LABELS[s.influence]}`}>{s.name.charAt(0)}</div>
-                                                        <span className="text-[8px] text-slate-600 whitespace-nowrap mt-0.5 bg-white/90 px-1 rounded shadow-sm">{s.name}</span>
+                                                        <span className="text-[8px] text-slate-400 whitespace-nowrap mt-0.5 bg-white/60 px-1 rounded shadow-lg shadow-black/20">{s.name}</span>
                                                       </div>
                                                     );
                                                   });
@@ -1226,10 +1470,10 @@ Yanıtın tamamı Türkçe olmalıdır.
                                           ) : (
                                             <div className="space-y-3">
                                               {activeProject.stakeholders.map(s => (
-                                                <div key={s.id} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-center gap-4">
+                                                <div key={s.id} className="bg-white/5 rounded-xl border border-white/10 p-4 shadow-lg shadow-black/20 flex items-center gap-4">
                                                   <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0`} style={{ background: s.raci === 'R' ? '#3b82f6' : s.raci === 'A' ? '#8b5cf6' : s.raci === 'C' ? '#f59e0b' : '#94a3b8' }}>{s.name.charAt(0)}</div>
                                                   <div className="flex-1 min-w-0">
-                                                    <p className="font-semibold text-slate-800">{s.name} <span className="text-slate-400 font-normal text-sm">— {s.role}</span></p>
+                                                    <p className="font-semibold text-slate-100">{s.name} <span className="text-slate-400 font-normal text-sm">— {s.role}</span></p>
                                                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                                                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${RACI_COLORS[s.raci]}`}>{s.raci} — {RACI_LABELS[s.raci]}</span>
                                                       {s.department && <span className="text-xs text-slate-400">{s.department}</span>}
@@ -1238,8 +1482,8 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                     {s.notes && <p className="text-xs text-slate-400 mt-1 italic">{s.notes}</p>}
                                                   </div>
                                                   <div className="flex items-center gap-1 shrink-0">
-                                                    <button onClick={() => openStakeholderModal(s)} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
-                                                    <button onClick={() => deleteStakeholder(s.id)} className="p-1.5 hover:bg-rose-50 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                                    <button onClick={() => openStakeholderModal(s)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
+                                                    <button onClick={() => deleteStakeholder(s.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                                                   </div>
                                                 </div>
                                               ))}
@@ -1253,37 +1497,37 @@ Yanıtın tamamı Türkçe olmalıdır.
                                         <div className="space-y-4">
                                           <div className="flex items-center justify-between flex-wrap gap-2">
                                             <div>
-                                              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2"><BookMarked className="text-teal-500 w-5 h-5" />Gereksinim Takip Tablosu</h2>
-                                              <p className="text-sm text-slate-500">{activeProject.requirements.length} gereksinim · {activeProject.requirements.filter(r => r.status === 'Canlıda').length} canlıda</p>
+                                              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><BookMarked className="text-teal-500 w-5 h-5" />Gereksinim Takip Tablosu</h2>
+                                              <p className="text-sm text-slate-400">{activeProject.requirements.length} gereksinim · {activeProject.requirements.filter(r => r.status === 'Canlıda').length} canlıda</p>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                              <select value={reqFilter} onChange={e => setReqFilter(e.target.value)} className="text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-teal-400">
+                                              <select value={reqFilter} onChange={e => setReqFilter(e.target.value)} className="text-xs border border-white/10 rounded-md px-2 py-1.5 bg-white/5 focus:outline-none focus:ring-1 focus:ring-teal-400">
                                                 <option value="all">Tüm Durumlar</option>
                                                 {Object.keys(REQ_STATUS_COLORS).map(s => <option key={s} value={s}>{s}</option>)}
                                               </select>
-                                              <button onClick={() => openReqModal()} className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"><Plus className="w-4 h-4" />Gereksinim Ekle</button>
+                                              <button onClick={() => openReqModal()} className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Gereksinim Ekle</button>
                                             </div>
                                           </div>
                                           {activeProject.requirements.length === 0 ? (
                                             <div className="text-center py-16 text-slate-400"><BookMarked className="w-10 h-10 mx-auto mb-3 opacity-30" /><p>Henüz gereksinim eklenmemiş.</p></div>
                                           ) : (
-                                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                                            <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 overflow-hidden">
                                               <table className="w-full text-sm">
-                                                <thead className="bg-slate-50 border-b border-slate-200">
-                                                  <tr>{['ID', 'Gereksinim', 'Hedef', 'Modül', 'Durum', ''].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">{h}</th>)}</tr>
+                                                <thead className="bg-white/5 border-b border-white/10">
+                                                  <tr>{['ID', 'Gereksinim', 'Hedef', 'Modül', 'Durum', ''].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase">{h}</th>)}</tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-slate-100">
                                                   {activeProject.requirements.filter(r => reqFilter === 'all' || r.status === reqFilter).map(r => (
-                                                    <tr key={r.id} className="hover:bg-slate-50 transition-colors">
-                                                      <td className="px-4 py-3 text-xs font-mono text-slate-500 whitespace-nowrap">{r.reqId}</td>
-                                                      <td className="px-4 py-3 font-medium text-slate-800">{r.name}</td>
-                                                      <td className="px-4 py-3 text-xs text-slate-500 max-w-[150px] truncate">{r.objective || '—'}</td>
-                                                      <td className="px-4 py-3 text-xs text-slate-500">{r.module || '—'}</td>
-                                                      <td className="px-4 py-3"><span className={`text-xs px-2 py-1 rounded-full font-medium ${REQ_STATUS_COLORS[r.status] || 'bg-slate-100 text-slate-700'}`}>{r.status}</span></td>
+                                                    <tr key={r.id} className="hover:bg-white/5 transition-colors">
+                                                      <td className="px-4 py-3 text-xs font-mono text-slate-400 whitespace-nowrap">{r.reqId}</td>
+                                                      <td className="px-4 py-3 font-medium text-slate-100">{r.name}</td>
+                                                      <td className="px-4 py-3 text-xs text-slate-400 max-w-[150px] truncate">{r.objective || '—'}</td>
+                                                      <td className="px-4 py-3 text-xs text-slate-400">{r.module || '—'}</td>
+                                                      <td className="px-4 py-3"><span className={`text-xs px-2 py-1 rounded-full font-medium ${REQ_STATUS_COLORS[r.status] || 'bg-white/10 text-slate-300'}`}>{r.status}</span></td>
                                                       <td className="px-4 py-3">
                                                         <div className="flex items-center gap-1">
-                                                          <button onClick={() => openReqModal(r)} className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
-                                                          <button onClick={() => deleteReq(r.id)} className="p-1 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                                                          <button onClick={() => openReqModal(r)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
+                                                          <button onClick={() => deleteReq(r.id)} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
                                                         </div>
                                                       </td>
                                                     </tr>
@@ -1300,17 +1544,17 @@ Yanıtın tamamı Türkçe olmalıdır.
                                         <div className="space-y-4">
                                           <div className="flex items-center justify-between">
                                             <div>
-                                              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2"><MessageSquare className="text-violet-500 w-5 h-5" />Toplantı Notları</h2>
-                                              <p className="text-sm text-slate-500">{activeProject.meetings.length} toplantı kaydı</p>
+                                              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><MessageSquare className="text-violet-500 w-5 h-5" />Toplantı Notları</h2>
+                                              <p className="text-sm text-slate-400">{activeProject.meetings.length} toplantı kaydı</p>
                                             </div>
-                                            <button onClick={() => setShowMeetingModal(true)} className="bg-violet-600 hover:bg-violet-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"><Plus className="w-4 h-4" />Yeni Toplantı</button>
+                                            <button onClick={() => setShowMeetingModal(true)} className="bg-violet-600 hover:bg-violet-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Yeni Toplantı</button>
                                           </div>
                                           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                             <div className="space-y-2">
                                               {activeProject.meetings.length === 0 && <div className="text-center py-12 text-slate-400"><MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-30" /><p className="text-sm">Henüz toplantı yok.</p></div>}
                                               {activeProject.meetings.map(m => (
-                                                <div key={m.id} onClick={() => setSelectedMeeting(m)} className={`p-3 rounded-xl border cursor-pointer transition-all ${selectedMeeting?.id === m.id ? 'border-violet-400 bg-violet-50 shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200 hover:shadow-sm'}`}>
-                                                  <p className="font-semibold text-sm text-slate-800 truncate">{m.topic}</p>
+                                                <div key={m.id} onClick={() => setSelectedMeeting(m)} className={`p-3 rounded-xl border cursor-pointer transition-all ${selectedMeeting?.id === m.id ? 'border-violet-400 bg-violet-500/10 shadow-lg shadow-black/20' : 'border-white/10 bg-white/5 hover:border-violet-500/20 hover:shadow-lg shadow-black/20'}`}>
+                                                  <p className="font-semibold text-sm text-slate-100 truncate">{m.topic}</p>
                                                   <div className="flex items-center justify-between mt-1">
                                                     <p className="text-xs text-slate-400">{m.date}</p>
                                                     <div className="flex items-center gap-1">
@@ -1323,18 +1567,18 @@ Yanıtın tamamı Türkçe olmalıdır.
                                             </div>
                                             <div className="lg:col-span-2">
                                               {!selectedMeeting ? (
-                                                <div className="text-center py-16 text-slate-400 border border-dashed border-slate-200 rounded-xl"><StickyNote className="w-8 h-8 mx-auto mb-2 opacity-30" /><p className="text-sm">Sol taraftan bir toplantı seçin.</p></div>
+                                                <div className="text-center py-16 text-slate-400 border border-dashed border-white/10 rounded-xl"><StickyNote className="w-8 h-8 mx-auto mb-2 opacity-30" /><p className="text-sm">Sol taraftan bir toplantı seçin.</p></div>
                                               ) : (
-                                                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-4">
+                                                <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 p-5 space-y-4">
                                                   <div className="flex items-start justify-between">
-                                                    <div><h3 className="font-bold text-slate-800">{selectedMeeting.topic}</h3><p className="text-xs text-slate-400 mt-0.5">{selectedMeeting.date} · {selectedMeeting.attendees}</p></div>
-                                                    <button onClick={() => generateMoM(selectedMeeting)} className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1.5 rounded-md flex items-center gap-1.5 transition-colors"><ClipboardCopy className="w-3.5 h-3.5" />MoM Oluştur</button>
+                                                    <div><h3 className="font-bold text-slate-100">{selectedMeeting.topic}</h3><p className="text-xs text-slate-400 mt-0.5">{selectedMeeting.date} · {selectedMeeting.attendees}</p></div>
+                                                    <button onClick={() => generateMoM(selectedMeeting)} className="text-xs bg-white/10 hover:bg-slate-200 text-slate-300 px-2 py-1.5 rounded-md flex items-center gap-1.5 transition-colors"><ClipboardCopy className="w-3.5 h-3.5" />MoM Oluştur</button>
                                                   </div>
                                                   <div className="flex gap-2">
-                                                    <select value={newNoteType} onChange={e => setNewNoteType(e.target.value)} className="text-sm border border-slate-200 rounded-lg px-3 py-2.5 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-violet-400 w-36">
+                                                    <select value={newNoteType} onChange={e => setNewNoteType(e.target.value)} className="text-sm border border-white/10 rounded-lg px-3 py-2.5 bg-white/5 focus:outline-none focus:ring-1 focus:ring-violet-400 w-36">
                                                       <option>Karar</option><option>Açık Nokta</option><option>Aksiyon</option>
                                                     </select>
-                                                    <textarea value={newNoteText} onChange={e => setNewNoteText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addNote(); } }} placeholder="Not ekle ve Enter'a bas... (Shift+Enter: yeni satır)" rows="2" className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-violet-400 resize-none" />
+                                                    <textarea value={newNoteText} onChange={e => setNewNoteText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addNote(); } }} placeholder="Not ekle ve Enter'a bas... (Shift+Enter: yeni satır)" rows="2" className="flex-1 text-sm border border-white/10 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-violet-400 resize-none" />
                                                     <button onClick={addNote} className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-lg text-sm transition-colors self-end"><Plus className="w-4 h-4" /></button>
                                                   </div>
                                                   <div className="space-y-2 max-h-[420px] overflow-y-auto">
@@ -1424,35 +1668,36 @@ Yanıtın tamamı Türkçe olmalıdır.
                                           <div className="space-y-4">
                                             <div className="flex items-center justify-between flex-wrap gap-2">
                                               <div>
-                                                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                                  <CalendarDays className="text-cyan-500 w-5 h-5" />Proje Zaman Çizelgesi (Gantt)
+                                                <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                                                  <CalendarDays className="text-cyan-500 w-5 h-5" />Proje Timeline
                                                 </h2>
-                                                <p className="text-sm text-slate-500">{tasks.length} görev{categories.length > 1 ? ` · ${categories.length} kategori` : ''}</p>
+                                                <p className="text-sm text-slate-400">{tasks.length} görev{categories.length > 1 ? ` · ${categories.length} kategori` : ''}</p>
                                               </div>
                                               <div className="flex items-center gap-2">
-                                                <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
+                                                <div className="flex items-center bg-white/10 rounded-lg p-0.5">
                                                   {[['week', 'Hafta'], ['month', 'Ay'], ['quarter', 'Çeyrek']].map(([z, label]) => (
-                                                    <button key={z} onClick={() => setGanttZoom(z)} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${ganttZoom === z ? 'bg-white text-cyan-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>{label}</button>
+                                                    <button key={z} onClick={() => setGanttZoom(z)} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${ganttZoom === z ? 'bg-white/5 text-cyan-700 shadow-lg shadow-black/20' : 'text-slate-400 hover:text-slate-300'}`}>{label}</button>
                                                   ))}
                                                 </div>
-                                                <button onClick={() => openGanttModal()} className="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm">
+                                                <button onClick={() => openGanttModal()} className="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20">
                                                   <Plus className="w-4 h-4" />Görev Ekle
                                                 </button>
                                               </div>
                                             </div>
 
                                             {tasks.length === 0 ? (
-                                              <div className="text-center py-16 text-slate-400 bg-white rounded-xl border border-slate-200">
-                                                <CalendarDays className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                                                <p className="font-medium">Henüz görev eklenmemiş.</p>
-                                                <p className="text-xs mt-1">Proje fazlarını ve görevlerini ekleyerek zaman çizelgenizi oluşturun.</p>
+                                              <div className="text-center py-20 glass-card p-8">
+                                                <CalendarDays className="w-14 h-14 mx-auto mb-4 text-cyan-500/20 empty-state-icon" />
+                                                <p className="text-slate-300 font-medium">Zaman çizelgesi boş.</p>
+                                                <p className="text-xs text-slate-400 mt-2">Proje fazlarını ve görevlerini ekleyerek zaman çizelgenizi oluşturun.</p>
+                                                <button onClick={() => openGanttModal()} className="mt-4 text-xs text-cyan-400 hover:text-cyan-300 transition-colors">+ İlk Görevi Ekle</button>
                                               </div>
                                             ) : (
-                                              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                                              <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 overflow-hidden">
                                                 <div className="flex" style={{ maxHeight: 'calc(100vh - 260px)', minHeight: 200 }}>
                                                   {/* Sidebar */}
-                                                  <div className="w-80 shrink-0 border-r border-slate-200 bg-slate-50 z-[2] overflow-y-auto">
-                                                    <div className="h-[52px] border-b border-slate-200 flex items-end px-3 pb-1.5 sticky top-0 bg-slate-50 z-[1]">
+                                                  <div className="w-80 shrink-0 border-r border-white/10 bg-white/5 z-[2] overflow-y-auto">
+                                                    <div className="h-[52px] border-b border-white/10 flex items-end px-3 pb-1.5 sticky top-0 bg-white/5 z-[1]">
                                                       <div className="flex items-center w-full">
                                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex-1">Görev Adı</span>
                                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 text-center">Sorumlu</span>
@@ -1460,30 +1705,30 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                       </div>
                                                     </div>
                                                     {rows.map((row, idx) => row.type === 'category' ? (
-                                                      <div key={`cat-${idx}`} className="h-8 px-3 flex items-center bg-slate-100/80 border-b border-slate-200">
-                                                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">{row.label}</span>
+                                                      <div key={`cat-${idx}`} className="h-8 px-3 flex items-center bg-white/10 border-b border-white/10">
+                                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">{row.label}</span>
                                                       </div>
                                                     ) : (
-                                                      <div key={row.task.id} className="h-14 px-3 flex items-center border-b border-slate-100 group hover:bg-white transition-colors">
+                                                      <div key={row.task.id} className="h-14 px-3 flex items-center border-b border-white/10 group hover:bg-white/5 transition-colors">
                                                         <div className="flex items-center gap-2 min-w-0 flex-1">
                                                           <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: row.task.color }} />
-                                                          <span className="text-xs font-medium text-slate-700 truncate" title={row.task.name}>{row.task.name}</span>
+                                                          <span className="text-xs font-medium text-slate-300 truncate" title={row.task.name}>{row.task.name}</span>
                                                         </div>
                                                         <div className="w-24 text-center shrink-0 px-1">
                                                           {row.task.assignedTo ? (
-                                                            <span className="text-[11px] text-slate-600 font-medium truncate block" title={row.task.assignedTo}>{row.task.assignedTo}</span>
+                                                            <span className="text-[11px] text-slate-400 font-medium truncate block" title={row.task.assignedTo}>{row.task.assignedTo}</span>
                                                           ) : (
                                                             <span className="text-[10px] text-slate-300">—</span>
                                                           )}
                                                         </div>
                                                         <div className="flex items-center gap-1 w-14 shrink-0 justify-end">
-                                                          <div className="w-8 bg-slate-200 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-cyan-500" style={{ width: `${row.task.progress || 0}%` }} /></div>
-                                                          <span className="text-[10px] font-medium text-slate-500">{row.task.progress || 0}%</span>
+                                                          <div className="w-8 bg-slate-200 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-cyan-500/100" style={{ width: `${row.task.progress || 0}%` }} /></div>
+                                                          <span className="text-[10px] font-medium text-slate-400">{row.task.progress || 0}%</span>
                                                         </div>
                                                         {(() => { const te = new Date(row.task.endDate); te.setHours(0,0,0,0); const isD = te < new Date(new Date().setHours(0,0,0,0)) && (row.task.progress || 0) < 100; return isD ? <span className="text-[9px] bg-rose-100 text-rose-700 px-1 py-0.5 rounded-full font-bold ml-1 shrink-0" title={row.task.delayReason || 'Gecikmiş'}>⚠️</span> : null; })()}
                                                         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
-                                                          <button onClick={() => openGanttModal(row.task)} className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-600"><Pencil className="w-3 h-3" /></button>
-                                                          <button onClick={() => deleteGanttTask(row.task.id)} className="p-1 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-600"><Trash2 className="w-3 h-3" /></button>
+                                                          <button onClick={() => openGanttModal(row.task)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-600"><Pencil className="w-3 h-3" /></button>
+                                                          <button onClick={() => deleteGanttTask(row.task.id)} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-600"><Trash2 className="w-3 h-3" /></button>
                                                         </div>
                                                       </div>
                                                     ))}
@@ -1493,16 +1738,16 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                   <div className="flex-1 overflow-x-auto overflow-y-auto">
                                                     <div style={{ width: totalWidth, minWidth: '100%' }} className="relative">
                                                       {/* Month header */}
-                                                      <div className="h-[26px] border-b border-slate-200 relative bg-slate-50 sticky top-0 z-[1]">
+                                                      <div className="h-[26px] border-b border-white/10 relative bg-white/5 sticky top-0 z-[1]">
                                                         {monthHeaders.map((m, i) => (
-                                                          <div key={i} className="absolute top-0 h-full flex items-center border-r border-slate-200 overflow-hidden" style={{ left: m.left, width: m.width }}>
-                                                            <span className="text-[10px] font-bold text-slate-500 px-2 truncate capitalize">{m.label}</span>
+                                                          <div key={i} className="absolute top-0 h-full flex items-center border-r border-white/10 overflow-hidden" style={{ left: m.left, width: m.width }}>
+                                                            <span className="text-[10px] font-bold text-slate-400 px-2 truncate capitalize">{m.label}</span>
                                                           </div>
                                                         ))}
                                                       </div>
 
                                                       {/* Sub-header */}
-                                                      <div className="h-[26px] border-b border-slate-200 relative bg-white sticky top-[26px] z-[1]">
+                                                      <div className="h-[26px] border-b border-white/10 relative bg-white/5 sticky top-[26px] z-[1]">
                                                         {Array.from({ length: totalDays }, (_, i) => {
                                                           const d = new Date(rangeStart); d.setDate(d.getDate() + i);
                                                           const isMonday = d.getDay() === 1;
@@ -1521,22 +1766,22 @@ Yanıtın tamamı Türkçe olmalıdır.
 
                                                       {/* Task rows */}
                                                       {rows.map((row, idx) => row.type === 'category' ? (
-                                                        <div key={`cat-${idx}`} className="h-8 border-b border-slate-200 bg-slate-50/60 flex items-center px-2"><span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{row.label}</span></div>
+                                                        <div key={`cat-${idx}`} className="h-8 border-b border-white/10 bg-white/40 flex items-center px-2"><span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{row.label}</span></div>
                                                       ) : (() => {
                                                         const taskEnd = new Date(row.task.endDate); taskEnd.setHours(0,0,0,0);
                                                         const isDelayed = taskEnd < today && (row.task.progress || 0) < 100;
                                                         const delayDays = isDelayed ? diffDays(today, taskEnd) : 0;
                                                         return (
-                                                        <div key={row.task.id} className="h-14 border-b border-slate-100 relative">
+                                                        <div key={row.task.id} className="h-14 border-b border-white/10 relative">
                                                           <div
-                                                            className={`absolute top-2 h-10 rounded-md shadow-sm cursor-pointer hover:brightness-110 transition-all flex flex-col justify-center px-2 overflow-hidden ${isDelayed ? 'ring-2 ring-rose-400 ring-offset-1' : ''}`}
+                                                            className={`absolute top-2 h-10 rounded-md shadow-lg shadow-black/20 cursor-pointer hover:brightness-110 transition-all flex flex-col justify-center px-2 overflow-hidden ${isDelayed ? 'ring-2 ring-rose-400 ring-offset-1' : ''}`}
                                                             style={{ left: getBarPos(row.task).left, width: getBarPos(row.task).width, backgroundColor: row.task.color || '#3b82f6' }}
                                                             onClick={() => openGanttModal(row.task)}
                                                             title={`${row.task.name}\n${row.task.startDate} → ${row.task.endDate}\nİlerleme: %${row.task.progress || 0}${row.task.assignedTo ? '\nSorumlu: ' + row.task.assignedTo : ''}${isDelayed ? '\n⚠️ ' + delayDays + ' gün gecikme' : ''}${row.task.delayReason ? '\nNeden: ' + row.task.delayReason : ''}`}
                                                           >
-                                                            {getBarPos(row.task).width > 70 && <span className="text-[10px] text-white font-medium truncate drop-shadow-sm leading-tight">{row.task.name}</span>}
+                                                            {getBarPos(row.task).width > 70 && <span className="text-[10px] text-white font-medium truncate drop-shadow-lg shadow-black/20 leading-tight">{row.task.name}</span>}
                                                             {getBarPos(row.task).width > 100 && row.task.assignedTo && <span className="text-[9px] text-white/80 truncate leading-tight">{row.task.assignedTo}</span>}
-                                                            {getBarPos(row.task).width > 50 && <div className="w-full bg-white/20 rounded-full h-1.5 mt-0.5"><div className="h-1.5 rounded-full bg-white/60" style={{ width: `${row.task.progress || 0}%` }} /></div>}
+                                                            {getBarPos(row.task).width > 50 && <div className="w-full bg-white/10 rounded-full h-1.5 mt-0.5"><div className="h-1.5 rounded-full bg-white/40" style={{ width: `${row.task.progress || 0}%` }} /></div>}
                                                           </div>
                                                           {isDelayed && (
                                                             <div className="absolute top-0 right-0 flex items-center" style={{ left: getBarPos(row.task).left + getBarPos(row.task).width + 4, top: 8 }}>
@@ -1553,7 +1798,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                           {Array.from({ length: totalDays }, (_, i) => {
                                                             const d = new Date(rangeStart); d.setDate(d.getDate() + i);
                                                             return (d.getDay() === 0 || d.getDay() === 6) ? (
-                                                              <div key={i} className="absolute top-0 bottom-0 bg-slate-100/40" style={{ left: i * dayWidth, width: dayWidth }} />
+                                                              <div key={i} className="absolute top-0 bottom-0 bg-white/10" style={{ left: i * dayWidth, width: dayWidth }} />
                                                             ) : null;
                                                           })}
                                                         </div>
@@ -1562,15 +1807,15 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                       {/* Week separator lines */}
                                                       <div className="absolute inset-0 pointer-events-none" style={{ top: 52 }}>
                                                         {weekMarkers.map((left, i) => (
-                                                          <div key={i} className="absolute top-0 bottom-0 border-l border-slate-100/80" style={{ left }} />
+                                                          <div key={i} className="absolute top-0 bottom-0 border-l border-white/10/80" style={{ left }} />
                                                         ))}
                                                       </div>
 
                                                       {/* Today line */}
                                                       {todayPos >= 0 && todayPos <= totalWidth && (
                                                         <div className="absolute top-0 bottom-0 z-[3] pointer-events-none" style={{ left: todayPos }}>
-                                                          <div className="w-0.5 h-full bg-rose-500 opacity-80" />
-                                                          <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-rose-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-b-md shadow-sm whitespace-nowrap">Bugün</div>
+                                                          <div className="w-0.5 h-full bg-rose-500/100 opacity-80" />
+                                                          <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-rose-500/100 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-b-md shadow-lg shadow-black/20 whitespace-nowrap">Bugün</div>
                                                         </div>
                                                       )}
                                                     </div>
@@ -1578,9 +1823,9 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                 </div>
 
                                                 {/* Summary bar */}
-                                                <div className="border-t border-slate-200 bg-slate-50 px-4 py-3">
+                                                <div className="border-t border-white/10 bg-white/5 px-4 py-3">
                                                   <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-                                                    <span className="text-xs font-bold text-slate-500">{tasks.length} görev</span>
+                                                    <span className="text-xs font-bold text-slate-400">{tasks.length} görev</span>
                                                     {tasks.length > 0 && (() => { const avg = Math.round(tasks.reduce((a, t) => a + (t.progress || 0), 0) / tasks.length); return <span className="text-xs font-medium text-cyan-600">Ortalama İlerleme: %{avg}</span>; })()}
                                                     {(() => { const delayed = tasks.filter(t => { const te = new Date(t.endDate); te.setHours(0,0,0,0); return te < today && (t.progress || 0) < 100; }); return delayed.length > 0 ? <span className="text-xs font-medium text-rose-600 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" />{delayed.length} gecikmiş görev</span> : null; })()}
                                                   </div>
@@ -1594,12 +1839,12 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                       return (
                                                         <div key={t.id} className="flex items-center gap-1.5 text-xs">
                                                           <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: t.color }} />
-                                                          <span className={`font-medium ${isPast ? 'text-slate-400 line-through' : isActive ? 'text-cyan-700' : 'text-slate-600'}`}>{t.name}</span>
+                                                          <span className={`font-medium ${isPast ? 'text-slate-400 line-through' : isActive ? 'text-cyan-700' : 'text-slate-400'}`}>{t.name}</span>
                                                           <span className="text-slate-400">{dur}g</span>
                                                           <span className="text-[9px] text-cyan-600 font-medium">%{t.progress || 0}</span>
-                                                          {t.assignedTo && <span className="text-xs text-slate-500 font-medium">· {t.assignedTo}</span>}
+                                                          {t.assignedTo && <span className="text-xs text-slate-400 font-medium">· {t.assignedTo}</span>}
                                                           {isActive && <span className="text-[9px] bg-cyan-100 text-cyan-700 px-1.5 py-0.5 rounded-full font-medium">Aktif</span>}
-                                                          {isPast && <span className="text-[9px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded-full">Bitti</span>}
+                                                          {isPast && <span className="text-[9px] bg-white/10 text-slate-400 px-1.5 py-0.5 rounded-full">Bitti</span>}
                                                         </div>
                                                       );
                                                     })}
@@ -1615,7 +1860,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                       {activeTab === 'knowledge_areas' && (
                                         <>
                                           {/* AI CONTEXT INPUT SECTON */}
-                                          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-5 rounded-xl border border-indigo-100 mb-6 shadow-sm">
+                                          <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 p-5 rounded-xl border border-indigo-500/15 mb-6 shadow-lg shadow-black/20">
                                             <div className="flex items-start gap-3 mb-3">
                                               <Bot className="w-6 h-6 text-indigo-600 shrink-0 mt-0.5" />
                                               <div>
@@ -1628,7 +1873,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                               </div>
                                             </div>
                                             <textarea
-                                              className="w-full p-3 rounded-lg border border-indigo-200 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all text-sm text-slate-700 resize-none"
+                                              className="w-full p-3 rounded-lg border border-indigo-500/20 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all text-sm text-slate-300 resize-none"
                                               rows="3"
                                               placeholder="Projenizin konusu ve hedefleri nedir?"
                                               value={projectContext}
@@ -1650,7 +1895,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                     setTimeout(() => setIsContextSaved(false), 3000);
                                                   }
                                                 }}
-                                                className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 px-5 rounded-md transition-colors shadow-sm flex items-center gap-2"
+                                                className="bg-indigo-600/80 hover:bg-indigo-500 text-white text-sm font-medium py-2 px-5 rounded-md transition-colors shadow-lg shadow-black/20 flex items-center gap-2"
                                               >
                                                 Kaydet ve Onayla
                                               </button>
@@ -1663,31 +1908,31 @@ Yanıtın tamamı Türkçe olmalıdır.
                                             const isExpanded = expandedKA === ka.id;
 
                                             return (
-                                              <div key={ka.id} className={`bg-white rounded-xl shadow-sm border ${isAllComplete ? 'border-green-200' : 'border-slate-200'} overflow-hidden transition-all mb-4`}>
+                                              <div key={ka.id} className={`bg-white/5 rounded-xl shadow-lg shadow-black/20 border ${isAllComplete ? 'border-green-500/20' : 'border-white/10'} overflow-hidden transition-all mb-4`}>
                                                 {/* KA Header */}
                                                 <div
-                                                  className={`p-4 cursor-pointer flex items-center justify-between hover:bg-slate-50 transition-colors ${isExpanded ? 'bg-slate-50 border-b border-slate-100' : ''}`}
+                                                  className={`p-4 cursor-pointer flex items-center justify-between hover:bg-white/5 transition-colors ${isExpanded ? 'bg-white/5 border-b border-white/10' : ''}`}
                                                   onClick={() => setExpandedKA(isExpanded ? null : ka.id)}
                                                 >
                                                   <div className="flex items-center gap-4">
-                                                    <div className={`p-2 rounded-lg ${ka.color} ${isAllComplete ? 'bg-green-100 border-green-200' : ''}`}>
+                                                    <div className={`p-2 rounded-lg ${ka.color} ${isAllComplete ? 'bg-green-100 border-green-500/20' : ''}`}>
                                                       {isAllComplete ? <CheckCircle2 className="w-6 h-6 text-green-600" /> : ka.icon}
                                                     </div>
                                                     <div>
                                                       <h2 className={`font-bold text-lg ${ka.headerColor}`}>{ka.title}</h2>
-                                                      <p className="text-sm text-slate-500 hidden md:block">{ka.description}</p>
+                                                      <p className="text-sm text-slate-400 hidden md:block">{ka.description}</p>
                                                     </div>
                                                   </div>
                                                   <div className="flex items-center gap-2">
                                                     {!isAllComplete && (
                                                       <button
                                                         onClick={(e) => markAllKA(ka, e)}
-                                                        className="text-xs text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-1 rounded-md transition-colors shrink-0"
+                                                        className="text-xs text-emerald-700 bg-emerald-500/10 hover:bg-emerald-100 border border-emerald-500/20 px-2 py-1 rounded-md transition-colors shrink-0"
                                                       >
                                                         Tümünü İşaretle
                                                       </button>
                                                     )}
-                                                    <span className="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-md">
+                                                    <span className="text-sm font-medium text-slate-400 bg-white/10 px-2 py-1 rounded-md">
                                                       {kaCompletedTasks}/{ka.tasks.length}
                                                     </span>
                                                     {isExpanded ? <ChevronDown className="text-slate-400" /> : <ChevronRight className="text-slate-400" />}
@@ -1696,7 +1941,7 @@ Yanıtın tamamı Türkçe olmalıdır.
 
                                                 {/* KA Tasks */}
                                                 {isExpanded && (
-                                                  <div className="divide-y divide-slate-100 bg-white">
+                                                  <div className="divide-y divide-slate-100 bg-white/5">
                                                     {ka.tasks.map(task => {
                                                       const isTaskCompleted = completedTasks.includes(task.id);
                                                       const isTaskSelected = selectedTask?.id === task.id;
@@ -1709,7 +1954,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                       return (
                                                         <div key={task.id} className="flex flex-col">
                                                           <div
-                                                            className={`p-4 pl-6 md:pl-16 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-colors ${isTaskSelected ? 'bg-slate-50' : ''}`}
+                                                            className={`p-4 pl-6 md:pl-16 flex items-center gap-3 cursor-pointer hover:bg-white/5 transition-colors ${isTaskSelected ? 'bg-white/5' : ''}`}
                                                             onClick={() => handleTaskClick(task)}
                                                           >
                                                             <button
@@ -1725,7 +1970,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                             </button>
 
                                                             <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-2">
-                                                              <span className={`font-medium ${isTaskCompleted ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                                                              <span className={`font-medium ${isTaskCompleted ? 'text-slate-400 line-through' : 'text-slate-300'}`}>
                                                                 {task.name}
                                                               </span>
 
@@ -1743,17 +1988,17 @@ Yanıtın tamamı Türkçe olmalıdır.
 
                                                           {/* Task Detail Inline Drawer with Checklist */}
                                                           {isTaskSelected && (
-                                                            <div className="pl-14 md:pl-24 pr-4 pb-4 bg-slate-50">
-                                                              <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm">
+                                                            <div className="pl-14 md:pl-24 pr-4 pb-4 bg-white/5">
+                                                              <div className="bg-white/5 border border-white/10 rounded-lg p-5 shadow-lg shadow-black/20">
 
                                                                 <div className="flex justify-between items-start gap-4 mb-4">
-                                                                  <p className="text-sm text-slate-600 italic border-l-2 border-slate-300 pl-3">
+                                                                  <p className="text-sm text-slate-400 italic border-l-2 border-white/15 pl-3">
                                                                     {task.purpose}
                                                                   </p>
                                                                   {/* AI Generator Button */}
                                                                   <button
                                                                     onClick={() => handleOpenAIModal(task, ka.title)}
-                                                                    className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 px-3 rounded-md flex items-center gap-1.5 transition-colors shadow-sm"
+                                                                    className="shrink-0 bg-indigo-600/80 hover:bg-indigo-500 text-white text-xs font-bold py-2 px-3 rounded-md flex items-center gap-1.5 transition-colors shadow-lg shadow-black/20"
                                                                   >
                                                                     <Sparkles className="w-3.5 h-3.5" />
                                                                     <span>AI Taslak Üret</span>
@@ -1761,16 +2006,16 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                                 </div>
 
                                                                 {/* Deliverables Banner */}
-                                                                <div className="bg-slate-50 border border-slate-200 rounded-md p-3 mb-5 flex gap-3 items-center">
-                                                                  <FileText className="w-5 h-5 text-slate-500 shrink-0" />
+                                                                <div className="bg-white/5 border border-white/10 rounded-md p-3 mb-5 flex gap-3 items-center">
+                                                                  <FileText className="w-5 h-5 text-slate-400 shrink-0" />
                                                                   <div>
-                                                                    <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Beklenen Çıktılar (Deliverables)</h5>
-                                                                    <p className="text-sm font-medium text-slate-800">{task.deliverables}</p>
+                                                                    <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Beklenen Çıktılar (Deliverables)</h5>
+                                                                    <p className="text-sm font-medium text-slate-100">{task.deliverables}</p>
                                                                   </div>
                                                                 </div>
 
                                                                 {/* Actionable Detailed Checklist */}
-                                                                <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                                                <h4 className="font-bold text-slate-100 mb-3 flex items-center gap-2">
                                                                   <CheckSquare className="w-4 h-4 text-blue-600" /> Operasyonel Checklist
                                                                 </h4>
 
@@ -1780,7 +2025,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                                     return (
                                                                       <div
                                                                         key={item.id}
-                                                                        className={`flex items-start gap-3 p-3 rounded-md border cursor-pointer transition-colors ${isChecked ? 'bg-green-50/50 border-green-100' : 'bg-white border-slate-100 hover:border-blue-200 hover:bg-slate-50'}`}
+                                                                        className={`flex items-start gap-3 p-3 rounded-md border cursor-pointer transition-colors ${isChecked ? 'bg-green-50/50 border-green-100' : 'bg-white/5 border-white/10 hover:border-blue-500/30 hover:bg-white/5'}`}
                                                                         onClick={() => toggleSubTask(item.id)}
                                                                       >
                                                                         <div className="mt-0.5 shrink-0">
@@ -1790,7 +2035,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                                             <Square className="w-5 h-5 text-slate-300" />
                                                                           )}
                                                                         </div>
-                                                                        <span className={`text-sm leading-relaxed ${isChecked ? 'text-slate-500 line-through' : 'text-slate-700'}`}>
+                                                                        <span className={`text-sm leading-relaxed ${isChecked ? 'text-slate-400 line-through' : 'text-slate-300'}`}>
                                                                           {item.text}
                                                                         </span>
                                                                       </div>
@@ -1799,7 +2044,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                                 </div>
 
                                                                 {/* Tip Box */}
-                                                                <div className="bg-amber-50 border border-amber-200 rounded-md p-3 flex gap-3 items-start">
+                                                                <div className="bg-amber-500/10 border border-amber-500/20 rounded-md p-3 flex gap-3 items-start">
                                                                   <Lightbulb className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                                                                   <p className="text-sm text-amber-900 leading-relaxed">
                                                                     <strong className="block mb-1">Analist İpucu:</strong> {task.tips}
@@ -1823,7 +2068,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                       {/* TAB 2: TECHNIQUES (Teknikler) */}
                                       {activeTab === 'techniques' && (
                                         <div className="space-y-4">
-                                          <div className="bg-emerald-50 text-emerald-800 p-4 rounded-lg flex gap-3 items-start border border-emerald-100 mb-6">
+                                          <div className="bg-emerald-500/10 text-emerald-800 p-4 rounded-lg flex gap-3 items-start border border-emerald-100 mb-6">
                                             <Wrench className="w-5 h-5 shrink-0 mt-0.5" />
                                             <p className="text-sm">
                                               <strong>İş Analizi Teknikleri:</strong> BABOK'ta 50'den fazla teknik bulunur. Burada en sık kullanılan ve her analistin alet çantasında bulunması gereken temel yöntemleri bulabilirsiniz.
@@ -1831,17 +2076,17 @@ Yanıtın tamamı Türkçe olmalıdır.
                                           </div>
                                           <div className="flex gap-2 mb-4 flex-wrap">
                                             {[['all', 'Tümü'], ...babokData.map(ka => [ka.id, ka.title.split(' ')[0]])].map(([id, lbl]) => (
-                                              <button key={id} onClick={() => setTechFilter(id)} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors border ${techFilter === id ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-300'}`}>{lbl}</button>
+                                              <button key={id} onClick={() => setTechFilter(id)} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors border ${techFilter === id ? 'bg-emerald-600/80 text-white border-emerald-600' : 'bg-white/5 text-slate-400 border-white/10 hover:border-emerald-500/30'}`}>{lbl}</button>
                                             ))}
                                           </div>
                                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {techniquesData.filter(t => techFilter === 'all' || t.relatedKA.includes(techFilter)).map(tech => (
-                                              <div key={tech.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                                                <h3 className="font-bold text-lg text-slate-800 mb-2">{tech.name}</h3>
-                                                <p className="text-sm text-slate-600 mb-4">{tech.desc}</p>
-                                                <div className="bg-slate-50 p-3 rounded-md border border-slate-100">
-                                                  <span className="text-xs font-bold text-slate-500 uppercase">En İyi Nerede Kullanılır?</span>
-                                                  <p className="text-sm text-slate-700 mt-1">{tech.bestFor}</p>
+                                              <div key={tech.id} className="bg-white/5 p-5 rounded-xl border border-white/10 shadow-lg shadow-black/20 hover:shadow-md transition-shadow">
+                                                <h3 className="font-bold text-lg text-slate-100 mb-2">{tech.name}</h3>
+                                                <p className="text-sm text-slate-400 mb-4">{tech.desc}</p>
+                                                <div className="bg-white/5 p-3 rounded-md border border-white/10">
+                                                  <span className="text-xs font-bold text-slate-400 uppercase">En İyi Nerede Kullanılır?</span>
+                                                  <p className="text-sm text-slate-300 mt-1">{tech.bestFor}</p>
                                                 </div>
                                               </div>
                                             ))}
@@ -1852,7 +2097,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                       {/* TAB 3: TEMPLATES (Doküman Şablonları) */}
                                       {activeTab === 'templates' && (
                                         <div className="space-y-4">
-                                          <div className="bg-amber-50 text-amber-800 p-4 rounded-lg flex gap-3 items-start border border-amber-100 mb-6">
+                                          <div className="bg-amber-500/10 text-amber-800 p-4 rounded-lg flex gap-3 items-start border border-amber-100 mb-6">
                                             <FileStack className="w-5 h-5 shrink-0 mt-0.5" />
                                             <p className="text-sm">
                                               <strong>BABOK Doküman Şablonları:</strong> Bir iş analizi projesinde standart olarak bulunması gereken temel belgelerin yapısal (iskelet) şablonlarıdır. Herhangi bir şablonu kopyalayarak projenizdeki ilgili Word dokümanına, Confluence sayfasına veya Jira Issue açıklamasına doğrudan yapıştırabilir ve altlarını kendi projenize göre doldurabilirsiniz.
@@ -1861,21 +2106,21 @@ Yanıtın tamamı Türkçe olmalıdır.
 
                                           <div className="space-y-6">
                                             {templatesData.map(tpl => (
-                                              <div key={tpl.id} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                                                <div className="bg-slate-50 border-b border-slate-200 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                              <div key={tpl.id} className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 overflow-hidden">
+                                                <div className="bg-white/5 border-b border-white/10 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                                   <div>
-                                                    <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
+                                                    <h3 className="font-bold text-lg text-slate-100 flex items-center gap-2">
                                                       <FileText className="w-5 h-5 text-indigo-500" />
                                                       {tpl.name}
                                                     </h3>
-                                                    <p className="text-sm text-slate-600 mt-1">{tpl.purpose}</p>
+                                                    <p className="text-sm text-slate-400 mt-1">{tpl.purpose}</p>
                                                   </div>
                                                   <button
                                                     onClick={() => {
                                                       navigator.clipboard.writeText(tpl.format);
                                                       alert(tpl.name + ' panoya kopyalandı!');
                                                     }}
-                                                    className="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 py-1.5 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shrink-0 self-start md:self-auto"
+                                                    className="bg-white/5 border border-white/15 hover:bg-white/10 text-slate-300 py-1.5 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-2 shadow-lg shadow-black/20 shrink-0 self-start md:self-auto"
                                                   >
                                                     <ClipboardCopy className="w-4 h-4" />
                                                     Şablonu Kopyala
@@ -1893,7 +2138,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                       {/* TAB 4: COMPETENCIES (Yetkinlikler) */}
                                       {activeTab === 'competencies' && (
                                         <div className="space-y-4">
-                                          <div className="bg-purple-50 text-purple-800 p-4 rounded-lg flex gap-3 items-start border border-purple-100 mb-6">
+                                          <div className="bg-purple-500/10 text-purple-800 p-4 rounded-lg flex gap-3 items-start border border-purple-100 mb-6">
                                             <BrainCircuit className="w-5 h-5 shrink-0 mt-0.5" />
                                             <p className="text-sm">
                                               <strong>Temel Yetkinlikler:</strong> Başarılı bir iş analisti olmak sadece teknikleri bilmekle değil, doğru iletişim ve analitik düşünce yapısına sahip olmakla ilgilidir.
@@ -1901,9 +2146,9 @@ Yanıtın tamamı Türkçe olmalıdır.
                                           </div>
                                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {competenciesData.map(comp => (
-                                              <div key={comp.id} className="bg-white p-5 rounded-xl border border-slate-200 border-l-4 border-l-purple-400 shadow-sm hover:shadow-md transition-shadow">
-                                                <h3 className="font-bold text-lg text-slate-800 mb-2">{comp.name}</h3>
-                                                <p className="text-sm text-slate-600">{comp.desc}</p>
+                                              <div key={comp.id} className="bg-white/5 p-5 rounded-xl border border-white/10 border-l-4 border-l-purple-400 shadow-lg shadow-black/20 hover:shadow-md transition-shadow">
+                                                <h3 className="font-bold text-lg text-slate-100 mb-2">{comp.name}</h3>
+                                                <p className="text-sm text-slate-400">{comp.desc}</p>
                                               </div>
                                             ))}
                                           </div>
@@ -1915,13 +2160,13 @@ Yanıtın tamamı Türkçe olmalıdır.
 
                                   {/* RESET CONFIRM */}
                                   {showResetConfirm && (
-                                    <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-                                      <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full">
-                                        <h3 className="font-bold text-lg text-slate-800 mb-2">İlerlemeyi Sıfırla?</h3>
-                                        <p className="text-sm text-slate-500 mb-5">Bu projede tamamlanan tüm ana görev ve alt görevler sıfırlanacak. Bu işlem geri alınamaz!</p>
+                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                                      <div className="glass-panel p-6 max-w-sm w-full shadow-2xl">
+                                        <h3 className="font-bold text-lg text-white mb-2">İlerlemeyi Sıfırla?</h3>
+                                        <p className="text-sm text-slate-400 mb-5">Bu projede tamamlanan tüm ana görev ve alt görevler sıfırlanacak. Bu işlem geri alınamaz!</p>
                                         <div className="flex justify-end gap-3">
-                                          <button onClick={() => setShowResetConfirm(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">İptal</button>
-                                          <button onClick={resetProgress} className="px-4 py-2 text-sm bg-rose-600 hover:bg-rose-700 text-white rounded-md font-medium">Sıfırla</button>
+                                          <button onClick={() => setShowResetConfirm(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+                                          <button onClick={resetProgress} className="px-4 py-2 text-sm bg-rose-600/80 hover:bg-rose-500 text-white rounded-md font-medium">Sıfırla</button>
                                         </div>
                                       </div>
                                     </div>
@@ -1929,13 +2174,13 @@ Yanıtın tamamı Türkçe olmalıdır.
 
                                   {/* PROJECT MODAL */}
                                   {showProjectModal && (
-                                    <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-                                      <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full">
-                                        <h3 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2"><FolderPlus className="text-blue-500 w-5 h-5" />Yeni Proje</h3>
-                                        <input value={newProjectName} onChange={e => setNewProjectName(e.target.value)} onKeyDown={e => e.key === 'Enter' && createProject()} placeholder="Proje adı..." className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4" autoFocus />
+                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                                      <div className="glass-panel p-6 shadow-2xl max-w-sm w-full">
+                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><FolderPlus className="text-blue-500 w-5 h-5" />Yeni Proje</h3>
+                                        <input value={newProjectName} onChange={e => setNewProjectName(e.target.value)} onKeyDown={e => e.key === 'Enter' && createProject()} placeholder="Proje adı..." className="w-full border border-white/10 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 mb-4" autoFocus />
                                         <div className="flex justify-end gap-3">
-                                          <button onClick={() => { setShowProjectModal(false); setNewProjectName(''); }} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">İptal</button>
-                                          <button onClick={createProject} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium">Oluştur</button>
+                                          <button onClick={() => { setShowProjectModal(false); setNewProjectName(''); }} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+                                          <button onClick={createProject} className="px-4 py-2 text-sm bg-blue-600/80 hover:bg-blue-500 text-white rounded-md font-medium">Oluştur</button>
                                         </div>
                                       </div>
                                     </div>
@@ -1943,40 +2188,40 @@ Yanıtın tamamı Türkçe olmalıdır.
 
                                   {/* RISK MODAL */}
                                   {showRiskModal && (
-                                    <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-                                      <div className="bg-white rounded-xl shadow-xl p-6 max-w-lg w-full">
-                                        <h3 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2"><AlertTriangle className="text-rose-500 w-5 h-5" />{editingRisk ? 'Riski Düzenle' : 'Yeni Risk'}</h3>
+                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                                      <div className="glass-panel p-6 shadow-2xl max-w-lg w-full">
+                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><AlertTriangle className="text-rose-500 w-5 h-5" />{editingRisk ? 'Riski Düzenle' : 'Yeni Risk'}</h3>
                                         <div className="space-y-3">
-                                          <input value={riskForm.title} onChange={e => setRiskForm({ ...riskForm, title: e.target.value })} placeholder="Risk başlığı*" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300" />
+                                          <input value={riskForm.title} onChange={e => setRiskForm({ ...riskForm, title: e.target.value })} placeholder="Risk başlığı*" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300" />
                                           <div className="grid grid-cols-2 gap-3">
-                                            <div><label className="text-xs text-slate-500 block mb-1">Kategori</label>
-                                              <select value={riskForm.category} onChange={e => setRiskForm({ ...riskForm, category: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                            <div><label className="text-xs text-slate-400 block mb-1">Kategori</label>
+                                              <select value={riskForm.category} onChange={e => setRiskForm({ ...riskForm, category: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
                                                 {['Teknik', 'İş', 'Kaynak', 'Çevresel', 'Yasal'].map(c => <option key={c}>{c}</option>)}
                                               </select>
                                             </div>
-                                            <div><label className="text-xs text-slate-500 block mb-1">Durum</label>
-                                              <select value={riskForm.status} onChange={e => setRiskForm({ ...riskForm, status: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                            <div><label className="text-xs text-slate-400 block mb-1">Durum</label>
+                                              <select value={riskForm.status} onChange={e => setRiskForm({ ...riskForm, status: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
                                                 {['Açık', 'Azaltıldı', 'Kapatıldı'].map(s => <option key={s}>{s}</option>)}
                                               </select>
                                             </div>
                                           </div>
                                           <div className="grid grid-cols-2 gap-3">
-                                            <div><label className="text-xs text-slate-500 block mb-1">Olasılık: {PROB_LABELS[riskForm.probability]}</label>
+                                            <div><label className="text-xs text-slate-400 block mb-1">Olasılık: {PROB_LABELS[riskForm.probability]}</label>
                                               <input type="range" min="1" max="3" value={riskForm.probability} onChange={e => setRiskForm({ ...riskForm, probability: Number(e.target.value) })} className="w-full accent-rose-500" />
                                             </div>
-                                            <div><label className="text-xs text-slate-500 block mb-1">Etki: {IMPACT_LABELS[riskForm.impact]}</label>
+                                            <div><label className="text-xs text-slate-400 block mb-1">Etki: {IMPACT_LABELS[riskForm.impact]}</label>
                                               <input type="range" min="1" max="3" value={riskForm.impact} onChange={e => setRiskForm({ ...riskForm, impact: Number(e.target.value) })} className="w-full accent-rose-500" />
                                             </div>
                                           </div>
                                           <div className={`text-center text-sm font-bold py-2 rounded-lg border ${getRiskLevel(riskForm.probability, riskForm.impact).cls}`}>
                                             Risk Skoru: {riskForm.probability * riskForm.impact} — {getRiskLevel(riskForm.probability, riskForm.impact).label}
                                           </div>
-                                          <input value={riskForm.owner} onChange={e => setRiskForm({ ...riskForm, owner: e.target.value })} placeholder="Sorumlu kişi" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          <textarea value={riskForm.mitigation} onChange={e => setRiskForm({ ...riskForm, mitigation: e.target.value })} placeholder="Azaltma stratejisi..." rows="2" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
+                                          <input value={riskForm.owner} onChange={e => setRiskForm({ ...riskForm, owner: e.target.value })} placeholder="Sorumlu kişi" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                          <textarea value={riskForm.mitigation} onChange={e => setRiskForm({ ...riskForm, mitigation: e.target.value })} placeholder="Azaltma stratejisi..." rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
                                         </div>
                                         <div className="flex justify-end gap-3 mt-5">
-                                          <button onClick={() => setShowRiskModal(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">İptal</button>
-                                          <button onClick={saveRisk} className="px-4 py-2 text-sm bg-rose-600 hover:bg-rose-700 text-white rounded-md font-medium">Kaydet</button>
+                                          <button onClick={() => setShowRiskModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+                                          <button onClick={saveRisk} className="px-4 py-2 text-sm bg-rose-600/80 hover:bg-rose-500 text-white rounded-md font-medium">Kaydet</button>
                                         </div>
                                       </div>
                                     </div>
@@ -1984,24 +2229,24 @@ Yanıtın tamamı Türkçe olmalıdır.
 
                                   {/* ACTION MODAL */}
                                   {showActionModal && (
-                                    <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-                                      <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full">
-                                        <h3 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2"><ListChecks className="text-indigo-500 w-5 h-5" />{editingAction ? 'Aksiyonu Düzenle' : 'Yeni Aksiyon'}</h3>
+                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                                      <div className="glass-panel p-6 shadow-2xl max-w-md w-full">
+                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><ListChecks className="text-indigo-500 w-5 h-5" />{editingAction ? 'Aksiyonu Düzenle' : 'Yeni Aksiyon'}</h3>
                                         <div className="space-y-3">
-                                          <input value={actionForm.title} onChange={e => setActionForm({ ...actionForm, title: e.target.value })} placeholder="Aksiyon başlığı*" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                                          <input value={actionForm.title} onChange={e => setActionForm({ ...actionForm, title: e.target.value })} placeholder="Aksiyon başlığı*" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
                                           <div className="grid grid-cols-2 gap-3">
-                                            <input value={actionForm.owner} onChange={e => setActionForm({ ...actionForm, owner: e.target.value })} placeholder="Sorumlu kişi" className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                            <input type="date" value={actionForm.dueDate} onChange={e => setActionForm({ ...actionForm, dueDate: e.target.value })} className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                            <input value={actionForm.owner} onChange={e => setActionForm({ ...actionForm, owner: e.target.value })} placeholder="Sorumlu kişi" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                            <input type="date" value={actionForm.dueDate} onChange={e => setActionForm({ ...actionForm, dueDate: e.target.value })} className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                                           </div>
-                                          <select value={actionForm.status} onChange={e => setActionForm({ ...actionForm, status: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                          <select value={actionForm.status} onChange={e => setActionForm({ ...actionForm, status: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
                                             {['Bekliyor', 'Devam Ediyor', 'Tamamlandı'].map(s => <option key={s}>{s}</option>)}
                                           </select>
-                                          <input value={actionForm.source} onChange={e => setActionForm({ ...actionForm, source: e.target.value })} placeholder="Kaynak (ör. Toplantı adı)" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          <textarea value={actionForm.notes || ''} onChange={e => setActionForm({ ...actionForm, notes: e.target.value })} placeholder="Not / Açıklama (opsiyonel)" rows="2" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none" />
+                                          <input value={actionForm.source} onChange={e => setActionForm({ ...actionForm, source: e.target.value })} placeholder="Kaynak (ör. Toplantı adı)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                          <textarea value={actionForm.notes || ''} onChange={e => setActionForm({ ...actionForm, notes: e.target.value })} placeholder="Not / Açıklama (opsiyonel)" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none" />
                                         </div>
                                         <div className="flex justify-end gap-3 mt-5">
-                                          <button onClick={() => setShowActionModal(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">İptal</button>
-                                          <button onClick={saveAction} className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-medium">Kaydet</button>
+                                          <button onClick={() => setShowActionModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+                                          <button onClick={saveAction} className="px-4 py-2 text-sm bg-indigo-600/80 hover:bg-indigo-500 text-white rounded-md font-medium">Kaydet</button>
                                         </div>
                                       </div>
                                     </div>
@@ -2009,36 +2254,36 @@ Yanıtın tamamı Türkçe olmalıdır.
 
                                   {/* STAKEHOLDER MODAL */}
                                   {showStakeholderModal && (
-                                    <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-                                      <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full">
-                                        <h3 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2"><UserPlus className="text-orange-500 w-5 h-5" />{editingStakeholder ? 'Paydaşı Düzenle' : 'Yeni Paydaş'}</h3>
+                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                                      <div className="glass-panel p-6 shadow-2xl max-w-md w-full">
+                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><UserPlus className="text-orange-500 w-5 h-5" />{editingStakeholder ? 'Paydaşı Düzenle' : 'Yeni Paydaş'}</h3>
                                         <div className="space-y-3">
                                           <div className="grid grid-cols-2 gap-3">
-                                            <input value={stakeholderForm.name} onChange={e => setStakeholderForm({ ...stakeholderForm, name: e.target.value })} placeholder="Paydaş adı*" className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-200" />
-                                            <input value={stakeholderForm.role} onChange={e => setStakeholderForm({ ...stakeholderForm, role: e.target.value })} placeholder="Rol/Ünvan" className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                            <input value={stakeholderForm.name} onChange={e => setStakeholderForm({ ...stakeholderForm, name: e.target.value })} placeholder="Paydaş adı*" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-200" />
+                                            <input value={stakeholderForm.role} onChange={e => setStakeholderForm({ ...stakeholderForm, role: e.target.value })} placeholder="Rol/Ünvan" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                                           </div>
-                                          <input value={stakeholderForm.department} onChange={e => setStakeholderForm({ ...stakeholderForm, department: e.target.value })} placeholder="Departman" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                          <input value={stakeholderForm.department} onChange={e => setStakeholderForm({ ...stakeholderForm, department: e.target.value })} placeholder="Departman" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                                           <div className="grid grid-cols-2 gap-3">
-                                            <div><label className="text-xs text-slate-500 block mb-1">İlgi: {PROB_LABELS[stakeholderForm.interest]}</label>
+                                            <div><label className="text-xs text-slate-400 block mb-1">İlgi: {PROB_LABELS[stakeholderForm.interest]}</label>
                                               <input type="range" min="1" max="3" value={stakeholderForm.interest} onChange={e => setStakeholderForm({ ...stakeholderForm, interest: Number(e.target.value) })} className="w-full accent-orange-500" />
                                             </div>
-                                            <div><label className="text-xs text-slate-500 block mb-1">Etki: {PROB_LABELS[stakeholderForm.influence]}</label>
+                                            <div><label className="text-xs text-slate-400 block mb-1">Etki: {PROB_LABELS[stakeholderForm.influence]}</label>
                                               <input type="range" min="1" max="3" value={stakeholderForm.influence} onChange={e => setStakeholderForm({ ...stakeholderForm, influence: Number(e.target.value) })} className="w-full accent-orange-500" />
                                             </div>
                                           </div>
-                                          <div><label className="text-xs text-slate-500 block mb-1">RACI Rolü</label>
+                                          <div><label className="text-xs text-slate-400 block mb-1">RACI Rolü</label>
                                             <div className="flex gap-2">
                                               {Object.entries(RACI_LABELS).map(([k, v]) => (
-                                                <button key={k} onClick={() => setStakeholderForm({ ...stakeholderForm, raci: k })} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors border ${stakeholderForm.raci === k ? RACI_COLORS[k] + ' border-current' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>{k}</button>
+                                                <button key={k} onClick={() => setStakeholderForm({ ...stakeholderForm, raci: k })} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors border ${stakeholderForm.raci === k ? RACI_COLORS[k] + ' border-current' : 'border-white/10 text-slate-400 hover:bg-white/5'}`}>{k}</button>
                                               ))}
                                             </div>
                                             <p className="text-xs text-slate-400 mt-1">{RACI_LABELS[stakeholderForm.raci]}</p>
                                           </div>
-                                          <textarea value={stakeholderForm.notes} onChange={e => setStakeholderForm({ ...stakeholderForm, notes: e.target.value })} placeholder="Notlar..." rows="2" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
+                                          <textarea value={stakeholderForm.notes} onChange={e => setStakeholderForm({ ...stakeholderForm, notes: e.target.value })} placeholder="Notlar..." rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
                                         </div>
                                         <div className="flex justify-end gap-3 mt-5">
-                                          <button onClick={() => setShowStakeholderModal(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">İptal</button>
-                                          <button onClick={saveStakeholder} className="px-4 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-md font-medium">Kaydet</button>
+                                          <button onClick={() => setShowStakeholderModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+                                          <button onClick={saveStakeholder} className="px-4 py-2 text-sm bg-orange-500/100 hover:bg-orange-600 text-white rounded-md font-medium">Kaydet</button>
                                         </div>
                                       </div>
                                     </div>
@@ -2046,22 +2291,22 @@ Yanıtın tamamı Türkçe olmalıdır.
 
                                   {/* REQUIREMENT MODAL */}
                                   {showReqModal && (
-                                    <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-                                      <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full">
-                                        <h3 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2"><BookMarked className="text-teal-500 w-5 h-5" />{editingReq ? 'Gereksinimi Düzenle' : 'Yeni Gereksinim'}</h3>
+                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                                      <div className="glass-panel p-6 shadow-2xl max-w-md w-full">
+                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><BookMarked className="text-teal-500 w-5 h-5" />{editingReq ? 'Gereksinimi Düzenle' : 'Yeni Gereksinim'}</h3>
                                         <div className="space-y-3">
-                                          <input value={reqForm.name} onChange={e => setReqForm({ ...reqForm, name: e.target.value })} placeholder="Gereksinim adı*" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300" />
-                                          <input value={reqForm.objective} onChange={e => setReqForm({ ...reqForm, objective: e.target.value })} placeholder="Bağlı iş hedefi" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                          <input value={reqForm.name} onChange={e => setReqForm({ ...reqForm, name: e.target.value })} placeholder="Gereksinim adı*" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300" />
+                                          <input value={reqForm.objective} onChange={e => setReqForm({ ...reqForm, objective: e.target.value })} placeholder="Bağlı iş hedefi" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                                           <div className="grid grid-cols-2 gap-3">
-                                            <input value={reqForm.module} onChange={e => setReqForm({ ...reqForm, module: e.target.value })} placeholder="Modül/Ekran" className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                            <input value={reqForm.testId} onChange={e => setReqForm({ ...reqForm, testId: e.target.value })} placeholder="Test ID" className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                            <input value={reqForm.module} onChange={e => setReqForm({ ...reqForm, module: e.target.value })} placeholder="Modül/Ekran" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                            <input value={reqForm.testId} onChange={e => setReqForm({ ...reqForm, testId: e.target.value })} placeholder="Test ID" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                                           </div>
-                                          <select value={reqForm.status} onChange={e => setReqForm({ ...reqForm, status: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                          <select value={reqForm.status} onChange={e => setReqForm({ ...reqForm, status: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
                                             {Object.keys(REQ_STATUS_COLORS).map(s => <option key={s}>{s}</option>)}
                                           </select>
                                         </div>
                                         <div className="flex justify-end gap-3 mt-5">
-                                          <button onClick={() => setShowReqModal(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">İptal</button>
+                                          <button onClick={() => setShowReqModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
                                           <button onClick={saveReq} className="px-4 py-2 text-sm bg-teal-600 hover:bg-teal-700 text-white rounded-md font-medium">Kaydet</button>
                                         </div>
                                       </div>
@@ -2070,16 +2315,16 @@ Yanıtın tamamı Türkçe olmalıdır.
 
                                   {/* MEETING MODAL */}
                                   {showMeetingModal && (
-                                    <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-                                      <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full">
-                                        <h3 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2"><MessageSquare className="text-violet-500 w-5 h-5" />Yeni Toplantı</h3>
+                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                                      <div className="glass-panel p-6 shadow-2xl max-w-md w-full">
+                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><MessageSquare className="text-violet-500 w-5 h-5" />Yeni Toplantı</h3>
                                         <div className="space-y-3">
-                                          <input value={meetingForm.topic} onChange={e => setMeetingForm({ ...meetingForm, topic: e.target.value })} placeholder="Toplantı konusu*" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" />
-                                          <input value={meetingForm.attendees} onChange={e => setMeetingForm({ ...meetingForm, attendees: e.target.value })} placeholder="Katılımcılar (ör. Ahmet, Ayşe, Mehmet)" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          <input type="date" value={meetingForm.date} onChange={e => setMeetingForm({ ...meetingForm, date: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                          <input value={meetingForm.topic} onChange={e => setMeetingForm({ ...meetingForm, topic: e.target.value })} placeholder="Toplantı konusu*" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" />
+                                          <input value={meetingForm.attendees} onChange={e => setMeetingForm({ ...meetingForm, attendees: e.target.value })} placeholder="Katılımcılar (ör. Ahmet, Ayşe, Mehmet)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                          <input type="date" value={meetingForm.date} onChange={e => setMeetingForm({ ...meetingForm, date: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                                         </div>
                                         <div className="flex justify-end gap-3 mt-5">
-                                          <button onClick={() => setShowMeetingModal(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">İptal</button>
+                                          <button onClick={() => setShowMeetingModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
                                           <button onClick={saveMeeting} className="px-4 py-2 text-sm bg-violet-600 hover:bg-violet-700 text-white rounded-md font-medium">Oluştur</button>
                                         </div>
                                       </div>
@@ -2088,32 +2333,32 @@ Yanıtın tamamı Türkçe olmalıdır.
 
                                   {/* GANTT TASK MODAL */}
                                   {showGanttModal && (
-                                    <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-                                      <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full">
-                                        <h3 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2"><CalendarDays className="text-cyan-500 w-5 h-5" />{editingGanttTask ? 'Görevi Düzenle' : 'Yeni Görev / Faz'}</h3>
+                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                                      <div className="glass-panel p-6 shadow-2xl max-w-md w-full">
+                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><CalendarDays className="text-cyan-500 w-5 h-5" />{editingGanttTask ? 'Görevi Düzenle' : 'Yeni Görev / Faz'}</h3>
                                         <div className="space-y-3">
-                                          <input value={ganttForm.name} onChange={e => setGanttForm({ ...ganttForm, name: e.target.value })} placeholder="Görev/Faz adı*" className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300" autoFocus />
+                                          <input value={ganttForm.name} onChange={e => setGanttForm({ ...ganttForm, name: e.target.value })} placeholder="Görev/Faz adı*" className="w-full border border-white/10 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300" autoFocus />
                                           <div className="grid grid-cols-2 gap-3">
-                                            <input value={ganttForm.category} onChange={e => setGanttForm({ ...ganttForm, category: e.target.value })} placeholder="Kategori (ör. Faz 1)" className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                            <input value={ganttForm.assignedTo} onChange={e => setGanttForm({ ...ganttForm, assignedTo: e.target.value })} placeholder="Sorumlu kişi" className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                            <input value={ganttForm.category} onChange={e => setGanttForm({ ...ganttForm, category: e.target.value })} placeholder="Kategori (ör. Faz 1)" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                            <input value={ganttForm.assignedTo} onChange={e => setGanttForm({ ...ganttForm, assignedTo: e.target.value })} placeholder="Sorumlu kişi" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                                           </div>
                                           <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                              <label className="text-xs text-slate-500 block mb-1">Başlangıç Tarihi*</label>
-                                              <input type="date" value={ganttForm.startDate} onChange={e => setGanttForm({ ...ganttForm, startDate: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300" />
+                                              <label className="text-xs text-slate-400 block mb-1">Başlangıç Tarihi*</label>
+                                              <input type="date" value={ganttForm.startDate} onChange={e => setGanttForm({ ...ganttForm, startDate: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300" />
                                             </div>
                                             <div>
-                                              <label className="text-xs text-slate-500 block mb-1">Bitiş Tarihi*</label>
-                                              <input type="date" value={ganttForm.endDate} onChange={e => setGanttForm({ ...ganttForm, endDate: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300" />
+                                              <label className="text-xs text-slate-400 block mb-1">Bitiş Tarihi*</label>
+                                              <input type="date" value={ganttForm.endDate} onChange={e => setGanttForm({ ...ganttForm, endDate: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300" />
                                             </div>
                                           </div>
                                           <div>
-                                            <label className="text-xs text-slate-500 block mb-1">İlerleme: <span className="font-bold text-cyan-700">%{ganttForm.progress}</span></label>
+                                            <label className="text-xs text-slate-400 block mb-1">İlerleme: <span className="font-bold text-cyan-700">%{ganttForm.progress}</span></label>
                                             <input type="range" min="0" max="100" step="5" value={ganttForm.progress} onChange={e => setGanttForm({ ...ganttForm, progress: Number(e.target.value) })} className="w-full accent-cyan-500" />
                                             <div className="flex justify-between text-[9px] text-slate-400"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
                                           </div>
                                           <div>
-                                            <label className="text-xs text-slate-500 block mb-1.5">Renk</label>
+                                            <label className="text-xs text-slate-400 block mb-1.5">Renk</label>
                                             <div className="flex gap-2 flex-wrap">
                                               {GANTT_COLORS.map(c => (
                                                 <button key={c} onClick={() => setGanttForm({ ...ganttForm, color: c })} className={`w-7 h-7 rounded-lg transition-all ${ganttForm.color === c ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : 'hover:scale-105'}`} style={{ backgroundColor: c }} />
@@ -2121,11 +2366,11 @@ Yanıtın tamamı Türkçe olmalıdır.
                                             </div>
                                           </div>
                                           <div>
-                                            <label className="text-xs text-slate-500 block mb-1">Gecikme Nedeni <span className="text-slate-300">(varsa)</span></label>
-                                            <textarea value={ganttForm.delayReason || ''} onChange={e => setGanttForm({ ...ganttForm, delayReason: e.target.value })} placeholder="Gecikme varsa nedenini yazın..." rows="2" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 resize-none" />
+                                            <label className="text-xs text-slate-400 block mb-1">Gecikme Nedeni <span className="text-slate-300">(varsa)</span></label>
+                                            <textarea value={ganttForm.delayReason || ''} onChange={e => setGanttForm({ ...ganttForm, delayReason: e.target.value })} placeholder="Gecikme varsa nedenini yazın..." rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 resize-none" />
                                           </div>
                                           {ganttForm.startDate && ganttForm.endDate && new Date(ganttForm.endDate) >= new Date(ganttForm.startDate) && (
-                                            <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-center">
+                                            <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3 text-center">
                                               <span className="text-sm font-bold text-cyan-700">
                                                 Süre: {Math.round((new Date(ganttForm.endDate) - new Date(ganttForm.startDate)) / 86400000) + 1} gün
                                               </span>
@@ -2133,7 +2378,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                           )}
                                         </div>
                                         <div className="flex justify-end gap-3 mt-5">
-                                          <button onClick={() => setShowGanttModal(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">İptal</button>
+                                          <button onClick={() => setShowGanttModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
                                           <button onClick={saveGanttTask} className="px-4 py-2 text-sm bg-cyan-600 hover:bg-cyan-700 text-white rounded-md font-medium">Kaydet</button>
                                         </div>
                                       </div>
@@ -2142,11 +2387,11 @@ Yanıtın tamamı Türkçe olmalıdır.
 
                                   {/* AI GENERATION MODAL */}
                                   {isAiModalOpen && (
-                                    <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-                                      <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                                      <div className="glass-panel w-full shadow-2xl max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
 
                                         {/* Modal Header */}
-                                        <div className="bg-indigo-600 p-4 flex justify-between items-center">
+                                        <div className="bg-indigo-600/80 p-4 flex justify-between items-center">
                                           <div className="flex items-center gap-2 text-white">
                                             <Sparkles className="w-5 h-5" />
                                             <h3 className="font-bold text-lg">AI Taslak: {activeAiTask?.name}</h3>
@@ -2160,17 +2405,17 @@ Yanıtın tamamı Türkçe olmalıdır.
                                         </div>
 
                                         {/* Modal Body */}
-                                        <div className="p-6 overflow-y-auto flex-1 bg-slate-50">
+                                        <div className="p-6 overflow-y-auto flex-1 bg-white/5">
                                           {aiLoading ? (
                                             <div className="flex flex-col items-center justify-center h-48 text-indigo-600">
                                               <Loader2 className="w-10 h-10 animate-spin mb-4" />
                                               <p className="font-medium">Proje bağlamınıza göre özel dokümanlar hazırlanıyor...</p>
-                                              <p className="text-sm text-slate-500 mt-2">Bu işlem birkaç saniye sürebilir.</p>
+                                              <p className="text-sm text-slate-400 mt-2">Bu işlem birkaç saniye sürebilir.</p>
                                             </div>
                                           ) : (
-                                            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm overflow-x-auto">
+                                            <div className="bg-white/5 border border-white/10 rounded-xl p-6 shadow-lg shadow-black/20 overflow-x-auto">
                                               <div
-                                                className="text-slate-700 leading-relaxed text-[15px]"
+                                                className="text-slate-300 leading-relaxed text-[15px]"
                                                 dangerouslySetInnerHTML={formatMarkdown(aiResult)}
                                               />
                                             </div>
@@ -2178,17 +2423,17 @@ Yanıtın tamamı Türkçe olmalıdır.
                                         </div>
 
                                         {/* Modal Footer */}
-                                        <div className="bg-white border-t border-slate-200 p-4 flex justify-end gap-3">
+                                        <div className="bg-white/5 border-t border-white/10 p-4 flex justify-end gap-3">
                                           <button
                                             onClick={() => setIsAiModalOpen(false)}
-                                            className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-md transition-colors"
+                                            className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-slate-100 hover:bg-white/10 rounded-md transition-colors"
                                           >
                                             Kapat
                                           </button>
                                           {!aiLoading && (
                                             <button
                                               onClick={handleRegenerateAI}
-                                              className="px-4 py-2 text-sm font-medium bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-md transition-colors flex items-center gap-2"
+                                              className="px-4 py-2 text-sm font-medium bg-white/5 text-slate-300 hover:bg-white/10 rounded-md transition-colors flex items-center gap-2"
                                             >
                                               <RotateCcw className="w-4 h-4" />
                                               Yeniden \u00dcret
@@ -2197,7 +2442,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                           {!aiLoading && (
                                             <button
                                               onClick={copyToClipboard}
-                                              className="px-4 py-2 text-sm font-medium bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-md transition-colors flex items-center gap-2"
+                                              className="px-4 py-2 text-sm font-medium bg-indigo-500/10 text-indigo-700 hover:bg-indigo-100 rounded-md transition-colors flex items-center gap-2"
                                             >
                                               <Copy className="w-4 h-4" />
                                               Kopyala
@@ -2207,6 +2452,41 @@ Yanıtın tamamı Türkçe olmalıdır.
                                       </div>
                                     </div>
                                   )}
+
+      </div>{/* end lg:ml-[78px] */}
+
+      {/* ===== MOBILE BOTTOM NAV ===== */}
+      <nav className="aura-mobile-nav lg:hidden">
+        {MOBILE_TABS.map(({ id, Icon }) => (
+          <button key={id} onClick={() => { setActiveTab(id); setShowDashboardDetail(null); setShowFabMenu(false); }}
+            className={`mobile-nav-item ${activeTab === id ? 'active' : ''}`}>
+            <Icon className="w-5 h-5" />
+          </button>
+        ))}
+        <button onClick={() => setShowFabMenu(!showFabMenu)} className="aura-fab">
+          {showFabMenu ? <X className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+        </button>
+      </nav>
+
+      {/* FAB Quick-Add Menu (Mobile) */}
+      {showFabMenu && (
+        <div className="fab-menu lg:hidden" onClick={() => setShowFabMenu(false)}>
+          <div className="fab-menu-items" onClick={e => e.stopPropagation()}>
+            <button className="fab-menu-item" onClick={() => { setShowFabMenu(false); setActiveTab('risks'); openRiskModal(); }}>
+              <AlertTriangle className="w-6 h-6 text-rose-400" />Risk Ekle
+            </button>
+            <button className="fab-menu-item" onClick={() => { setShowFabMenu(false); setActiveTab('requirements'); openReqModal(); }}>
+              <BookMarked className="w-6 h-6 text-cyan-400" />Gereksinim
+            </button>
+            <button className="fab-menu-item" onClick={() => { setShowFabMenu(false); setActiveTab('actions'); openActionModal(); }}>
+              <ListChecks className="w-6 h-6 text-violet-400" />Aksiyon
+            </button>
+            <button className="fab-menu-item" onClick={() => { setShowFabMenu(false); setActiveTab('knowledge_areas'); setIsAiModalOpen(true); }}>
+              <Sparkles className="w-6 h-6 text-amber-400" />AI'a Sor
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
