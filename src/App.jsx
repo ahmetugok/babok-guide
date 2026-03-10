@@ -585,6 +585,7 @@ export default function App() {
   const [editingGanttTask, setEditingGanttTask] = useState(null);
   const [ganttForm, setGanttForm] = useState({ name: '', startDate: '', endDate: '', color: '#3b82f6', category: '', assignedTo: '', progress: 0, delayReason: '' });
   const [showDashboardDetail, setShowDashboardDetail] = useState(null);
+  const [focusedStakeholderId, setFocusedStakeholderId] = useState(null);
   const [ganttZoom, setGanttZoom] = useState('month');
   const [showBackupMenu, setShowBackupMenu] = useState(false);
 
@@ -1540,7 +1541,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                   ))}
                                                 </div>
                                               </div>
-                                              <div className="relative border border-white/10 rounded-xl overflow-hidden" style={{ height: Math.max(260, activeProject.stakeholders.length > 6 ? 340 : 280) }}>
+                                              <div className="relative border border-white/10 rounded-xl overflow-hidden" onClick={() => setFocusedStakeholderId(null)} style={{ height: Math.max(260, activeProject.stakeholders.length > 6 ? 340 : 280) }}>
                                                 {/* Quadrant backgrounds */}
                                                 <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
                                                   <div className="bg-amber-500/15 border-r border-b border-dashed border-white/15" />
@@ -1592,11 +1593,11 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                     }
                                                     placed.push({ x: finalX, y: finalY });
                                                     return (
-                                                      <div key={s.id} className="absolute flex flex-col items-center z-[1] transition-all duration-200 group/stakeholder" style={{ left: `${finalX}%`, top: `${finalY}%`, transform: 'translate(-50%,-50%)' }}>
-                                                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-md ring-2 ring-white cursor-pointer" style={{ background: s.raci === 'R' ? '#3b82f6' : s.raci === 'A' ? '#8b5cf6' : s.raci === 'C' ? '#f59e0b' : '#94a3b8' }}>{s.name.charAt(0)}</div>
+                                                      <div key={s.id} className={`absolute flex flex-col items-center transition-all duration-200 group/stakeholder ${focusedStakeholderId === s.id ? 'z-50' : 'z-[1]'}`} style={{ left: `${finalX}%`, top: `${finalY}%`, transform: 'translate(-50%,-50%)' }}>
+                                                        <div onClick={(e) => { e.stopPropagation(); setFocusedStakeholderId(focusedStakeholderId === s.id ? null : s.id); }} className={`w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-md ring-2 cursor-pointer transition-all ${focusedStakeholderId === s.id ? 'ring-cyan-400 scale-125' : 'ring-white hover:scale-110'}`} style={{ background: s.raci === 'R' ? '#3b82f6' : s.raci === 'A' ? '#8b5cf6' : s.raci === 'C' ? '#f59e0b' : '#94a3b8' }}>{s.name.charAt(0)}</div>
                                                         <span className="text-[8px] text-slate-400 whitespace-nowrap mt-0.5 bg-white/60 px-1 rounded shadow-lg shadow-black/20">{s.name}</span>
-                                                        {/* Hover Tooltip */}
-                                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 invisible group-hover/stakeholder:opacity-100 group-hover/stakeholder:visible transition-all duration-200 z-50 pointer-events-none">
+                                                        {/* Hover + Click Tooltip */}
+                                                        <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 transition-all duration-200 z-50 ${focusedStakeholderId === s.id ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible group-hover/stakeholder:opacity-100 group-hover/stakeholder:visible pointer-events-none'}`}>
                                                           <div className="glass-panel px-3 py-2.5 rounded-xl shadow-2xl border border-white/15 min-w-[180px] text-left" style={{ backdropFilter: 'blur(20px)' }}>
                                                             <p className="text-xs font-bold text-white truncate">{s.name}</p>
                                                             {s.role && <p className="text-[10px] text-slate-400 mt-0.5">{s.role}</p>}
