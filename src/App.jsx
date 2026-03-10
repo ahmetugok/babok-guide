@@ -401,7 +401,7 @@ const PROB_LABELS = ['', 'Düşük', 'Orta', 'Yüksek'];
 const IMPACT_LABELS = ['', 'Düşük', 'Orta', 'Yüksek'];
 const RACI_LABELS = { R: 'Sorumlu', A: 'Onaylayan', C: 'Danışılan', I: 'Bilgilendirilen' };
 const RACI_COLORS = { R: 'bg-blue-100 text-blue-800', A: 'bg-purple-100 text-purple-800', C: 'bg-amber-100 text-amber-800', I: 'bg-white/10 text-slate-300' };
-const REQ_STATUS_COLORS = { 'Taslak': 'bg-white/10 text-slate-300', 'İncelemede': 'bg-amber-500/15 text-amber-300', 'Onaylandı': 'bg-blue-500/15 text-blue-300', 'Geliştiriliyor': 'bg-purple-500/15 text-purple-300', 'Test': 'bg-orange-500/15 text-orange-300', 'Canlıda': 'bg-emerald-500/15 text-emerald-300' };
+const REQ_STATUS_COLORS = { 'Taslak': 'req-status-taslak', 'İncelemede': 'req-status-incelemede', 'Onaylandı': 'req-status-onaylandi', 'Geliştiriliyor': 'req-status-gelistiriliyor', 'Test': 'req-status-test', 'Canlıda': 'req-status-canlida' };
 const NOTE_TYPE_COLORS = { 'Karar': 'bg-blue-500/15 text-blue-300 border-blue-500/20', 'Açık Nokta': 'bg-rose-500/15 text-rose-300 border-rose-500/20', 'Aksiyon': 'bg-amber-500/15 text-amber-300 border-amber-500/20' };
 
 // --- BABOK UNDERLYING COMPETENCIES DATA ---
@@ -455,6 +455,58 @@ const templatesData = [
 ];
 
 export default function App() {
+  // --- File System Access API helpers (Obsidian vault style) ---
+  const [vaultHandle, setVaultHandle] = useState(null);
+  const [vaultReady, setVaultReady] = useState(false);
+
+  const openVault = async () => {
+    try {
+      const handle = await window.showDirectoryPicker({ mode: 'readwrite', startIn: 'documents' });
+      setVaultHandle(handle);
+      localStorage.setItem('babok_vault_name', handle.name);
+      return handle;
+    } catch { return null; }
+  };
+
+  const writeProjectFile = async (handle, project) => {
+    if (!handle) return;
+    try {
+      const safeName = project.name.replace(/[^a-zA-Z0-9çÇğĞıİöÖşŞüÜ _-]/g, '_');
+      const fileName = `${safeName}.babok.json`;
+      const fileHandle = await handle.getFileHandle(fileName, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(JSON.stringify(project, null, 2));
+      await writable.close();
+    } catch (err) { console.warn('Dosya yazılamadı:', err); }
+  };
+
+  const readAllProjectFiles = async (handle) => {
+    if (!handle) return [];
+    const projects = [];
+    try {
+      for await (const entry of handle.values()) {
+        if (entry.kind === 'file' && entry.name.endsWith('.babok.json')) {
+          try {
+            const file = await entry.getFile();
+            const text = await file.text();
+            const data = JSON.parse(text);
+            if (data && data.name) projects.push({ ...DEFAULT_PROJECT, ...data });
+          } catch { /* skip invalid files */ }
+        }
+      }
+    } catch (err) { console.warn('Vault okunamadı:', err); }
+    return projects;
+  };
+
+  const deleteProjectFile = async (handle, project) => {
+    if (!handle) return;
+    try {
+      const safeName = project.name.replace(/[^a-zA-Z0-9çÇğĞıİöÖşŞüÜ _-]/g, '_');
+      const fileName = `${safeName}.babok.json`;
+      await handle.removeEntry(fileName);
+    } catch { /* file may not exist */ }
+  };
+
   // --- Multi-Project Management ---
   const [projects, setProjects] = useState(() => {
     try {
@@ -518,7 +570,7 @@ export default function App() {
   // Requirement states
   const [showReqModal, setShowReqModal] = useState(false);
   const [editingReq, setEditingReq] = useState(null);
-  const [reqForm, setReqForm] = useState({ name: '', objective: '', module: '', status: 'Taslak', testId: '' });
+  const [reqForm, setReqForm] = useState({ name: '', objective: '', module: '', status: 'Taslak', testId: '', notes: '', moscow: '' });
   const [reqFilter, setReqFilter] = useState('all');
 
   // Meeting states
@@ -560,11 +612,23 @@ export default function App() {
     }
   };
 
-  // Save all project data to localStorage
+  // Save all project data to localStorage + vault file system
   useEffect(() => {
     localStorage.setItem('babok_v2_projects', JSON.stringify(projects));
     localStorage.setItem('babok_v2_activeProjectId', activeProjectId);
+    // Auto-save to vault if connected
+    if (vaultHandle && vaultReady) {
+      const proj = projects.find(p => p.id === activeProjectId);
+      if (proj) writeProjectFile(vaultHandle, proj);
+    }
   }, [projects, activeProjectId]);
+
+  // Save ALL projects to vault when vault changes
+  useEffect(() => {
+    if (vaultHandle && vaultReady) {
+      projects.forEach(p => writeProjectFile(vaultHandle, p));
+    }
+  }, [vaultHandle, vaultReady]);
 
   // Computed totals
   const totalTasks = babokData.reduce((acc, ka) => acc + ka.tasks.length, 0);
@@ -620,7 +684,7 @@ export default function App() {
   const deleteStakeholder = (id) => { if (window.confirm('Paydaşı silmek istiyor musunuz?')) updateActive(p => ({ ...p, stakeholders: p.stakeholders.filter(s => s.id !== id) })); };
 
   // --- REQUIREMENT ---
-  const openReqModal = (r = null) => { setEditingReq(r); setReqForm(r || { name: '', objective: '', module: '', status: 'Taslak', testId: '' }); setShowReqModal(true); };
+  const openReqModal = (r = null) => { setEditingReq(r); setReqForm(r ? { ...r, notes: r.notes || '', moscow: r.moscow || '' } : { name: '', objective: '', module: '', status: 'Taslak', testId: '', notes: '', moscow: '' }); setShowReqModal(true); };
   const saveReq = () => {
     if (!reqForm.name.trim()) return;
     updateActive(p => { const cnt = p.reqCounter || 1; return { ...p, requirements: editingReq ? p.requirements.map(r => r.id === editingReq.id ? { ...reqForm, id: editingReq.id, reqId: editingReq.reqId } : r) : [...p.requirements, { ...reqForm, id: generateId(), reqId: `REQ-${String(cnt).padStart(3, '0')}` }], reqCounter: editingReq ? cnt : cnt + 1 }; });
@@ -678,8 +742,22 @@ export default function App() {
   const deleteGanttTask = (id) => { if (window.confirm('Görevi silmek istiyor musunuz?')) updateActive(p => ({ ...p, ganttTasks: (p.ganttTasks || []).filter(t => t.id !== id) })); };
 
   // --- PROJECT MANAGEMENT ---
-  const createProject = () => { if (!newProjectName.trim()) return; const np = { ...DEFAULT_PROJECT, id: generateId(), name: newProjectName }; setProjects(prev => [...prev, np]); setActiveProjectId(np.id); setNewProjectName(''); setShowProjectModal(false); };
-  const deleteProject = (id) => { if (projects.length <= 1) { alert('En az bir proje olmalıdır!'); return; } const rem = projects.filter(p => p.id !== id); setProjects(rem); if (activeProjectId === id) setActiveProjectId(rem[0].id); };
+  const createProject = () => {
+    if (!newProjectName.trim()) return;
+    const np = { ...DEFAULT_PROJECT, id: generateId(), name: newProjectName };
+    setProjects(prev => [...prev, np]);
+    setActiveProjectId(np.id);
+    if (vaultHandle) writeProjectFile(vaultHandle, np);
+    setNewProjectName(''); setShowProjectModal(false);
+  };
+  const deleteProject = (id) => {
+    if (projects.length <= 1) { alert('En az bir proje olmalıdır!'); return; }
+    const proj = projects.find(p => p.id === id);
+    const rem = projects.filter(p => p.id !== id);
+    setProjects(rem);
+    if (activeProjectId === id) setActiveProjectId(rem[0].id);
+    if (vaultHandle && proj) deleteProjectFile(vaultHandle, proj);
+  };
   const importProject = () => {
     const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
     input.onchange = (e) => {
@@ -692,9 +770,10 @@ export default function App() {
             const np = { ...DEFAULT_PROJECT, ...data, id: generateId() };
             setProjects(prev => [...prev, np]);
             setActiveProjectId(np.id);
+            if (vaultHandle) writeProjectFile(vaultHandle, np);
             alert(`"${np.name}" projesi başarıyla içe aktarıldı!`);
           } else if (Array.isArray(data)) {
-            data.forEach(d => { const np = { ...DEFAULT_PROJECT, ...d, id: generateId() }; setProjects(prev => [...prev, np]); });
+            data.forEach(d => { const np = { ...DEFAULT_PROJECT, ...d, id: generateId() }; setProjects(prev => [...prev, np]); if (vaultHandle) writeProjectFile(vaultHandle, np); });
             alert(`${data.length} proje başarıyla içe aktarıldı!`);
           } else { alert('Geçersiz proje dosyası formatı.'); }
         } catch { alert('Dosya okunamadı. Lütfen geçerli bir JSON dosyası seçin.'); }
@@ -702,6 +781,30 @@ export default function App() {
       reader.readAsText(file);
     };
     input.click();
+  };
+  const openVaultAndLoad = async () => {
+    const handle = await openVault();
+    if (!handle) return;
+    const vaultProjects = await readAllProjectFiles(handle);
+    if (vaultProjects.length > 0) {
+      setProjects(vaultProjects);
+      setActiveProjectId(vaultProjects[0].id);
+      alert(`Vault açıldı! ${vaultProjects.length} proje yüklendi.`);
+    } else {
+      // No projects in vault, save current to vault
+      alert('Vault bağlandı. Mevcut projeler vault klasörüne kaydedilecek.');
+    }
+    setVaultReady(true);
+  };
+  const saveAllToVault = async () => {
+    let handle = vaultHandle;
+    if (!handle) {
+      handle = await openVault();
+      if (!handle) return;
+    }
+    for (const p of projects) { await writeProjectFile(handle, p); }
+    setVaultReady(true);
+    alert(`${projects.length} proje vault klasörüne kaydedildi!`);
   };
   const exportProjectJSON = () => {
     const blob = new Blob([JSON.stringify(activeProject, null, 2)], { type: 'application/json' });
@@ -909,6 +1012,17 @@ Yanıtın tamamı Türkçe olmalıdır.
                 <FileText className="w-4 h-4 text-violet-400" />
                 <span>Markdown (.md)</span>
               </button>
+              <div className="border-t border-white/10 my-1" />
+              <button onClick={() => { saveAllToVault(); setShowBackupMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-white/10 transition-colors">
+                <FolderPlus className="w-4 h-4 text-amber-400" />
+                <span>{vaultHandle ? 'Vault Senkronla' : 'Vault Bağla'}</span>
+              </button>
+              {vaultHandle && (
+                <button onClick={async () => { const vp = await readAllProjectFiles(vaultHandle); if (vp.length > 0) { setProjects(vp); setActiveProjectId(vp[0].id); alert(`${vp.length} proje vault\'dan yüklendi!`); } else alert('Vault klasöründe proje dosyası bulunamadı.'); setShowBackupMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-white/10 transition-colors">
+                  <Upload className="w-4 h-4 text-emerald-400" />
+                  <span>Vault'dan Yükle</span>
+                </button>
+              )}
               </div>
             </>
           )}
@@ -939,7 +1053,12 @@ Yanıtın tamamı Türkçe olmalıdır.
                       {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>
                     <button onClick={() => setShowProjectModal(true)} className="text-xs text-cyan-400/70 hover:text-cyan-300 transition-colors" title="Yeni Proje"><FolderPlus className="w-3.5 h-3.5" /></button>
-                    <button onClick={importProject} className="text-xs text-emerald-400/70 hover:text-emerald-300 transition-colors" title="İçe Aktar"><Upload className="w-3.5 h-3.5" /></button>
+                    <button onClick={importProject} className="text-xs text-emerald-400/70 hover:text-emerald-300 transition-colors" title="JSON İçe Aktar"><Upload className="w-3.5 h-3.5" /></button>
+                    {vaultHandle ? (
+                      <span className="text-[9px] text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full font-medium" title={`Vault: ${vaultHandle.name}`}>📂 Vault</span>
+                    ) : (
+                      <button onClick={openVaultAndLoad} className="text-xs text-amber-400/70 hover:text-amber-300 transition-colors" title="Vault Klasörü Bağla (Obsidian tarzı lokal dosya sistemi)"><FolderPlus className="w-3.5 h-3.5" /></button>
+                    )}
                     {projects.length > 1 && (
                       <button onClick={() => { if (window.confirm(`"${activeProject.name}" projesini silmek istiyor musunuz?`)) deleteProject(activeProjectId); }} className="text-xs text-rose-400/60 hover:text-rose-400 transition-colors"><Trash2 className="w-3 h-3" /></button>
                     )}
@@ -1109,7 +1228,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                       </div>
                                                     );
                                                   })}
-                                                  {openRisks.length > 5 && <p className="text-[10px] text-slate-500 text-center pt-1">+{openRisks.length - 5} daha</p>}
+                                                  {openRisks.length > 5 && <button onClick={() => setActiveTab('risks')} className="text-[10px] text-cyan-400 hover:text-cyan-300 text-center pt-1 w-full cursor-pointer hover:underline transition-colors">+{openRisks.length - 5} daha →</button>}
                                                 </div>
                                               )}
                                             </div>
@@ -1140,7 +1259,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                         <span className={`text-xs px-2 py-0.5 rounded-full ${REQ_STATUS_COLORS[r.status] || 'bg-white/10 text-slate-400'}`}>{r.status}</span>
                                                       </div>
                                                     ))}
-                                                    {reqs.length > 6 && <p className="text-[10px] text-slate-500 text-center pt-1">+{reqs.length - 6} daha</p>}
+                                                    {reqs.length > 6 && <button onClick={() => setActiveTab('requirements')} className="text-[10px] text-cyan-400 hover:text-cyan-300 text-center pt-1 w-full cursor-pointer hover:underline transition-colors">+{reqs.length - 6} daha →</button>}
                                                   </div>
                                                 </>
                                               )}
@@ -1167,7 +1286,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                       {a.dueDate && <span className={`text-xs ${isOverdue(a) ? 'text-rose-400' : 'text-slate-500'}`}>{a.dueDate}</span>}
                                                     </div>
                                                   ))}
-                                                  {pendingActions.length > 5 && <p className="text-[10px] text-slate-500 text-center pt-1">+{pendingActions.length - 5} daha</p>}
+                                                  {pendingActions.length > 5 && <button onClick={() => setActiveTab('actions')} className="text-[10px] text-cyan-400 hover:text-cyan-300 text-center pt-1 w-full cursor-pointer hover:underline transition-colors">+{pendingActions.length - 5} daha →</button>}
                                                 </div>
                                               )}
                                             </div>
@@ -1473,9 +1592,26 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                     }
                                                     placed.push({ x: finalX, y: finalY });
                                                     return (
-                                                      <div key={s.id} className="absolute flex flex-col items-center z-[1] transition-all duration-200" style={{ left: `${finalX}%`, top: `${finalY}%`, transform: 'translate(-50%,-50%)' }}>
-                                                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-md ring-2 ring-white" style={{ background: s.raci === 'R' ? '#3b82f6' : s.raci === 'A' ? '#8b5cf6' : s.raci === 'C' ? '#f59e0b' : '#94a3b8' }} title={`${s.name} — İlgi: ${PROB_LABELS[s.interest]}, Etki: ${PROB_LABELS[s.influence]}`}>{s.name.charAt(0)}</div>
+                                                      <div key={s.id} className="absolute flex flex-col items-center z-[1] transition-all duration-200 group/stakeholder" style={{ left: `${finalX}%`, top: `${finalY}%`, transform: 'translate(-50%,-50%)' }}>
+                                                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-md ring-2 ring-white cursor-pointer" style={{ background: s.raci === 'R' ? '#3b82f6' : s.raci === 'A' ? '#8b5cf6' : s.raci === 'C' ? '#f59e0b' : '#94a3b8' }}>{s.name.charAt(0)}</div>
                                                         <span className="text-[8px] text-slate-400 whitespace-nowrap mt-0.5 bg-white/60 px-1 rounded shadow-lg shadow-black/20">{s.name}</span>
+                                                        {/* Hover Tooltip */}
+                                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 invisible group-hover/stakeholder:opacity-100 group-hover/stakeholder:visible transition-all duration-200 z-50 pointer-events-none">
+                                                          <div className="glass-panel px-3 py-2.5 rounded-xl shadow-2xl border border-white/15 min-w-[180px] text-left" style={{ backdropFilter: 'blur(20px)' }}>
+                                                            <p className="text-xs font-bold text-white truncate">{s.name}</p>
+                                                            {s.role && <p className="text-[10px] text-slate-400 mt-0.5">{s.role}</p>}
+                                                            {s.department && <p className="text-[10px] text-slate-500">{s.department}</p>}
+                                                            <div className="flex items-center gap-2 mt-1.5 pt-1.5 border-t border-white/10">
+                                                              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${RACI_COLORS[s.raci]}`}>{s.raci} — {RACI_LABELS[s.raci]}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-3 mt-1">
+                                                              <span className="text-[9px] text-slate-400">İlgi: <strong className="text-slate-300">{PROB_LABELS[s.interest]}</strong></span>
+                                                              <span className="text-[9px] text-slate-400">Etki: <strong className="text-slate-300">{PROB_LABELS[s.influence]}</strong></span>
+                                                            </div>
+                                                            {s.notes && <p className="text-[9px] text-slate-500 mt-1 italic truncate">{s.notes}</p>}
+                                                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-2 h-2 rotate-45 bg-white/10 border-r border-b border-white/15" />
+                                                          </div>
+                                                        </div>
                                                       </div>
                                                     );
                                                   });
@@ -1529,10 +1665,11 @@ Yanıtın tamamı Türkçe olmalıdır.
                                           {activeProject.requirements.length === 0 ? (
                                             <div className="text-center py-16 text-slate-400"><BookMarked className="w-10 h-10 mx-auto mb-3 opacity-30" /><p>Henüz gereksinim eklenmemiş.</p></div>
                                           ) : (
-                                            <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 overflow-hidden">
+                                            <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 overflow-hidden" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+                                              <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 220px)' }}>
                                               <table className="w-full text-sm">
-                                                <thead className="bg-white/5 border-b border-white/10">
-                                                  <tr>{['ID', 'Gereksinim', 'Hedef', 'Modül', 'Durum', ''].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase">{h}</th>)}</tr>
+                                                <thead className="bg-white/5 border-b border-white/10 sticky top-0 z-10" style={{ backdropFilter: 'blur(12px)' }}>
+                                                  <tr>{['ID', 'Gereksinim', 'Tür', 'Modül', 'MoSCoW', 'Durum', 'Not', ''].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase">{h}</th>)}</tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-slate-100">
                                                   {activeProject.requirements.filter(r => reqFilter === 'all' || r.status === reqFilter).map(r => (
@@ -1541,7 +1678,9 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                       <td className="px-4 py-3 font-medium text-slate-100">{r.name}</td>
                                                       <td className="px-4 py-3 text-xs text-slate-400 max-w-[150px] truncate">{r.objective || '—'}</td>
                                                       <td className="px-4 py-3 text-xs text-slate-400">{r.module || '—'}</td>
+                                                      <td className="px-4 py-3">{r.moscow ? <span className={`text-xs px-2 py-1 rounded-full font-medium ${r.moscow === 'Must' ? 'moscow-must' : r.moscow === 'Should' ? 'moscow-should' : r.moscow === 'Could' ? 'moscow-could' : 'moscow-wont'}`}>{r.moscow}</span> : <span className="text-xs text-slate-500">—</span>}</td>
                                                       <td className="px-4 py-3"><span className={`text-xs px-2 py-1 rounded-full font-medium ${REQ_STATUS_COLORS[r.status] || 'bg-white/10 text-slate-300'}`}>{r.status}</span></td>
+                                                      <td className="px-4 py-3 text-xs text-slate-400 max-w-[150px] truncate" title={r.notes || ''}>{r.notes || '—'}</td>
                                                       <td className="px-4 py-3">
                                                         <div className="flex items-center gap-1">
                                                           <button onClick={() => openReqModal(r)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
@@ -1552,6 +1691,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                   ))}
                                                 </tbody>
                                               </table>
+                                              </div>
                                             </div>
                                           )}
                                         </div>
@@ -1715,7 +1855,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                 <div className="flex" style={{ maxHeight: 'calc(100vh - 260px)', minHeight: 200 }}>
                                                   {/* Sidebar */}
                                                   <div className="w-80 shrink-0 border-r border-white/10 bg-white/5 z-[2] overflow-y-auto">
-                                                    <div className="h-[52px] border-b border-white/10 flex items-end px-3 pb-1.5 sticky top-0 bg-white/5 z-[1]">
+                                                    <div className="h-[52px] border-b border-white/10 flex items-end px-3 pb-1.5 sticky top-0 z-[3]" style={{ backdropFilter: 'blur(12px)', backgroundColor: 'rgba(255,255,255,0.05)' }}>
                                                       <div className="flex items-center w-full">
                                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex-1">Görev Adı</span>
                                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 text-center">Sorumlu</span>
@@ -2319,9 +2459,19 @@ Yanıtın tamamı Türkçe olmalıdır.
                                             <input value={reqForm.module} onChange={e => setReqForm({ ...reqForm, module: e.target.value })} placeholder="Modül/Ekran" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                                             <input value={reqForm.testId} onChange={e => setReqForm({ ...reqForm, testId: e.target.value })} placeholder="Test ID" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                                           </div>
-                                          <select value={reqForm.status} onChange={e => setReqForm({ ...reqForm, status: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                            {Object.keys(REQ_STATUS_COLORS).map(s => <option key={s}>{s}</option>)}
-                                          </select>
+                                          <div className="grid grid-cols-2 gap-3">
+                                            <select value={reqForm.status} onChange={e => setReqForm({ ...reqForm, status: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                              {Object.keys(REQ_STATUS_COLORS).map(s => <option key={s}>{s}</option>)}
+                                            </select>
+                                            <select value={reqForm.moscow} onChange={e => setReqForm({ ...reqForm, moscow: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                              <option value="">MoSCoW Seçin</option>
+                                              <option value="Must">Must Have</option>
+                                              <option value="Should">Should Have</option>
+                                              <option value="Could">Could Have</option>
+                                              <option value="Wont">Won't Have</option>
+                                            </select>
+                                          </div>
+                                          <textarea value={reqForm.notes} onChange={e => setReqForm({ ...reqForm, notes: e.target.value })} placeholder="Not / Açıklama (opsiyonel)" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
                                         </div>
                                         <div className="flex justify-end gap-3 mt-5">
                                           <button onClick={() => setShowReqModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>

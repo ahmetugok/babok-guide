@@ -397,6 +397,32 @@ input[type="range"]::-webkit-slider-thumb { width: 16px; height: 16px; }
 /* ============================================
    RESPONSIVE
    ============================================ */
+
+/* --- Requirement Status Badge Colors (both themes) --- */
+.req-status-taslak { background-color: rgba(100,116,139,0.15); color: #475569; }
+.req-status-incelemede { background-color: rgba(245,158,11,0.18); color: #92400e; }
+.req-status-onaylandi { background-color: rgba(59,130,246,0.18); color: #1e40af; }
+.req-status-gelistiriliyor { background-color: rgba(168,85,247,0.18); color: #6b21a8; }
+.req-status-test { background-color: rgba(249,115,22,0.18); color: #9a3412; }
+.req-status-canlida { background-color: rgba(16,185,129,0.18); color: #065f46; }
+
+.theme-dark .req-status-taslak { background-color: rgba(148,163,184,0.12); color: #cbd5e1; }
+.theme-dark .req-status-incelemede { background-color: rgba(245,158,11,0.15); color: #fbbf24; }
+.theme-dark .req-status-onaylandi { background-color: rgba(59,130,246,0.15); color: #93c5fd; }
+.theme-dark .req-status-gelistiriliyor { background-color: rgba(168,85,247,0.15); color: #d8b4fe; }
+.theme-dark .req-status-test { background-color: rgba(249,115,22,0.15); color: #fdba74; }
+.theme-dark .req-status-canlida { background-color: rgba(16,185,129,0.15); color: #6ee7b7; }
+
+/* --- MoSCoW Badge Colors (both themes) --- */
+.moscow-must { background-color: rgba(244,63,94,0.16); color: #9f1239; }
+.moscow-should { background-color: rgba(245,158,11,0.16); color: #92400e; }
+.moscow-could { background-color: rgba(59,130,246,0.16); color: #1e40af; }
+.moscow-wont { background-color: rgba(100,116,139,0.12); color: #475569; }
+
+.theme-dark .moscow-must { background-color: rgba(244,63,94,0.15); color: #fda4af; }
+.theme-dark .moscow-should { background-color: rgba(245,158,11,0.15); color: #fbbf24; }
+.theme-dark .moscow-could { background-color: rgba(59,130,246,0.15); color: #93c5fd; }
+.theme-dark .moscow-wont { background-color: rgba(148,163,184,0.10); color: #94a3b8; }
 @media (max-width: 1023px) {
   .aura-dock { display: none !important; }
   .aura-mobile-nav { display: flex !important; }
