@@ -1482,12 +1482,12 @@ Yanıtın tamamı Türkçe olmalıdır.
       {showMobileMenu && (
         <div className="fixed inset-0 z-60 lg:hidden flex flex-col justify-end" onClick={() => setShowMobileMenu(false)}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative glass-panel rounded-t-2xl p-5 pb-8 shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="relative glass-panel rounded-t-2xl p-5 pb-8 shadow-2xl" style={{ maxHeight: '70vh' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <p className="text-sm font-bold text-slate-300">Tüm Modüller</p>
               <button onClick={() => setShowMobileMenu(false)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400"><X className="w-4 h-4" /></button>
             </div>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-2 overflow-y-auto" style={{ maxHeight: 'calc(70vh - 60px)' }}>
               {TAB_ITEMS.map(({ id, label, Icon }) => (
                 <button key={id} onClick={() => {
                   setShowMobileMenu(false);
