@@ -37,7 +37,16 @@ export function ChangesTab({ activeProject, openCRModal, deleteCR }) {
                     <span className="text-xs font-mono text-slate-400">{cr.crId}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cr.status === 'Bekliyor' ? 'bg-amber-500/10 text-amber-400' : cr.status === 'Onaylandi' ? 'bg-emerald-500/10 text-emerald-400' : cr.status === 'Reddedildi' ? 'bg-rose-500/10 text-rose-400' : 'bg-white/10 text-slate-400'}`}>{cr.status}</span>
                     <span className="text-xs bg-white/10 text-slate-400 px-2 py-0.5 rounded-full">{cr.changeType}</span>
-                    {cr.affectedEntityId && <span className="text-xs font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded-full">{cr.affectedEntityId}</span>}
+                    {cr.affectedEntityId && (() => {
+                      const colors = {
+                        'Gereksinim': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+                        'Is Kurali':  'bg-violet-500/10 text-violet-400 border-violet-500/20',
+                        'Varsayim':   'bg-amber-500/10 text-amber-400 border-amber-500/20',
+                        'Risk':       'bg-rose-500/10 text-rose-400 border-rose-500/20',
+                      };
+                      const cls = colors[cr.affectedEntityType] || 'bg-white/10 text-slate-400 border-white/10';
+                      return <span className={`text-xs font-mono border px-2 py-0.5 rounded-full ${cls}`}>{cr.affectedEntityType} · {cr.affectedEntityId}</span>;
+                    })()}
                   </div>
                   <p className="font-semibold text-slate-100">{cr.title}</p>
                   {cr.changeDescription && <p className="text-xs text-slate-400 mt-1">{cr.changeDescription}</p>}

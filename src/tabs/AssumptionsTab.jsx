@@ -31,6 +31,12 @@ export function AssumptionsTab({ activeProject, openAssumptionModal, deleteAssum
                 <p className="font-semibold text-slate-100">{a.title}</p>
                 {a.content && <p className="text-xs text-slate-400 mt-1">{a.content}</p>}
                 <p className="text-xs text-slate-500 mt-1">Sorumlu: {a.ownerId || '—'}{a.validationDate ? ' · Tarih: ' + a.validationDate : ''}</p>
+                {a.linkedRequirements && (
+                  <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">GRK bagl.</span>
+                )}
+                {a.validationStatus === 'Curutuldu' && (
+                  <p className="text-xs text-rose-400 mt-1">⚠ Curutuldu — iliskili gereksinimler etkilenebilir</p>
+                )}
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <button onClick={() => openAssumptionModal(a)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>

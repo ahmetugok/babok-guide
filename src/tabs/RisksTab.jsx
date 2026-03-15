@@ -35,6 +35,12 @@ export function RisksTab({ activeProject, openRiskModal, deleteRisk, openLinkCar
                   <p className="font-semibold text-slate-100">{r.title}</p>
                   {r.mitigation && <p className="text-xs text-slate-400 mt-1">Azaltma: {r.mitigation}</p>}
                   <p className="text-xs text-slate-400 mt-1">Sorumlu: {r.owner || '—'} · Olas.: {PROB_LABELS[r.probability]} · Etki: {IMPACT_LABELS[r.impact]} · Skor: {r.probability * r.impact}</p>
+                  {(r.linkedRequirementId || r.linkedAssumptionId) && (
+                    <div className="flex gap-2 flex-wrap mt-2">
+                      {r.linkedRequirementId && <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">REQ bagl.</span>}
+                      {r.linkedAssumptionId  && <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Vars. bagl.</span>}
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <button onClick={() => openLinkCard('risk', r.id)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-cyan-400 transition-colors" title="Baglantilar"><ArrowUpRight className="w-4 h-4" /></button>

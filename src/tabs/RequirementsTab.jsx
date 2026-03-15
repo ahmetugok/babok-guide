@@ -25,10 +25,16 @@ export function RequirementsTab({ activeProject, openReqModal, deleteReq, openLi
           <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 220px)' }}>
           <table className="w-full text-sm">
             <thead className="bg-white/5 border-b border-white/10 sticky top-0 z-10" style={{ backdropFilter: 'blur(12px)' }}>
-              <tr>{['ID', 'Gereksinim', 'Tür', 'Modül', 'MoSCoW', 'Durum', 'K.K.', 'Not', ''].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase">{h}</th>)}</tr>
+              <tr>{['ID', 'Gereksinim', 'Tür', 'Modül', 'MoSCoW', 'Durum', 'K.K.', 'Bagl.', 'Not', ''].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase">{h}</th>)}</tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {activeProject.requirements.filter(r => reqFilter === 'all' || r.status === reqFilter).map(r => (
+              {activeProject.requirements.filter(r => reqFilter === 'all' || r.status === reqFilter).map(r => {
+                const linkedCount = [
+                  (activeProject.risks          || []).filter(x => x.linkedRequirementId === r.id).length,
+                  (activeProject.changeRequests  || []).filter(x => x.affectedEntityId   === r.id).length,
+                  (activeProject.businessRules   || []).filter(x => x.linkedRequirements  === r.id).length,
+                ].reduce((a, b) => a + b, 0);
+                return (
                 <tr key={r.id} className="hover:bg-white/5 transition-colors">
                   <td className="px-4 py-3 text-xs font-mono text-slate-400 whitespace-nowrap">{r.reqId}</td>
                   <td className="px-4 py-3 font-medium text-slate-100">{r.name}</td>
@@ -37,6 +43,7 @@ export function RequirementsTab({ activeProject, openReqModal, deleteReq, openLi
                   <td className="px-4 py-3">{r.moscow ? <span className={`text-xs px-2 py-1 rounded-full font-medium ${r.moscow === 'Must' ? 'moscow-must' : r.moscow === 'Should' ? 'moscow-should' : r.moscow === 'Could' ? 'moscow-could' : 'moscow-wont'}`}>{r.moscow}</span> : <span className="text-xs text-slate-500">—</span>}</td>
                   <td className="px-4 py-3"><span className={`text-xs px-2 py-1 rounded-full font-medium ${REQ_STATUS_COLORS[r.status] || 'bg-white/10 text-slate-300'}`}>{r.status}</span></td>
                   <td className="px-4 py-3 text-center" title={r.acceptanceCriteria || 'Kabul kriteri girilmemis'}>{r.acceptanceCriteria ? <CheckCircle2 className="w-4 h-4 text-emerald-400 inline" /> : <X className="w-4 h-4 text-rose-400 inline" />}</td>
+                  <td className="px-4 py-3 text-center">{linkedCount > 0 ? <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-medium">{linkedCount} bagl.</span> : <span className="text-xs text-slate-600">—</span>}</td>
                   <td className="px-4 py-3 text-xs text-slate-400 max-w-[150px] truncate" title={r.notes || ''}>{r.notes || '—'}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
@@ -46,7 +53,8 @@ export function RequirementsTab({ activeProject, openReqModal, deleteReq, openLi
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
           </div>
