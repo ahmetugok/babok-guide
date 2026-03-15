@@ -1,12 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import {
-  CheckCircle2, Circle, ChevronDown, ChevronRight, BookOpen, Target, Users, Layers,
+  BookOpen, Target, Users, Layers,
   RefreshCw, Activity, Info, Lightbulb, Wrench, BrainCircuit, LayoutGrid, FileText,
-  CheckSquare, Square, Sparkles, Bot, X, Copy, Loader2, FileStack, ClipboardCopy,
-  AlertTriangle, Trash2, Pencil, Plus, Download, LayoutDashboard, ListChecks,
-  StickyNote, FolderPlus, RotateCcw, MessageSquare, Clock, UserPlus, ChevronUp,
-  Shield, ArrowUpRight, TrendingUp, BookMarked, CalendarDays, Upload, Moon, Sun
+  Sparkles, X, Copy, Loader2, FileStack,
+  AlertTriangle, Trash2, Plus, Download, LayoutDashboard, ListChecks,
+  FolderPlus, RotateCcw, MessageSquare,
+  ArrowUpRight, BookMarked, CalendarDays, Upload, Moon, Sun
 } from 'lucide-react';
+
+import { DEFAULT_PROJECT, PROB_LABELS, RACI_LABELS, templatesData } from './constants/index.js';
+import { generateId, getRiskLevel, formatMarkdown } from './utils.js';
+
+import { DashboardTab } from './tabs/DashboardTab.jsx';
+import { KnowledgeAreasTab } from './tabs/KnowledgeAreasTab.jsx';
+import { AssumptionsTab } from './tabs/AssumptionsTab.jsx';
+import { BusinessRulesTab } from './tabs/BusinessRulesTab.jsx';
+import { ChangesTab } from './tabs/ChangesTab.jsx';
+import { RisksTab } from './tabs/RisksTab.jsx';
+import { ActionsTab } from './tabs/ActionsTab.jsx';
+import { StakeholdersTab } from './tabs/StakeholdersTab.jsx';
+import { RequirementsTab } from './tabs/RequirementsTab.jsx';
+import { TraceabilityTab } from './tabs/TraceabilityTab.jsx';
+import { MeetingsTab } from './tabs/MeetingsTab.jsx';
+import { GanttTab } from './tabs/GanttTab.jsx';
+import { TechniquesTab } from './tabs/TechniquesTab.jsx';
+import { TemplatesTab } from './tabs/TemplatesTab.jsx';
+import { CompetenciesTab } from './tabs/CompetenciesTab.jsx';
+
+import { BusinessRuleModal } from './modals/BusinessRuleModal.jsx';
+import { ChangeRequestModal } from './modals/ChangeRequestModal.jsx';
+import { RiskModal } from './modals/RiskModal.jsx';
+import { AssumptionModal } from './modals/AssumptionModal.jsx';
+import { ActionModal } from './modals/ActionModal.jsx';
+import { StakeholderModal } from './modals/StakeholderModal.jsx';
+import { RequirementModal } from './modals/RequirementModal.jsx';
+import { LinkCardModal } from './modals/LinkCardModal.jsx';
+import { MeetingModal } from './modals/MeetingModal.jsx';
+import { GanttModal } from './modals/GanttModal.jsx';
 
 // --- BABOK KNOWLEDGE AREAS AND DETAILED TASKS DATA ---
 const babokData = [
@@ -119,338 +149,203 @@ const babokData = [
       },
       {
         id: 't2_4',
-        name: 'İş Analizi Bilgi Yönetimini Planlama',
-        purpose: 'Gereksinimlerin, modellerin ve belgelerin nerede, nasıl saklanacağını ve izleneceğini belirlemek.',
-        deliverables: 'Bilgi Yönetimi Standartları (Araçlar, Klasör Yapısı, Versiyonlama)',
+        name: 'İş Analizi Bilgisini Yönetme',
+        purpose: 'Analiz çalışmaları sırasında üretilen tüm bilgi ve çıktıların düzenli, erişilebilir ve güncel tutulmasını sağlamak.',
+        deliverables: 'Gereksinim Deposu (Repository), Versiyon Kontrollü Belgeler',
         checklist: [
-          { id: 'c2_4_1', text: 'Çalışmaların kaydedileceği dijital platformu (Jira, Confluence, TFS, SharePoint) seçin.' },
-          { id: 'c2_4_2', text: 'Dokümanların ve gereksinimlerin isimlendirme standartlarını (Ör: PRJ_Gereksinim_V1.2.docx) belirleyin.' },
-          { id: 'c2_4_3', text: 'Gereksinimlerin durumlarını (Taslak, İncelemede, Onaylandı, Geliştiriliyor) temsil edecek statü akışını oluşturun.' }
+          { id: 'c2_4_1', text: 'Tüm gereksinim ve analiz dokümanlarının saklanacağı merkezi bir yer (Confluence, SharePoint vb.) belirleyin.' },
+          { id: 'c2_4_2', text: 'Dokümanlar için bir versiyon numaralandırma standardı (v1.0, v1.1 gibi) belirleyin.' },
+          { id: 'c2_4_3', text: 'Eski ve geçersiz gereksinimlerin ne yapılacağını (arşivleme, silme) planlayın.' }
         ],
-        tips: 'Ekibe yeni katılan biri, sizin yönlendirmeniz olmadan klasörlere bakarak projenin nerede olduğunu anlayabilmelidir.'
+        tips: 'Bilgi yönetimi sıkıcı görünür ama bir toplantıdan 3 ay sonra "Bu kararı neden almıştık?" sorusunu yanıtlayabilmek paha biçilemez.'
+      },
+      {
+        id: 't2_5',
+        name: 'İş Analizi Performansını İzleme',
+        purpose: 'Kendi iş analizi çalışmalarının kalitesini ve verimliliğini ölçerek sürekli iyileştirme sağlamak.',
+        deliverables: 'İA Performans Metrikleri Raporu, Derslerin Öğrenilmesi (Lessons Learned)',
+        checklist: [
+          { id: 'c2_5_1', text: 'İş analizi sürecinin kalitesini ölçmek için metrikler belirleyin (ör: toplantıda geçirilen süre, düzeltilen gereksinim sayısı).' },
+          { id: 'c2_5_2', text: 'Periyodik olarak (Sprint sonu, faz sonu) "Geri Bakış" (Retrospective) yaparak neyin iyi, neyin kötü gittiğini belgeleyin.' },
+          { id: 'c2_5_3', text: 'Öğrenilen dersleri gelecekteki projeler için paylaşın.' }
+        ],
+        tips: 'En iyi analistler, her projeden bir şeyler öğrenir. "Lessons Learned" belgesi, kurumsal hafızanın en değerli parçasıdır.'
       }
     ]
   },
   {
     id: 'ka3',
     title: 'Ortaya Çıkarma ve İşbirliği',
-    description: 'Paydaşlardan, dokümanlardan veya sistemlerden bilgi toplama ve sürekli iletişimi sağlama süreci.',
-    icon: <Users className="w-6 h-6 text-orange-500" />,
-    color: 'border-orange-200 bg-orange-500/10',
-    headerColor: 'text-orange-700',
+    description: 'Paydaşlardan ihtiyaçlar, beklentiler ve kısıtlamalar hakkında bilgi toplamak için teknikler kullanma.',
+    icon: <Users className="w-6 h-6 text-green-500" />,
+    color: 'border-green-500/20 bg-green-500/10',
+    headerColor: 'text-green-700',
     tasks: [
       {
         id: 't3_1',
-        name: 'Ortaya Çıkarma Çalışmalarını Hazırlama',
-        purpose: 'Bilgi toplama seanslarının (toplantı, anket vb.) verimli geçmesi için ön hazırlık yapmak.',
-        deliverables: 'Toplantı Ajandası, Mülakat Soru Seti, Çalıştay (Workshop) Planı',
+        name: 'Ortaya Çıkarmayı Hazırlama',
+        purpose: 'Paydaşlarla yapılacak görüşme veya atölye çalışmasını verimli kılmak için önceden hazırlanmak.',
+        deliverables: 'Görüşme Rehberi (Interview Guide), Atölye Ajandası',
         checklist: [
-          { id: 'c3_1_1', text: 'Bilgi toplamak için en uygun tekniği seçin (Birebir Mülakat, Grup Çalıştayı, Anket, Doküman Analizi).' },
-          { id: 'c3_1_2', text: 'Görüşülecek paydaşların projeyle ilgili teknik/iş seviyesine uygun soru listeleri hazırlayın.' },
-          { id: 'c3_1_3', text: 'Toplantı takvimlerini ayarlayın ve katılımcılara ne hazırlığı yapmaları gerektiğini anlatan bir ajanda gönderin.' },
-          { id: 'c3_1_4', text: 'Mevcut sistem dokümanlarını veya yasal mevzuatları toplantı öncesi okuyup çalışın.' }
+          { id: 'c3_1_1', text: 'Hangi bilgilere ihtiyaç duyduğunuzu ve bu bilgileri kimden alabileceğinizi listeleyin.' },
+          { id: 'c3_1_2', text: 'Görüşmeler için açık uçlu sorulardan oluşan bir soru listesi hazırlayın.' },
+          { id: 'c3_1_3', text: 'Atölye çalışmaları için katılımcıları, gündem maddelerini ve süreleri içeren bir ajanda oluşturun.' },
+          { id: 'c3_1_4', text: 'Kullanılacak teknikleri (Beyin Fırtınası, Prototip Gösterimi vb.) belirleyin.' }
         ],
-        tips: 'Hazırlıksız girilen bir mülakat hem vakit kaybıdır hem de paydaşın size olan güvenini sıfırlar.'
+        tips: '"Sistemin nasıl çalışmasını istersiniz?" yerine "Şu an hangi adımda en çok zaman kaybediyorsunuz?" gibi sorular çok daha değerli yanıtlar getirir.'
       },
       {
         id: 't3_2',
-        name: 'Ortaya Çıkarma Çalışmalarını Yürütme',
-        purpose: 'Planlanan teknikleri kullanarak gereksinimleri, iş kurallarını ve süreçleri keşfetmek.',
-        deliverables: 'Ham Toplantı Notları, Ses Kayıtları (İzinliyse), Kavramsal Taslaklar',
+        name: 'Ortaya Çıkarmayı Yürütme',
+        purpose: 'Paydaşlarla aktif olarak etkileşerek gereksinimleri, fikirleri ve kısıtlamaları keşfetmek.',
+        deliverables: 'Toplantı Notları, Ham Gereksinim Listesi, Gözlem Bulguları',
         checklist: [
-          { id: 'c3_2_1', text: 'Toplantılarda yönlendirici açık uçlu sorular sorarak paydaşları konuşturun ve aktif dinleme yapın.' },
-          { id: 'c3_2_2', text: 'Sürekli dile getirilen "Varsayımları" ve çözülmemiş "Açık Noktaları (Open Issues)" yakalayıp not alın.' },
-          { id: 'c3_2_3', text: 'Gereksinimleri alırken arkasındaki iş kurallarını (Ör: Kredi onay limiti 50.000 TL\'dir) sormayı unutmayın.' },
-          { id: 'c3_2_4', text: 'Kullanıcıların sadece "ekranda buton olsun" gibi çözüm taleplerine değil, "bunu neden istiyorsunuz?" sorusuyla asıl hedefe odaklanın.' }
+          { id: 'c3_2_1', text: 'Planlanan görüşmeleri, atölyeleri veya anketleri gerçekleştirin.' },
+          { id: 'c3_2_2', text: 'Toplantı sırasında aktif dinleme yapın; söylenmeyeni de duymaya çalışın.' },
+          { id: 'c3_2_3', text: 'Her toplantının sonunda kısa bir özet yaparak mutabık kalınan noktaları teyit edin.' },
+          { id: 'c3_2_4', text: 'Farklı paydaşlar arasında çelişen gereksinimleri not alın, daha sonra çözüme kavuşturmak üzere işaretleyin.' }
         ],
-        tips: 'İnsanlar genellikle çözümü söyler. Analistin asıl görevi, o çözümün altındaki maskelenmiş asıl ihtiyacı bulup çıkarmaktır.'
+        tips: 'Paydaşlar çoğu zaman ne istediklerini değil, ne yapmak istediklerini anlatır. "Ne" değil "Neden" sorusunu sormayı alışkanlık edinin.'
       },
       {
         id: 't3_3',
-        name: 'Ortaya Çıkarma Sonuçlarını Doğrulama',
-        purpose: 'Toplanan bilgilerin doğru, tutarlı ve paydaşların asıl niyetini yansıttığından emin olmak.',
-        deliverables: 'Doğrulanmış Toplantı Tutanakları (MoM), Teyit Mailleri',
+        name: 'Ortaya Çıkarma Sonuçlarını Onaylama',
+        purpose: 'Toplanan bilgilerin paydaşların gerçek niyetini doğru yansıttığından emin olmak.',
+        deliverables: 'Onaylı Toplantı Tutanağı (MoM), Çatışan Gereksinim Çözüm Raporu',
         checklist: [
-          { id: 'c3_3_1', text: 'Toplantı sırasında alınan dağınık notları anlamlı metinler halinde temize çekin.' },
-          { id: 'c3_3_2', text: 'Notları, toplantıya katılan paydaşlara göndererek "Doğru anlamış mıyım? Eksik var mı?" onayı (teyit) isteyin.' },
-          { id: 'c3_3_3', text: 'Farklı paydaşlardan gelen birbiriyle çelişen (Ör: Pazarlama A diyor, Muhasebe B diyor) ifadeleri tespit edin.' },
-          { id: 'c3_3_4', text: 'Çelişkili konular için ilgili kişileri bir araya getirip ortak bir karara/uzlaşmaya vardırın.' }
+          { id: 'c3_3_1', text: 'Toplantı notlarını ve çıkarılan gereksinimleri düzenleyerek paydaşlara gönderin.' },
+          { id: 'c3_3_2', text: 'Belirlenen süre içinde onay veya düzeltme geri bildirimi isteyin.' },
+          { id: 'c3_3_3', text: 'Çelişen paydaş görüşlerini kolaylaştırıcı (facilitator) rolüyle uzlaştırın.' }
         ],
-        tips: 'Söylenenleri toplantıdan hemen sonra yazılı olarak teyit ettirmek, gelecekte yaşanacak "ben öyle dememiştim" krizlerini önler.'
-      },
-      {
-        id: 't3_4',
-        name: 'İş Analizi Bilgilerini İletme',
-        purpose: 'Doğru bilginin, doğru zamanda, doğru paydaşlara net bir şekilde sunulması.',
-        deliverables: 'Gereksinim Sunumları, Bilgilendirme Mailleri, Dashboardlar',
-        checklist: [
-          { id: 'c3_4_1', text: 'Toplanan bilgileri, sunulacak kitleye (Teknik ekip, Üst yönetim, Son kullanıcı) uygun bir formata dönüştürün.' },
-          { id: 'c3_4_2', text: 'Üst yönetim için özet tablolar, teknik ekip için veri ve süreç detayları içeren sunumlar/belgeler hazırlayın.' },
-          { id: 'c3_4_3', text: 'Hazırlanan gereksinimlerin periyodik olarak tüm paydaşlarca görülebilmesi için (Jira vb. üzerinden) şeffaf bir erişim sağlayın.' }
-        ],
-        tips: 'Yazılımcıya destan gibi metin vermek yerine süreç modeli, iş birimine ise karmaşık kod mantığı yerine ekran prototipi göstermek her zaman daha etkilidir.'
+        tips: '"MoM\'u okudum, onaylıyorum" yanıtını almak zordur. "Herhangi bir itirazınız yoksa 3 iş günü içinde onaylandı sayacağım" yöntemi işe yarar.'
       }
     ]
   },
   {
     id: 'ka4',
-    title: 'Gereksinim Analizi ve Tasarım Tanımlama',
-    description: 'Ortaya çıkarılan karmaşık bilgileri yapılandırma, modelleme ve geliştiriciler için net gereksinimlere dönüştürme.',
-    icon: <Layers className="w-6 h-6 text-teal-500" />,
-    color: 'border-teal-200 bg-teal-500/10',
-    headerColor: 'text-teal-700',
+    title: 'Gereksinimlerin Yaşam Döngüsü Yönetimi',
+    description: 'Gereksinimlerin ve tasarımların belgelenmesi, izlenmesi, önceliklendirilmesi ve onaylanması süreçleri.',
+    icon: <RefreshCw className="w-6 h-6 text-orange-500" />,
+    color: 'border-orange-500/20 bg-orange-500/10',
+    headerColor: 'text-orange-700',
     tasks: [
       {
         id: 't4_1',
-        name: 'Gereksinimleri Belirtme ve Modelleme',
-        purpose: 'Toplanan bilgileri, herkesin aynı şeyi anlayacağı net kurallar ve görseller haline getirmek.',
-        deliverables: 'İş Gereksinim Dokümanı (BRD), User Story / Use Case Listesi, BPMN Çizimleri, Ekran Mockup\'ları',
+        name: 'Gereksinimleri İzleme',
+        purpose: 'Bir gereksinimin proje boyunca izlenebilirliğini (traceability) sağlamak.',
+        deliverables: 'İzlenebilirlik Matrisi (Traceability Matrix)',
         checklist: [
-          { id: 'c4_1_1', text: 'Gereksinimleri atomik (tek bir işi anlatan) metinler halinde (User Story, Use Case veya Yazılı Madde) dökümante edin.' },
-          { id: 'c4_1_2', text: 'Kavramların herkes tarafından aynı anlaşılması için "Veri Sözlüğü" (Data Dictionary) ve Kavramsal Veri Modeli oluşturun.' },
-          { id: 'c4_1_3', text: 'İş süreçlerinin nasıl akacağını ve karar noktalarını gösteren Süreç Akış Diyagramları (Ör: BPMN) çizin.' },
-          { id: 'c4_1_4', text: 'Uygulamanın kullanıcıya nasıl görüneceğini tasvir eden ekran taslakları (Wireframe/Mockup) veya prototipler hazırlayın.' }
+          { id: 'c4_1_1', text: 'Her gereksinimleme bir iş hedefiyle, bir proje çıktısıyla veya bir test senaryosuyla ilişkilendirin.' },
+          { id: 'c4_1_2', text: 'İzlenebilirlik matrisini oluşturun ve düzenli aralıklarla güncelleyin.' },
+          { id: 'c4_1_3', text: 'Hiçbir gereksinimin karşılıksız (implement edilmemiş veya test edilmemiş) kalmamasını sağlayın.' }
         ],
-        tips: 'Bir resim (model) bin kelimeye bedeldir. "Eğer A olursa B sayfasına git, X işaretliyse C formunu aç" gibi karmaşık karar mantıklarını metin yerine diyagramla anlatın.'
+        tips: 'İzlenebilirlik matrisi olmadan "Bu özellik neden geliştirildi?" sorusu proje biterken bile yanıtsız kalabilir. Bu matris sizi kurtarır.'
       },
       {
         id: 't4_2',
-        name: 'Gereksinimleri Doğrulama (Verification)',
-        purpose: 'Gereksinimlerin kalite standartlarına (doğru yazılmış mı?) uygun olduğunu kontrol etmek.',
-        deliverables: 'Doğrulanmış Kaliteli Gereksinim Seti (Quality Checked Requirements)',
+        name: 'Gereksinimleri Sürdürme',
+        purpose: 'Gereksinimler değiştikçe bunları güncel, doğru ve tutarlı tutmak.',
+        deliverables: 'Güncellenmiş Gereksinim Deposu, Değişiklik Geçmişi Logu',
         checklist: [
-          { id: 'c4_2_1', text: 'Her bir gereksinimin "Açık, Net, Anlaşılır ve Tek Anlamlı" olup olmadığını kendi içinizde okuyarak test edin.' },
-          { id: 'c4_2_2', text: 'Gereksinimlerin Test Edilebilir (Testable) olduğunu kontrol edin. "Sistem hızlı olmalı" yerine "Sistem 2 saniyede açılmalı" yazın.' },
-          { id: 'c4_2_3', text: 'User Story kullanıyorsanız, INVEST (Independent, Negotiable, Valuable, Estimable, Small, Testable) kriterlerine uygunluğunu denetleyin.' },
-          { id: 'c4_2_4', text: 'Kurumsal yazım standartlarına, şablonlara ve isimlendirme kurallarına uyulduğundan emin olun.' }
+          { id: 'c4_2_1', text: 'Gereksinimlerde yapılan her değişikliği, nedenini ve kimin onayladığını kaydedin.' },
+          { id: 'c4_2_2', text: 'Gereksinimler arasındaki bağımlılıkları belirleyin; bir gereksinim değişirse bağlı olanları da güncelleyin.' },
+          { id: 'c4_2_3', text: 'Geçersiz veya kapsam dışına çıkan gereksinimleri aktif listeden çıkarıp arşivleyin.' }
         ],
-        tips: 'Doğrulama (Verification) işlemi tamamen kalite ile ilgilidir. Soru şudur: "Gereksinimi doğru ve kurallara uygun şekilde YAZMIŞ mıyız?"'
+        tips: 'Gereksinimlerin "canlı belgeler" olduğunu unutmayın. Proje başındaki ilk liste, proje sonunda tamamen farklı görünebilir ve bu normaldir.'
       },
       {
         id: 't4_3',
-        name: 'Gereksinimleri Geçerli Kılma (Validation)',
-        purpose: 'Gereksinimlerin gerçekten iş hedeflerine hizmet edip etmediğini kontrol etmek.',
-        deliverables: 'Geçerli Kılınmış Kapsam, Kapsam Dışı (Out-of-Scope) Listesi',
+        name: 'Gereksinimleri Önceliklendirme',
+        purpose: 'Kısıtlı zaman ve bütçe ile hangi gereksinimlerin önce ele alınacağına karar vermek.',
+        deliverables: 'Önceliklendirilmiş Gereksinim Listesi (Product Backlog vb.)',
         checklist: [
-          { id: 'c4_3_1', text: 'Yazılan her bir alt gereksinimi, Strateji Analizinde belirlenen ana "İş Hedefleri" ile eşleştirin.' },
-          { id: 'c4_3_2', text: 'Eğer bir gereksinim hiçbir iş hedefine veya problem çözümüne hizmet etmiyorsa, bunu tespit edin.' },
-          { id: 'c4_3_3', text: 'Müşteri "Bunu da koysak güzel olur" dese bile, iş değerine katkısı olmayan (Gold-plating) talepleri kapsam dışına alın.' },
-          { id: 'c4_3_4', text: 'Kalan tüm gereksinimlerin "Doğru İşi Yapmak" (Business Value) felsefesine uygun olduğundan emin olun.' }
+          { id: 'c4_3_1', text: "MoSCoW (Must/Should/Could/Won't), Kano Modeli veya Oylamayla Önceliklendirme tekniklerinden birini kullanın." },
+          { id: 'c4_3_2', text: 'Önceliklendirme kararlarını paydaşlarla birlikte, şeffaf bir şekilde yapın.' },
+          { id: 'c4_3_3', text: "İş değeri düşük ama maliyeti yüksek \"Won't Have\" gereksinimlerini sürüm 1 dışında bırakın." }
         ],
-        tips: 'Geçerlilik (Validation), "Sırf birisi istedi diye, ürüne değersiz ve kullanılmayacak bir özellik ekliyor muyuz?" sorusunun filtresidir.'
+        tips: '"Her şey öncelikli" diyenlerle çalışıyorsanız, onlara "Eğer sadece bir tane yapabilseydik hangisi olurdu?" sorusunu sorun.'
       },
       {
         id: 't4_4',
-        name: 'Tasarım Seçeneklerini Tanımlama',
-        purpose: 'Gereksinimleri karşılayacak çözüm mimarilerini veya yazılım yaklaşımlarını değerlendirmek.',
-        deliverables: 'Tasarım Alternatifleri Analizi, Make or Buy Raporu',
+        name: 'Gereksinimleri Onaylama',
+        purpose: 'Gereksinimin doğru ve eksiksiz tanımlandığını ve paydaşların bunu kabul ettiğini resmileştirmek.',
+        deliverables: 'İmzalı Gereksinim Onay Belgesi (Sign-off Document)',
         checklist: [
-          { id: 'c4_4_1', text: 'Gereksinimleri karşılayacak hazır bir yazılım (COTS) mı alınmalı, yoksa şirket içinde (In-house) mi geliştirilmeli araştırması yapın.' },
-          { id: 'c4_4_2', text: 'Eğer geliştirilecekse, teknik mimar, yazılım uzmanı veya tasarımcılarla bir araya gelerek olası teknik yolları konuşun.' },
-          { id: 'c4_4_3', text: 'Farklı teknik seçeneklerin gereksinimleri ne oranda karşıladığını ve kısıtlarını (Performans, Güvenlik) karşılaştırın.' },
-          { id: 'c4_4_4', text: 'Hangi çözümün veya teknik tasarımın paydaşlara en yüksek değeri sunacağını (Recommendation) raporlayın.' }
+          { id: 'c4_4_1', text: 'Gereksinimlerin "yeterince detaylı" ve "uygulanabilir" olduğundan emin olun.' },
+          { id: 'c4_4_2', text: 'Onay almak istediğiniz gereksinim paketini ilgili paydaşlara gönderin.' },
+          { id: 'c4_4_3', text: 'Resmi onayı (imza veya dijital onay) alın ve kaydedin. Bu, ilerleyen süreçlerdeki anlaşmazlıkları önler.' }
         ],
-        tips: 'Tasarım aşamasında analist; iş biriminin "Ne istiyoruz?" (What) sorusu ile yazılımcının "Bunu nasıl yaparız?" (How) sorusu arasındaki köprüdür.'
+        tips: 'Onay almak, projenin en önemli risk azaltma adımlarından biridir. "Sözlü onay" çoğu zaman ileride "Ben öyle demedim" e dönüşür.'
       }
     ]
   },
   {
     id: 'ka5',
-    title: 'Gereksinim Yaşam Döngüsü Yönetimi',
-    description: 'Projenin başlangıcından bitişine kadar gereksinimlerdeki değişimleri, onayları ve izlenebilirliği yönetme.',
-    icon: <RefreshCw className="w-6 h-6 text-indigo-500" />,
-    color: 'border-indigo-500/20 bg-indigo-500/10',
-    headerColor: 'text-indigo-700',
+    title: 'Strateji Analizi',
+    description: 'Gereksinimlerin ve tasarımların, iş hedeflerine ve iş analizi standartlarına uygunluğunu değerlendirme.',
+    icon: <Activity className="w-6 h-6 text-red-500" />,
+    color: 'border-red-500/20 bg-red-500/10',
+    headerColor: 'text-red-700',
     tasks: [
       {
         id: 't5_1',
-        name: 'Gereksinimleri İzleme (Traceability)',
-        purpose: 'İş hedefinden, gereksinime, tasarıma ve test senaryosuna kadar olan bağıntıyı kurmak.',
-        deliverables: 'İzlenebilirlik Matrisi (Traceability Matrix)',
+        name: 'Gereksinimleri ve Tasarımları Doğrulama',
+        purpose: 'Gereksinimlerin kalite kriterlerini (doğru, eksiksiz, tutarlı, test edilebilir) karşıladığını kontrol etmek.',
+        deliverables: 'Gereksinim Kalite İnceleme Raporu',
         checklist: [
-          { id: 'c5_1_1', text: 'En üst seviye iş ihtiyacını (Hedef) -> Detay gereksinime bağlayın (Geriye Dönük İzlenebilirlik).' },
-          { id: 'c5_1_2', text: 'Detay gereksinimi -> Yazılım koduna/modülüne ve Test senaryosuna bağlayın (İleriye Dönük İzlenebilirlik).' },
-          { id: 'c5_1_3', text: 'Bu ilişkileri Jira gibi bir araç üzerinden (Epic -> Story -> Task -> Bug) veya bir Excel tablosunda (Matris) oluşturun.' },
-          { id: 'c5_1_4', text: 'Test aşamasına gelindiğinde, açıkta kalan (testi yazılmamış) hiçbir gereksinim olmadığından emin olun.' }
+          { id: 'c5_1_1', text: 'Her gereksinimin açık, tek bir yoruma sahip (muğlak olmayan) olduğundan emin olun.' },
+          { id: 'c5_1_2', text: 'Her gereksinimin en az bir test senaryosuyla test edilebilir olduğunu doğrulayın.' },
+          { id: 'c5_1_3', text: 'Gereksinimler arasında çelişki veya çakışma olup olmadığını kontrol edin.' }
         ],
-        tips: 'İzlenebilirlik, projede bir değişiklik talep edildiğinde "Bu değişiklik sistemdeki başka neleri bozar?" (Impact Analysis) sorusunu saniyeler içinde cevaplamanızı sağlar.'
+        tips: '"Sistem hızlı çalışmalıdır" gibi muğlak gereksinimler yazılırsa test edilemez. "Sistem, arama sonuçlarını 2 saniye altında getirmelidir" yazın.'
       },
       {
         id: 't5_2',
-        name: 'Gereksinimleri Önceliklendirme',
-        purpose: 'Kaynaklar kısıtlı olduğunda hangi gereksinimin önce yapılacağına karar vermek.',
-        deliverables: 'Önceliklendirilmiş Ürün İş Listesi (Prioritized Product Backlog), MVP Kapsamı',
+        name: 'Gereksinimleri ve Tasarımları Onaylama',
+        purpose: 'Çözümün gerçekten iş değeri yaratıp yaratmayacağını ve doğru sorunu çözüp çözmediğini teyit etmek.',
+        deliverables: 'Kullanıcı Kabul Testi (UAT) Sonuçları, Paydaş Kabul Belgesi',
         checklist: [
-          { id: 'c5_2_1', text: 'Gereksinimleri MoSCoW (Must have, Should have, Could have, Won\'t have) tekniği ile kategorize edin.' },
-          { id: 'c5_2_2', text: 'İş birimiyle toplantı yaparak gereksinimleri İş Değeri, Maliyet, Aciliyet ve Risk faktörlerine göre puanlayın.' },
-          { id: 'c5_2_3', text: 'Ürünün canlıya çıkabilmesi için gereken en küçük ve en değerli seti (Minimum Viable Product - MVP) belirleyin.' },
-          { id: 'c5_2_4', text: 'Çevik çalışıyorsanız, iş listesini (Backlog) her Sprint (koşu) öncesi tekrar gözden geçirip öncelikleri güncelleyin.' }
+          { id: 'c5_2_1', text: 'Geliştirilen çözümü, gerçek kullanıcı senaryoları ile test eden bir UAT (Kullanıcı Kabul Testi) organize edin.' },
+          { id: 'c5_2_2', text: 'Geri bildirimleri toplayın ve kritik hataları önceliklendirin.' },
+          { id: 'c5_2_3', text: 'Tüm onay kriterleri karşılandığında resmi kabul belgesini imzalatın.' }
         ],
-        tips: 'İş birimine kalsa her gereksinim "Çok Acil ve Yüksek Öncelikli"dir. Analist olarak sınırları çizmeli ve "Her şey yüksek öncelikliyse, hiçbir şeyin önceliği yoktur" kuralını hatırlatmalısınız.'
-      },
-      {
-        id: 't5_3',
-        name: 'Gereksinim Değişikliklerini Değerlendirme',
-        purpose: 'Yeni gelen veya değişen bir talebin projeye (maliyet, zaman, değer) etkisini analiz etmek.',
-        deliverables: 'Değişiklik Talep Formu (CR), Etki Analiz Raporu (Impact Analysis)',
-        checklist: [
-          { id: 'c5_3_1', text: 'Proje ortasında gelen değişiklik talebini (Change Request) yazılı olarak kayıt altına alın.' },
-          { id: 'c5_3_2', text: 'Bu değişikliğin zaman planına, efora, maliyete ve projenin diğer parçalarına etkisini (Impact Analysis) çıkarın.' },
-          { id: 'c5_3_3', text: 'Değişikliğin uygulanıp uygulanmayacağına karar vermek üzere durumu Karar Kuruluna (CCB) veya Sponsora sunun.' },
-          { id: 'c5_3_4', text: 'Karar onaylanırsa dokümanları (BRD, Planlar vb.) güncelleyin; reddedilirse sebebini talep sahibine iletin.' }
-        ],
-        tips: 'Değişikliklere katı bir şekilde direnmek Agile ruhuna aykırıdır; ancak değişikliği etki analizi yapmadan kabul etmek de projenin felaketi olur.'
-      },
-      {
-        id: 't5_4',
-        name: 'Gereksinimleri Onaylama',
-        purpose: 'Tasarım ve geliştirme aşamasına geçmeden önce yetkili kişilerden mutabakat almak.',
-        deliverables: 'İmzalı/Onaylı BRD, Sprint Backlog Onayı, Onay E-postaları (Sign-off)',
-        checklist: [
-          { id: 'c5_4_1', text: 'Hazırlanan gereksinim dokümanlarını veya User Story\'leri ilgili paydaşlara okuma ve inceleme için gönderin.' },
-          { id: 'c5_4_2', text: 'Eğer paydaşlar arasında gereksinimle ilgili çatışma varsa, bir arabulucu gibi davranarak sorunu çözün.' },
-          { id: 'c5_4_3', text: 'Sürecin başında belirlenen yetkili kişilerden (Sponsor, Ürün Sahibi vb.) tasarıma geçilmesi için resmi onay (Sign-off) alın.' },
-          { id: 'c5_4_4', text: 'Alınan onayları (fiziki imza, e-posta onayı veya Jira statü değişimi) projenin kanıtı olarak saklayın.' }
-        ],
-        tips: 'Onay aşaması analistin işinin bittiği değil, herkesin "aynı şeyi anladığını" resmileştirdiği noktadır.'
+        tips: 'UAT\'ı geçmek, projenin teknik olarak "bitti" değil, iş hedeflerini gerçekten karşıladığı anlamına gelir. Bu iki kavramı birbirinden ayırın.'
       }
     ]
   },
   {
     id: 'ka6',
-    title: 'Çözüm Değerlendirme',
-    description: 'Geliştirilen çözümün (veya canlıya alınan ürünün) gerçekten hedeflenen değeri yaratıp yaratmadığını ölçme.',
-    icon: <Activity className="w-6 h-6 text-emerald-500" />,
-    color: 'border-emerald-500/20 bg-emerald-500/10',
-    headerColor: 'text-emerald-700',
+    title: 'Çözüm Değerlendirmesi',
+    description: 'Uygulanan çözümün iş değerini ve kurumun değişim kapasitesini değerlendirme.',
+    icon: <Info className="w-6 h-6 text-teal-500" />,
+    color: 'border-teal-500/20 bg-teal-500/10',
+    headerColor: 'text-teal-700',
     tasks: [
       {
         id: 't6_1',
         name: 'Çözüm Performansını Ölçme',
-        purpose: 'Canlıdaki çözümün ne kadar iyi çalıştığına dair gerçek veri toplamak.',
-        deliverables: 'Performans Ölçüm Kriterleri (Metrikler/KPI), Veri Toplama Sistemi',
+        purpose: 'Canlıya alınan çözümün gerçekten öngörülen iş değerini yaratıp yaratmadığını ölçmek.',
+        deliverables: 'KPI (Anahtar Performans Göstergesi) Raporu, ROI Analizi',
         checklist: [
-          { id: 'c6_1_1', text: 'Çözüm canlıya (Prod) alındıktan sonra, projenin başarısını gösterecek niteliksel (anket vb.) ve niceliksel (süre vb.) metrikleri belirleyin.' },
-          { id: 'c6_1_2', text: 'Eğer sistemde bunu ölçecek bir yapı yoksa (Ör: Kaç kişi butona bastı verisi), veri toplamak için sisteme loglama/analitik araçları ekletin.' },
-          { id: 'c6_1_3', text: 'Kullanıcılardan periyodik olarak geri bildirim (Feedback) toplamak için mekanizmalar (NPS anketleri) kurun.' },
-          { id: 'c6_1_4', text: 'Toplanan bu ham verileri belirli aralıklarla sistemden çekerek bir araya getirin.' }
+          { id: 'c6_1_1', text: 'Proje başında belirlenen iş hedeflerine ne kadar ulaşıldığını ölçen KPI\'ları tanımlayın.' },
+          { id: 'c6_1_2', text: 'Çözümün canlıya alınmasından belirli bir süre (3-6 ay) sonra bu metrikleri ölçün.' },
+          { id: 'c6_1_3', text: 'Sonuçları paydaşlarla paylaşın ve gerekiyorsa iyileştirme önerilerinde bulunun.' }
         ],
-        tips: '"Proje bitti, canlıya çıktık" demek başarının kanıtı değildir. Rakamlarla ölçemediğiniz hiçbir şeyin başarısını ispat edemezsiniz.'
+        tips: 'İş analizi, sistemin "canlıya alınmasıyla" bitmez. Asıl soru şudur: "Bu sistemi yaptık, ama değer yarattı mı?"'
       },
       {
         id: 't6_2',
-        name: 'Performans Ölçümlerini Analiz Etme',
-        purpose: 'Toplanan verileri yorumlayarak beklenen değer ile gerçekleşen değeri karşılaştırmak.',
-        deliverables: 'Performans Değerlendirme Raporu, KPI Tabloları',
+        name: 'Kurumun Değişim Kapasitesini Değerlendirme',
+        purpose: 'Kurumun yeni çözümü benimseyip benimseyemeyeceğini ve geçişin nasıl yönetileceğini planlamak.',
+        deliverables: 'Değişim Yönetimi Planı, Eğitim İhtiyaç Analizi',
         checklist: [
-          { id: 'c6_2_1', text: 'Toplanan gerçek verileri (Ör: gerçekleşen %5 iade oranı), "Strateji Analizinde" koyduğunuz hedeflerle (Ör: hedeflenen %15 azalma) kıyaslayın.' },
-          { id: 'c6_2_2', text: 'Eğer çözüm beklenen değeri yaratmıyorsa veya KPI\'lar tutmuyorsa, sorunun nereden kaynaklandığını bulmak için analiz yapın.' },
-          { id: 'c6_2_3', text: 'Beklenmeyen/fark edilmeyen olumsuz yan etkiler (Ör: iade düştü ama müşteri şikayetleri arttı) oluştuysa bunları tespit edin.' },
-          { id: 'c6_2_4', text: 'Bulgularınızı sponsorlar ve üst yönetim ile paylaşmak üzere bir rapor haline getirin.' }
+          { id: 'c6_2_1', text: 'Çözümün etkilediği iş süreçlerini, rolleri ve yetkinlikleri belirleyin.' },
+          { id: 'c6_2_2', text: 'Son kullanıcıların yeni sistemi kullanmak için ihtiyaç duyduğu eğitimleri planlayın.' },
+          { id: 'c6_2_3', text: 'Değişime direnç gösterebilecek grupları belirleyip onlar için iletişim stratejisi geliştirin.' }
         ],
-        tips: 'Yazılımın hatasız çalışması başka, değer üretmesi başkadır. Sistem tıkır tıkır çalışıyor olabilir ama kullanıcılar ekranı zor bulduğu için kullanmıyorsa o çözüm başarısızdır.'
-      },
-      {
-        id: 't6_3',
-        name: 'Çözüm/Kurum Kısıtlarını Değerlendirme',
-        purpose: 'Çözümün tam potansiyeline ulaşmasını engelleyen teknik veya kurumsal engelleri bulmak.',
-        deliverables: 'Kısıt ve Darboğaz Analizi, Sorun Bildirim Listesi',
-        checklist: [
-          { id: 'c6_3_1', text: 'Sistemden kaynaklanan teknik darboğazları (Uygulamanın yavaş çalışması, sistemin sık çökmesi, UI karmaşıklığı) tespit edin.' },
-          { id: 'c6_3_2', text: 'Kurumdan (İnsan/Süreç) kaynaklanan engelleri araştırın (Personelin yetersiz eğitimi, eski alışkanlıklara direnç gösterilmesi).' },
-          { id: 'c6_3_3', text: 'Yasal düzenlemelerin veya şirket kurallarının çözümün tam kullanılmasını engelleyip engellemediğini kontrol edin.' },
-          { id: 'c6_3_4', text: 'Kısıtların ürüne ne kadar zarar verdiğini puanlayarak etki analizi yapın.' }
-        ],
-        tips: 'Canlıdaki bir sorunun kaynağı her zaman "yazılım" değildir. Çoğu zaman sorun, kurum kültürünün veya çalışanların yeni sisteme adaptasyon sağlayamamasıdır.'
-      },
-      {
-        id: 't6_4',
-        name: 'Çözüm Değerini Artırmak İçin Eylemler Önerme',
-        purpose: 'Elde edilen bulgularla sistemi veya süreçleri iyileştirecek yeni aksiyonlar planlamak.',
-        deliverables: 'İyileştirme Önerileri Raporu (Recommendations), Yeni Faz Talepleri',
-        checklist: [
-          { id: 'c6_4_1', text: 'Teknik sorunlar için yeni düzeltme veya özellik geliştirme talepleri (Yeni Feature Request) hazırlayın.' },
-          { id: 'c6_4_2', text: 'Kurumsal uyum sorunları için yeni eğitim programları veya süreç iyileştirme adımları tavsiye edin.' },
-          { id: 'c6_4_3', text: 'Eğer mevcut çözüm artık hiçbir şekilde fayda sağlamıyorsa (End of Life), sistemin emekliye ayrılması ve tamamen yeni bir sistem kurulması yönünde öneri sunun.' },
-          { id: 'c6_4_4', text: 'Tavsiyelerinizi karar vericilere sunarak iş analizi döngüsünü yeniden "Strateji Analizi" adımından başlatın.' }
-        ],
-        tips: 'İş analizi sürekli dönen bir çarktır. Bir projenin bitişi ve değerlendirilmesi, aslında her zaman yeni bir projenin başlangıcına (Yeni bir ihtiyaca) temel hazırlar.'
+        tips: 'En mükemmel sistem bile, kullanıcılar onu sevmez veya nasıl kullanacaklarını bilmezlerse başarısız olur. Değişim yönetimi teknik kadar önemlidir.'
       }
     ]
-  }
-];
-
-// --- BABOK TECHNIQUES DATA ---
-const techniquesData = [
-  { id: 'tech1', name: 'Atölye Çalışmaları (Workshops)', desc: 'Paydaşları bir araya getirerek hızlıca gereksinim toplama, karar alma ve fikir birliğine varma tekniğidir.', bestFor: 'Farklı departmanların uzlaşması gerektiğinde.', relatedKA: ['ka2', 'ka3'] },
-  { id: 'tech2', name: 'Süreç Modelleme (Process Modelling)', desc: 'İşin nasıl yapıldığını (BPMN, Akış Şeması vb. ile) görselleştirme tekniği.', bestFor: 'Mevcut durumu anlamak ve dar boğazları tespit etmek.', relatedKA: ['ka1', 'ka4'] },
-  { id: 'tech3', name: 'Görüşmeler (Interviews)', desc: 'Birebir veya küçük gruplarla soru-cevap yaparak derinlemesine bilgi alma yöntemi.', bestFor: 'Hassas konular veya uzmanlardan spesifik bilgiler almak.', relatedKA: ['ka3'] },
-  { id: 'tech4', name: 'Kullanıcı Hikayeleri (User Stories)', desc: 'İhtiyacı, kullanıcının perspektifinden "Bir [rol] olarak, [hedef] istiyorum, böylece [fayda] sağlayabilirim" formatında yazma.', bestFor: 'Çevik (Agile) projelerde gereksinimleri ifade etmek.', relatedKA: ['ka4', 'ka5'] },
-  { id: 'tech5', name: 'Kök Neden Analizi (Root Cause Analysis)', desc: 'Problemin yüzeydeki belirtilerini değil, altında yatan asıl sebebi (5 Neden, Balık Kılçığı vb.) bulma tekniği.', bestFor: 'Sorunların tekrarlamasını önlemek.', relatedKA: ['ka1', 'ka3'] },
-  { id: 'tech6', name: 'Veri Modelleme (Data Modelling)', desc: 'Sistemin kullanacağı kavramları ve bu kavramlar arasındaki ilişkileri (ER Diyagramları) standartlaştırma.', bestFor: 'Veritabanı tasarımı öncesi kavramsal netlik sağlamak.', relatedKA: ['ka4'] },
-];
-
-// --- UTILITIES & CONSTANTS ---
-const generateId = () => `id_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-const DEFAULT_PROJECT = {
-  id: 'proj_1', name: 'Ana Proje', projectContext: '',
-  completedTasks: [], completedSubTasks: [],
-  risks: [], assumptions: [], businessRules: [], changeRequests: [], actions: [], stakeholders: [], requirements: [], meetings: [], ganttTasks: [], reqCounter: 1, brCounter: 1, crCounter: 1,
-};
-const PROB_LABELS = ['', 'Düşük', 'Orta', 'Yüksek'];
-const IMPACT_LABELS = ['', 'Düşük', 'Orta', 'Yüksek'];
-const RACI_LABELS = { R: 'Sorumlu', A: 'Onaylayan', C: 'Danışılan', I: 'Bilgilendirilen' };
-const RACI_COLORS = { R: 'bg-blue-100 text-blue-800', A: 'bg-purple-100 text-purple-800', C: 'bg-amber-100 text-amber-800', I: 'bg-white/10 text-slate-300' };
-const REQ_STATUS_COLORS = { 'Taslak': 'req-status-taslak', 'İncelemede': 'req-status-incelemede', 'Onaylandı': 'req-status-onaylandi', 'Geliştiriliyor': 'req-status-gelistiriliyor', 'Test': 'req-status-test', 'Canlıda': 'req-status-canlida' };
-const NOTE_TYPE_COLORS = { 'Karar': 'bg-blue-500/15 text-blue-300 border-blue-500/20', 'Açık Nokta': 'bg-rose-500/15 text-rose-300 border-rose-500/20', 'Aksiyon': 'bg-amber-500/15 text-amber-300 border-amber-500/20', 'Gereksinim': 'bg-teal-500/15 text-teal-300 border-teal-500/20', 'Varsayim': 'bg-amber-500/10 text-amber-200 border-amber-400/20' };
-
-// --- BABOK UNDERLYING COMPETENCIES DATA ---
-const competenciesData = [
-  { id: 'comp1', name: 'Analitik Düşünme ve Problem Çözme', desc: 'Sistem düşüncesi, kök neden analizi ve yaratıcı düşünmeyi kapsar. Karmaşık sorunları basite indirgeme yeteneğidir.' },
-  { id: 'comp2', name: 'Davranışsal Özellikler', desc: 'Etik kurallara uyma, kişisel organizasyon ve güvenilirlik. Analistin tarafsız ve dürüst olması kritik öneme sahiptir.' },
-  { id: 'comp3', name: 'İş Bilgisi (Business Knowledge)', desc: 'Çalışılan sektörü, kurumun yapısını ve çözüm vizyonunu anlama. "Ne" yaptığınızı değil "neden" yaptığınızı bilmektir.' },
-  { id: 'comp4', name: 'İletişim Becerileri', desc: 'Sözlü, yazılı iletişim ve aktif dinleme. Yanlış anlaşılan gereksinimlerin çoğu kötü dinlemeden kaynaklanır.' },
-  { id: 'comp5', name: 'Etkileşim Becerileri', desc: 'Fasilitasyon, liderlik, müzakere ve takım çalışması. Çatışan paydaşları ortak bir noktada buluşturma sanatıdır.' },
-  { id: 'comp6', name: 'Araçlar ve Teknoloji', desc: 'Gereksinim yönetim araçları (Jira vb.), modelleme araçları (Visio, Miro) ve ofis yazılımlarını etkin kullanabilme.' },
-];
-
-// --- BABOK DOCUMENT TEMPLATES DATA ---
-const templatesData = [
-  {
-    id: 'tpl_brd',
-    name: 'İş Gereksinim Dokümanı (BRD - Business Requirements Document)',
-    purpose: 'Projenin "ne" yapacağını ve "neden" yapıldığını iş biriminin dilinden anlatan temel sözleşmedir.',
-    format: `1. YÖNETİCİ ÖZETİ\n   [Projenin genel amacı ve beklenen faydalar]\n\n2. İŞ HEDEFLERİ\n   - Hedef 1: [Örn: Operasyonel maliyetleri %10 düşürmek]\n   - Hedef 2: ...\n\n3. KAPSAM (IN-SCOPE / OUT-OF-SCOPE)\n   - Kapsam İçi: [Projenin teslim edeceği özellikler]\n   - Kapsam Dışı: [Açıkça yapılmayacağı belirtilen özellikler]\n\n4. PAYDAŞLAR VE KULLANICI ROLLERİ\n   [Sistemi kimler, hangi yetkilerle kullanacak?]\n\n5. MEVCUT DURUM VE GELECEK DURUM (AS-IS & TO-BE)\n   [Mevcut sürecin sıkıntıları ve yeni tasarlanan sürecin özeti]\n\n6. İŞ GEREKSİNİMLERİ (YÜKSEK SEVİYE)\n   - BR-01: Sistem ... yapabilmelidir.\n   - BR-02: Kullanıcı ... görebilmelidir.\n\n7. İŞ KURALLARI (BUSINESS RULES)\n   [Örn: Bir işlem onaylanmadan önce bakiye kontrol edilmelidir.]\n\n8. ONAYLAR (SIGN-OFF)\n   [İsim / Unvan / İmza / Tarih]`
-  },
-  {
-    id: 'tpl_bc',
-    name: 'İş Vakası (Business Case)',
-    purpose: 'Yönetimden veya sponsorlardan projeyi başlatmak/bütçe almak için gereken gerekçelendirme belgesidir.',
-    format: `1. PROBLEM / FIRSAT TANIMI\n   [Kurumun çözmesi gereken sorun veya yakalamak istediği fırsat]\n\n2. ÇÖZÜM ALTERNATİFLERİ\n   - Alternatif A (Örn: Hazır ürün satın alma): Artıları/Eksileri\n   - Alternatif B (Örn: İçeride geliştirme): Artıları/Eksileri\n   - Alternatif C (Hiçbir şey yapmama durumu): Etkileri\n\n3. ÖNERİLEN ÇÖZÜM VE GEREKÇESİ\n   [Hangi alternatif neden seçildi? Neden en yüksek değeri üretiyor?]\n\n4. FİNANSAL ANALİZ (MALİYET/FAYDA)\n   - Tahmini Başlangıç Maliyeti: ...\n   - Beklenen Fayda (Gelir Artışı/Maliyet Düşüşü): ...\n   - ROI (Yatırım Getirisi) ve Geri Dönüş Süresi (Payback Period): ...\n\n5. PROJE YOL HARİTASI\n   [Ana fazlar ve tahmini süreler]\n\n6. RİSKLER VE KISITLAR\n   [Projenin başarıya ulaşmasını engelleyebilecek faktörler ve yasal/teknik kısıtlar]`
-  },
-  {
-    id: 'tpl_cr',
-    name: 'Değişiklik Talep Formu (Change Request - CR)',
-    purpose: 'Proje esnasında gelen ve kapsamı/bütçeyi/zamanı etkileyen yeni taleplerin kontrollü şekilde yönetilmesini sağlar.',
-    format: `1. TALEP BİLGİLERİ\n   - Talep Eden: ...\n   - Tarih: ...\n   - Talep ID: CR-[No]\n\n2. DEĞİŞİKLİĞİN TANIMI\n   [Mevcut durumda ne isteniyor? Sisteme ne eklenecek/çıkarılacak?]\n\n3. DEĞİŞİKLİĞİN GEREKÇESİ (BUSINESS DRIVER)\n   [Neden bu değişikliğe ihtiyacımız var? Yapılmazsa ne gibi bir zarar oluşur?]\n\n4. ETKİ ANALİZİ (IMPACT ANALYSIS - Analist/Ekip Tarafından Doldurulur)\n   - Etkilenen Modüller/Süreçler: ...\n   - Efor / Maliyet Etkisi (Adam/Gün): ...\n   - Zaman Çizelgesine Etkisi (Gecikme süresi): ...\n   - Diğer Projelere Etkisi: ...\n\n5. CCB (Değişiklik Kontrol Kurulu) KARARI\n   [ ] Onaylandı    [ ] Reddedildi    [ ] Ertelendi (Faz 2'ye bırakıldı)\n   - Gerekçe / Notlar: ...\n   - Onaylayan(lar): ...`
-  },
-  {
-    id: 'tpl_mom',
-    name: 'Toplantı Tutanağı (Meeting Minutes - MoM)',
-    purpose: 'Ortaya çıkarma (elicitation) çalışmaları sonrası kararları, açık noktaları ve aksiyonları kayıt altına alır.',
-    format: `1. TOPLANTI BİLGİLERİ\n   - Tarih / Saat: ...\n   - Konu: ...\n   - Katılımcılar (Gelenler ve Mazeretli Olanlar): ...\n\n2. GÖRÜŞÜLEN KONULAR VE ALINAN KARARLAR\n   - Karar 1: [Örn: Parolalar en az 8 karakter olacak şekilde mutabık kalındı.]\n   - Karar 2: ...\n\n3. AÇIK NOKTALAR (OPEN ISSUES)\n   [Toplantıda çözülemeyen, dışarıdan teyit/araştırma bekleyen konular]\n   - Sorun/Konu: ... | Sorumlu Kişi: ... | Hedef Tarih: ...\n\n4. AKSİYON PLANLARI (ACTION ITEMS)\n   - Aksiyon 1: [Yapılacak İş] | Sorumlu: [Kim Yapacak] | Tarih: [Ne Zaman Bitecek]\n   - Aksiyon 2: ...`
-  },
-  {
-    id: 'tpl_raci',
-    name: 'Paydaş Kayıt ve RACI Matrisi',
-    purpose: 'Projeye dahil olan kişileri ve karar/onay mekanizmasındaki rollerini netleştirerek iletişim kazalarını önler.',
-    format: `| Paydaş Adı / Departman | Projedeki Rolü | İlgi | Etki | RACI Rolü |\n| :--- | :--- | :--- | :--- | :--- |\n| Ahmet Y. (Genel Müdür Yrd.) | Sponsor / Bütçe Onayı | Yüksek | Yüksek | A (Accountable - Onaylayan) |\n| Ayşe K. (İnsan Kaynakları) | Süreç Sahibi (Product Owner) | Yüksek | Yüksek | R (Responsible - Sorumlu) |\n| Mehmet T. (Yazılım Ekibi) | Geliştirici Lideri | Düşük | Yüksek | C (Consulted - Danışılan) |\n| Hukuk Departmanı | Yasal Uyumluluk Kontrolü | Düşük | Yüksek | C (Consulted - Danışılan) |\n| Son Kullanıcılar (Çalışanlar) | Sistemi Kullanacak Olanlar | Yüksek | Düşük | I (Informed - Bilgilendirilen) |\n\nR (Responsible): İşi yapan, gereksinimi veren, süreci yürüten ana kişi/ekip.\nA (Accountable): Son onayı veren, nihai sorumluluğu ve yetkiyi taşıyan kişi (Tek kişidir).\nC (Consulted): Fikri sorulan, işe başlamadan önce danışılan uzmanlar.\nI (Informed): Sadece sonuçtan ve gelişmelerden haberdar edilen kişiler.`
-  },
-  {
-    id: 'tpl_tm',
-    name: 'İzlenebilirlik Matrisi (Traceability Matrix)',
-    purpose: 'Gereksinimlerin iş hedefleriyle ve yazılım testleriyle bağlantısını kurarak hiçbir şeyin atlanmamasını sağlar.',
-    format: `| Req ID | İş Hedefi / Kapsam | Gereksinim Adı / Açıklaması | İlgili Modül / Ekran | Yazılım Geliştirici / Görev ID | Test Senaryosu ID | Durum |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| REQ-001 | H-01: Güvenliği Artırmak | Şifre sıfırlama linki e-posta ile iletilmeli. | Login Modülü | JIRA-1045 | TEST-001 | Canlıda |\n| REQ-002 | H-02: Hızı Artırmak | Arama sonuçları 2 sn altında gelmeli. | Arama Modülü | JIRA-1048 | TEST-005 | Test Aşamasında |\n| REQ-003 | ... | ... | ... | ... | ... | ... |`
   }
 ];
 
@@ -665,12 +560,6 @@ export default function App() {
   const resetProgress = () => { setCompletedTasks([]); setCompletedSubTasks([]); setShowResetConfirm(false); };
 
   // --- RISK ---
-  const getRiskLevel = (prob, impact) => {
-    const s = prob * impact;
-    if (s >= 7) return { label: 'Kritik', cls: 'text-rose-700 bg-rose-100 border-rose-500/30', dot: 'bg-rose-500/100' };
-    if (s >= 4) return { label: 'Orta', cls: 'text-amber-700 bg-amber-100 border-amber-500/30', dot: 'bg-amber-500/100' };
-    return { label: 'Düşük', cls: 'text-emerald-700 bg-emerald-100 border-emerald-500/30', dot: 'bg-emerald-500/100' };
-  };
   const openRiskModal = (risk = null) => { setEditingRisk(risk); setRiskForm(risk ? { linkedRequirementId: '', linkedAssumptionId: '', affectedStakeholderId: '', triggerDescription: '', ...risk } : { title: '', category: '', probability: 2, impact: 2, owner: '', mitigation: '', status: 'Açık', linkedRequirementId: '', linkedAssumptionId: '', affectedStakeholderId: '', triggerDescription: '' }); setShowRiskModal(true); };
   const saveRisk = () => {
     if (!riskForm.title.trim()) return;
@@ -689,7 +578,6 @@ export default function App() {
   const deleteAssumption = (id) => { if (window.confirm('Varsayimi silmek istiyor musunuz?')) updateActive(p => ({ ...p, assumptions: p.assumptions.filter(a => a.id !== id) })); };
 
   // --- ACTION ---
-  const isOverdue = (a) => a.status !== 'Tamamlandı' && a.dueDate && new Date(a.dueDate) < new Date();
   const openActionModal = (action = null) => { setEditingAction(action); setActionForm(action ? { linkedRequirementId: '', ...action, notes: action.notes || '' } : { title: '', owner: '', dueDate: '', status: 'Bekliyor', source: '', notes: '', linkedRequirementId: '' }); setShowActionModal(true); };
   const quickUpdateActionStatus = (actionId, newStatus) => { updateActive(p => ({ ...p, actions: p.actions.map(a => a.id === actionId ? { ...a, status: newStatus } : a) })); };
   const saveAction = () => {
@@ -718,6 +606,8 @@ export default function App() {
   const deleteBR = (id) => { if (window.confirm('Is kuralini silmek istiyor musunuz?')) updateActive(p => ({ ...p, businessRules: p.businessRules.filter(r => r.id !== id) })); };
 
   // --- LINK CARD ---
+  const [showLinkCard, setShowLinkCard] = useState(false);
+  const [linkCardEntity, setLinkCardEntity] = useState(null);
   const openLinkCard = (type, id) => { setLinkCardEntity({ type, id }); setShowLinkCard(true); };
   const closeLinkCard = () => { setShowLinkCard(false); setLinkCardEntity(null); };
 
@@ -807,7 +697,6 @@ export default function App() {
   };
 
   // --- GANTT ---
-  const GANTT_COLORS = ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6366f1', '#14b8a6', '#f97316'];
   const openGanttModal = (task = null) => {
     setEditingGanttTask(task);
     const td = new Date().toISOString().split('T')[0];
@@ -1001,36 +890,6 @@ Yanıtın tamamı Türkçe olmalıdır.
     alert("Taslak panoya kopyalandı!");
   };
 
-  // Basit Markdown biçimlendirici
-  const formatMarkdown = (text) => {
-    if (!text) return { __html: '' };
-    let html = text
-      .replace(/</g, "&lt;").replace(/>/g, "&gt;") // Basit güvenlik
-      .replace(/\*\*(.*?)\*\*/g, '<strong class="text-indigo-900">$1</strong>') // Kalın
-      .replace(/\*(.*?)\*/g, '<em>$1</em>') // İtalik
-      .replace(/^### (.*$)/gim, '<h3 class="text-lg font-bold mt-6 mb-2 text-indigo-700">$1</h3>') // Başlık 3
-      .replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold mt-8 mb-3 text-indigo-800 border-b border-indigo-500/15 pb-2">$1</h2>') // Başlık 2
-      .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-6 mb-4 text-indigo-900 border-b-2 border-indigo-500/20 pb-2">$1</h1>') // Başlık 1
-      .replace(/^- (.*$)/gim, '<li class="ml-5 list-disc mb-1.5">$1</li>') // Liste
-      .replace(/^\* (.*$)/gim, '<li class="ml-5 list-disc mb-1.5">$1</li>') // Liste (Alternatif)
-      .replace(/\n/g, '<br />'); // Yeni satırlar
-
-
-
-    // Liste elemanlarını ul içine alma (Basit çözüm)
-    html = html.replace(/(<li.*?>.*?<\/li>(?:<br \/>)*)+/g, '<ul class="my-3">$&</ul>');
-
-    return { __html: html };
-
-  };
-
-  // Link card state
-  const [showLinkCard, setShowLinkCard] = useState(false);
-  const [linkCardEntity, setLinkCardEntity] = useState(null);
-
-  // Mobile fab menu
-  const [showFabMenu, setShowFabMenu] = useState(false);
-
   // Tab definitions with icons
   const TAB_ITEMS = [
     { id: 'dashboard', label: 'Dashboard', Icon: LayoutDashboard },
@@ -1073,6 +932,9 @@ Yanıtın tamamı Türkçe olmalıdır.
     );
   };
 
+  // Mobile fab menu
+  const [showFabMenu, setShowFabMenu] = useState(false);
+
   return (
     <div className={`aura-void min-h-screen font-sans ${darkMode ? 'theme-dark text-slate-200' : 'theme-light text-slate-800'}`}>
       {/* Void Background Beams */}
@@ -1113,7 +975,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                 <span>{vaultHandle ? 'Vault Senkronla' : 'Vault Bağla'}</span>
               </button>
               {vaultHandle && (
-                <button onClick={async () => { const vp = await readAllProjectFiles(vaultHandle); if (vp.length > 0) { setProjects(vp); setActiveProjectId(vp[0].id); alert(`${vp.length} proje vault\'dan yüklendi!`); } else alert('Vault klasöründe proje dosyası bulunamadı.'); setShowBackupMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-white/10 transition-colors">
+                <button onClick={async () => { const vp = await readAllProjectFiles(vaultHandle); if (vp.length > 0) { setProjects(vp); setActiveProjectId(vp[0].id); alert(`${vp.length} proje vault'dan yüklendi!`); } else alert('Vault klasöründe proje dosyası bulunamadı.'); setShowBackupMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-white/10 transition-colors">
                   <Upload className="w-4 h-4 text-emerald-400" />
                   <span>Vault'dan Yükle</span>
                 </button>
@@ -1192,2158 +1054,388 @@ Yanıtın tamamı Türkçe olmalıdır.
 
         <div className="flex-1 space-y-3 min-w-0 aura-content-enter">
 
-
-                                      {/* DASHBOARD TAB */}
-                                      {activeTab === 'dashboard' && (() => {
-                                        const openRisks = activeProject.risks.filter(r => r.status === 'Açık');
-                                        const highRisks = openRisks.filter(r => getRiskLevel(r.probability, r.impact).label === 'Yüksek' || getRiskLevel(r.probability, r.impact).label === 'Kritik');
-                                        const pendingActions = activeProject.actions.filter(a => a.status !== 'Tamamlandı');
-                                        const overdueActions = pendingActions.filter(isOverdue);
-                                        const reqs = activeProject.requirements;
-                                        const ganttTasks = activeProject.ganttTasks || [];
-                                        const overdueTasks = ganttTasks.filter(gt => gt.progress < 100 && gt.endDate && new Date(gt.endDate) < new Date());
-                                        const stakeholderCount = activeProject.stakeholders?.length || 0;
-                                        const meetingCount = activeProject.meetings?.length || 0;
-
-                                        return (
-                                        <div className="space-y-3">
-
-                                          {/* ── ROW 1: Hero Progress ── */}
-                                          <div className="glass-card p-4 relative overflow-hidden">
-                                            <div className="absolute -top-16 -right-16 w-48 h-48 bg-cyan-500/5 rounded-full blur-3xl" />
-                                            <div className="flex items-center gap-5">
-                                              {/* Ring Chart */}
-                                              <div className="relative flex-shrink-0">
-                                                <RingChart progress={overallProgress} size={110} stroke={10} />
-                                              </div>
-                                              {/* Stats Grid */}
-                                              <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1.5">
-                                                  <h2 className="text-lg font-bold text-white">Proje Özeti</h2>
-                                                  <span className="text-sm text-slate-500">· {activeProject.name}</span>
-                                                </div>
-                                                <div className="grid grid-cols-4 gap-2.5">
-                                                  <div className="bg-white/5 rounded-lg p-2.5 border border-white/5">
-                                                    <span className="text-xs text-slate-500 uppercase tracking-wider block mb-0.5">Ana Görev</span>
-                                                    <span className="font-stat text-xl font-bold text-white">{completedTasks.length}<span className="text-sm text-slate-500">/{totalTasks}</span></span>
-                                                  </div>
-                                                  <div className="bg-white/5 rounded-lg p-2.5 border border-white/5">
-                                                    <span className="text-xs text-slate-500 uppercase tracking-wider block mb-0.5">Alt Görev</span>
-                                                    <span className="font-stat text-xl font-bold text-white">{completedSubTasks.length}<span className="text-sm text-slate-500">/{totalSubTasks}</span></span>
-                                                  </div>
-                                                  <div className="bg-white/5 rounded-lg p-2.5 border border-white/5">
-                                                    <span className="text-xs text-slate-500 uppercase tracking-wider block mb-0.5">Paydaş</span>
-                                                    <span className="font-stat text-xl font-bold text-white">{stakeholderCount}</span>
-                                                  </div>
-                                                  <div className="bg-white/5 rounded-lg p-2.5 border border-white/5">
-                                                    <span className="text-xs text-slate-500 uppercase tracking-wider block mb-0.5">Toplantı</span>
-                                                    <span className="font-stat text-xl font-bold text-white">{meetingCount}</span>
-                                                  </div>
-                                                </div>
-                                                <div className="mt-2">
-                                                  <div className="liquid-bar w-full h-1.5">
-                                                    <div className="liquid-bar-fill bg-gradient-to-r from-cyan-500 to-cyan-400" style={{ width: `${overallProgress}%` }} />
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-
-                                          {/* ── PROAKTIF BLOK: Bugun Ne Yapmaliyim? ── */}
-                                          {(() => {
-                                            const today = new Date();
-                                            const weekLater = new Date(today.getTime() + 7 * 86400000);
-                                            const allReqs = activeProject.requirements || [];
-                                            const allAss = activeProject.assumptions || [];
-                                            const allCRs = activeProject.changeRequests || [];
-                                            const allGantt = activeProject.ganttTasks || [];
-
-                                            const noAC = allReqs.filter(r => !r.acceptanceCriteria);
-                                            const refutedAss = allAss.filter(a => a.validationStatus === 'Curutuldu');
-                                            const approvedNoBiz = allCRs.filter(cr => cr.status === 'Onaylandi' && !cr.impactAnalysis);
-                                            const unvalidatedAss = allAss.filter(a => a.validationStatus === 'Dogrulanmadi');
-                                            const dueSoonGantt = allGantt.filter(gt => gt.progress < 100 && gt.endDate && new Date(gt.endDate) <= weekLater && new Date(gt.endDate) >= today);
-                                            const pendingCRs = allCRs.filter(cr => cr.status === 'Bekliyor');
-                                            const overdue = overdueActions;
-
-                                            const redItems = [
-                                              { count: noAC.length, icon: <X className="w-3.5 h-3.5" />, text: 'Kabul kriteri bos gereksinim', tab: 'requirements' },
-                                              { count: refutedAss.length, icon: <AlertTriangle className="w-3.5 h-3.5" />, text: 'Curutulmus varsayim', tab: 'assumptions' },
-                                              { count: approvedNoBiz.length, icon: <RefreshCw className="w-3.5 h-3.5" />, text: 'Etki analizi bos onaylanmis CR', tab: 'changes' },
-                                            ].filter(i => i.count > 0);
-
-                                            const yellowItems = [
-                                              { count: unvalidatedAss.length, icon: <Lightbulb className="w-3.5 h-3.5" />, text: 'Dogrulanmamis varsayim', tab: 'assumptions' },
-                                              { count: dueSoonGantt.length, icon: <CalendarDays className="w-3.5 h-3.5" />, text: 'Bu hafta biten timeline gorevi', tab: 'gantt' },
-                                              { count: pendingCRs.length, icon: <RefreshCw className="w-3.5 h-3.5" />, text: 'Bekleyen degisiklik talebi', tab: 'changes' },
-                                            ].filter(i => i.count > 0);
-
-                                            const blueItems = [
-                                              { count: overdue.length, icon: <Clock className="w-3.5 h-3.5" />, text: 'Gecikmi aksiyonlar', tab: 'actions' },
-                                            ].filter(i => i.count > 0);
-
-                                            const allClear = redItems.length + yellowItems.length + blueItems.length === 0;
-
-                                            return (
-                                              <div className="glass-card p-4">
-                                                <h3 className="font-bold text-sm text-slate-200 flex items-center gap-2 mb-3">
-                                                  <Sparkles className="w-4 h-4 text-amber-400" />
-                                                  Bugun Ne Yapmaliyim?
-                                                </h3>
-                                                {allClear ? (
-                                                  <div className="text-center py-3 text-emerald-400 font-medium text-sm bg-emerald-500/5 rounded-lg border border-emerald-500/15">
-                                                    🎉 Her sey yolunda gorunuyor. Harika is!
-                                                  </div>
-                                                ) : (
-                                                  <div className="space-y-1.5">
-                                                    {redItems.map(({ count, icon, text, tab }) => (
-                                                      <button key={text} onClick={() => setActiveTab(tab)} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/15 transition-colors text-left">
-                                                        <span className="text-rose-400 shrink-0">{icon}</span>
-                                                        <span className="text-xs text-rose-300 flex-1">{text}</span>
-                                                        <span className="text-xs font-bold bg-rose-500/30 text-rose-200 px-2 py-0.5 rounded-full shrink-0">{count}</span>
-                                                      </button>
-                                                    ))}
-                                                    {yellowItems.map(({ count, icon, text, tab }) => (
-                                                      <button key={text} onClick={() => setActiveTab(tab)} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/15 transition-colors text-left">
-                                                        <span className="text-amber-400 shrink-0">{icon}</span>
-                                                        <span className="text-xs text-amber-300 flex-1">{text}</span>
-                                                        <span className="text-xs font-bold bg-amber-500/30 text-amber-200 px-2 py-0.5 rounded-full shrink-0">{count}</span>
-                                                      </button>
-                                                    ))}
-                                                    {blueItems.map(({ count, icon, text, tab }) => (
-                                                      <button key={text} onClick={() => setActiveTab(tab)} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/15 transition-colors text-left">
-                                                        <span className="text-blue-400 shrink-0">{icon}</span>
-                                                        <span className="text-xs text-blue-300 flex-1">{text}</span>
-                                                        <span className="text-xs font-bold bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded-full shrink-0">{count}</span>
-                                                      </button>
-                                                    ))}
-                                                  </div>
-                                                )}
-                                              </div>
-                                            );
-                                          })()}
-
-                                          {/* ── ROW 2: 5 Stat Cards ── */}
-                                          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5">
-                                            {/* Unvalidated Assumptions */}
-                                            <div onClick={() => setActiveTab('assumptions')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform group" style={{ borderLeft: '2px solid rgba(251,191,36,0.4)' }}>
-                                              <div className="flex items-center justify-between mb-2">
-                                                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/10">
-                                                  <Lightbulb className="w-5 h-5 text-amber-400" />
-                                                </div>
-                                              </div>
-                                              <span className="font-stat text-3xl font-black text-amber-400">{(activeProject.assumptions || []).filter(a => a.validationStatus === 'Dogrulanmadi').length}</span>
-                                              <span className="text-sm text-slate-400 block mt-0.5">Dogrulanmamis Varsayim</span>
-                                              <span className="text-xs text-slate-500 block">{(activeProject.assumptions || []).length} toplam</span>
-                                            </div>
-                                            {/* Open Risks */}
-                                            <div onClick={() => setActiveTab('risks')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform neon-border-crimson group">
-                                              <div className="flex items-center justify-between mb-2">
-                                                <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center border border-rose-500/10">
-                                                  <AlertTriangle className="w-5 h-5 text-rose-400" />
-                                                </div>
-                                                {highRisks.length > 0 && <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold animate-pulse">{highRisks.length} kritik</span>}
-                                              </div>
-                                              <span className="font-stat text-3xl font-black neon-crimson">{openRisks.length}</span>
-                                              <span className="text-sm text-slate-400 block mt-0.5">Açık Risk</span>
-                                              <span className="text-xs text-slate-500 block">{activeProject.risks.length} toplam</span>
-                                            </div>
-                                            {/* Pending Actions */}
-                                            <div onClick={() => setActiveTab('actions')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform neon-border-amethyst group">
-                                              <div className="flex items-center justify-between mb-2">
-                                                <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center border border-violet-500/10">
-                                                  <ListChecks className="w-5 h-5 text-violet-400" />
-                                                </div>
-                                                {overdueActions.length > 0 && <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold animate-pulse">{overdueActions.length} gecikmiş</span>}
-                                              </div>
-                                              <span className="font-stat text-3xl font-black neon-amethyst">{pendingActions.length}</span>
-                                              <span className="text-sm text-slate-400 block mt-0.5">Bekleyen Aksiyon</span>
-                                              <span className="text-xs text-slate-500 block">{activeProject.actions.length} toplam</span>
-                                            </div>
-                                            {/* Requirements */}
-                                            <div onClick={() => setActiveTab('requirements')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform neon-border-cyan group">
-                                              <div className="flex items-center justify-between mb-2">
-                                                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/10">
-                                                  <BookMarked className="w-5 h-5 text-cyan-400" />
-                                                </div>
-                                                {reqs.filter(r => r.status === 'Canlıda').length > 0 && <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-medium">{reqs.filter(r => r.status === 'Canlıda').length} canlıda</span>}
-                                              </div>
-                                              <span className="font-stat text-3xl font-black neon-cyan">{reqs.length}</span>
-                                              <span className="text-sm text-slate-400 block mt-0.5">Gereksinim</span>
-                                              <span className="text-xs text-slate-500 block">{Object.entries(REQ_STATUS_COLORS).map(([st]) => reqs.filter(r => r.status === st).length > 0 ? st.slice(0,3) + ':' + reqs.filter(r => r.status === st).length : null).filter(Boolean).join(' · ')}</span>
-                                            </div>
-                                            {/* Gantt */}
-                                            <div onClick={() => setActiveTab('gantt')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform group" style={{ borderLeft: '2px solid rgba(251,191,36,0.3)' }}>
-                                              <div className="flex items-center justify-between mb-2">
-                                                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/10">
-                                                  <CalendarDays className="w-5 h-5 text-amber-400" />
-                                                </div>
-                                                {overdueTasks.length > 0 && <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold animate-pulse">{overdueTasks.length} gecikmiş</span>}
-                                              </div>
-                                              <span className="font-stat text-3xl font-black text-amber-400">{ganttTasks.length}</span>
-                                              <span className="text-sm text-slate-400 block mt-0.5">Timeline Görevi</span>
-                                              <span className="text-xs text-slate-500 block">{ganttTasks.filter(gt => gt.progress === 100).length} tamamlandı</span>
-                                            </div>
-                                          </div>
-
-                                          {/* ── ROW 2b: CR Banner ── */}
-                                          {(() => { const pendingCRs = (activeProject.changeRequests || []).filter(cr => cr.status === 'Bekliyor'); return pendingCRs.length > 0 ? (
-                                            <div onClick={() => setActiveTab('changes')} className="glass-card px-4 py-3 cursor-pointer hover:scale-[1.01] transition-transform flex items-center justify-between" style={{ borderLeft: '3px solid rgba(251,191,36,0.6)' }}>
-                                              <div className="flex items-center gap-3">
-                                                <RefreshCw className="w-5 h-5 text-amber-400 shrink-0" />
-                                                <div>
-                                                  <span className="font-bold text-amber-400 text-lg">{pendingCRs.length}</span>
-                                                  <span className="text-sm text-slate-400 ml-2">bekleyen degisiklik talebi</span>
-                                                </div>
-                                              </div>
-                                              <span className="text-xs text-amber-400 hover:text-amber-300">Tamamini gor →</span>
-                                            </div>
-                                          ) : null; })()}
-
-                                          {/* ── ROW 3: Open Risks & Actions ── */}
-                                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
-                                            {/* Open Risks List */}
-                                            <div className="glass-card p-4">
-                                              <div className="flex items-center justify-between mb-3">
-                                                <h3 className="font-bold text-sm text-white flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-rose-400" />Açık Riskler</h3>
-                                                <button onClick={() => setActiveTab('risks')} className="text-xs text-rose-400 hover:text-rose-300 transition-colors">Tümünü gör →</button>
-                                              </div>
-                                              {openRisks.length === 0 ? (
-                                                <div className="text-center py-4 text-slate-500"><Shield className="w-7 h-7 mx-auto mb-1.5 opacity-30" /><p className="text-xs">Açık risk bulunmuyor 🎉</p></div>
-                                              ) : (
-                                                <div className="space-y-1.5 max-h-[130px] overflow-y-auto pr-1">
-                                                  {openRisks.slice(0, 5).map(r => {
-                                                    const lvl = getRiskLevel(r.probability, r.impact);
-                                                    return (
-                                                      <div key={r.id} className="flex items-center gap-2.5 p-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group/item">
-                                                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full border whitespace-nowrap ${lvl.cls}`}>{lvl.label}</span>
-                                                        <span className="text-sm text-slate-300 flex-1 truncate">{r.title}</span>
-                                                        <span className="text-xs text-slate-500 hidden sm:inline">{r.owner || '—'}</span>
-                                                      </div>
-                                                    );
-                                                  })}
-                                                  {openRisks.length > 5 && <button onClick={() => setActiveTab('risks')} className="text-[10px] text-cyan-400 hover:text-cyan-300 text-center pt-1 w-full cursor-pointer hover:underline transition-colors">+{openRisks.length - 5} daha →</button>}
-                                                </div>
-                                              )}
-                                            </div>
-
-                                            {/* Requirements Summary */}
-                                            <div className="glass-card p-4">
-                                              <div className="flex items-center justify-between mb-3">
-                                                <h3 className="font-bold text-sm text-white flex items-center gap-2"><BookMarked className="w-4 h-4 text-cyan-400" />Gereksinimler</h3>
-                                                <button onClick={() => setActiveTab('requirements')} className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors">Tümünü gör →</button>
-                                              </div>
-                                              {reqs.length === 0 ? (
-                                                <div className="text-center py-4 text-slate-500"><BookMarked className="w-7 h-7 mx-auto mb-1.5 opacity-30" /><p className="text-xs">Henüz gereksinim eklenmemiş</p></div>
-                                              ) : (
-                                                <>
-                                                  {/* Status pills */}
-                                                  <div className="flex flex-wrap gap-1.5 mb-3">
-                                                    {Object.keys(REQ_STATUS_COLORS).map(st => {
-                                                      const cnt = reqs.filter(r => r.status === st).length;
-                                                      return cnt > 0 ? <span key={st} className={`text-xs px-2.5 py-1 rounded-full font-medium ${REQ_STATUS_COLORS[st]}`}>{st}: {cnt}</span> : null;
-                                                    })}
-                                                  </div>
-                                                  {/* Requirement list */}
-                                                  <div className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
-                                                    {reqs.slice(0, 6).map(r => (
-                                                      <div key={r.id} className="flex items-center gap-2 p-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                                                        <span className="text-xs font-mono text-slate-500 w-14">{r.reqId}</span>
-                                                        <span className="text-sm text-slate-300 flex-1 truncate">{r.name}</span>
-                                                        <span className={`text-xs px-2 py-0.5 rounded-full ${REQ_STATUS_COLORS[r.status] || 'bg-white/10 text-slate-400'}`}>{r.status}</span>
-                                                      </div>
-                                                    ))}
-                                                    {reqs.length > 6 && <button onClick={() => setActiveTab('requirements')} className="text-[10px] text-cyan-400 hover:text-cyan-300 text-center pt-1 w-full cursor-pointer hover:underline transition-colors">+{reqs.length - 6} daha →</button>}
-                                                  </div>
-                                                </>
-                                              )}
-                                            </div>
-                                          </div>
-
-                                          {/* ── ROW 4: Pending Actions & Timeline ── */}
-                                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
-                                            {/* Pending Actions List */}
-                                            <div className="glass-card p-4">
-                                              <div className="flex items-center justify-between mb-3">
-                                                <h3 className="font-bold text-sm text-white flex items-center gap-2"><ListChecks className="w-4 h-4 text-violet-400" />Bekleyen Aksiyonlar</h3>
-                                                <button onClick={() => setActiveTab('actions')} className="text-xs text-violet-400 hover:text-violet-300 transition-colors">Tümünü gör →</button>
-                                              </div>
-                                              {pendingActions.length === 0 ? (
-                                                <div className="text-center py-4 text-slate-500"><CheckCircle2 className="w-7 h-7 mx-auto mb-1.5 opacity-30" /><p className="text-xs">Tüm aksiyonlar tamamlandı 🎉</p></div>
-                                              ) : (
-                                                <div className="space-y-1.5 max-h-[130px] overflow-y-auto pr-1">
-                                                  {pendingActions.slice(0, 5).map(a => (
-                                                    <div key={a.id} className={`flex items-center gap-2.5 p-2.5 rounded-lg transition-colors ${isOverdue(a) ? 'bg-rose-500/10 hover:bg-rose-500/15' : 'bg-white/5 hover:bg-white/10'}`}>
-                                                      {isOverdue(a) && <span className="text-[10px] bg-rose-500/25 text-rose-300 px-1.5 py-0.5 rounded-full font-bold whitespace-nowrap">GECİKMİŞ</span>}
-                                                      <span className="text-sm text-slate-300 flex-1 truncate">{a.title}</span>
-                                                      <span className="text-xs text-slate-500 hidden sm:inline">{a.owner || '—'}</span>
-                                                      {a.dueDate && <span className={`text-xs ${isOverdue(a) ? 'text-rose-400' : 'text-slate-500'}`}>{a.dueDate}</span>}
-                                                    </div>
-                                                  ))}
-                                                  {pendingActions.length > 5 && <button onClick={() => setActiveTab('actions')} className="text-[10px] text-cyan-400 hover:text-cyan-300 text-center pt-1 w-full cursor-pointer hover:underline transition-colors">+{pendingActions.length - 5} daha →</button>}
-                                                </div>
-                                              )}
-                                            </div>
-
-                                            {/* Gantt Mini Chart */}
-                                            <div className="glass-card p-4">
-                                              <div className="flex items-center justify-between mb-3">
-                                                <h3 className="font-bold text-sm text-white flex items-center gap-2"><CalendarDays className="w-4 h-4 text-amber-400" />Timeline</h3>
-                                                <button onClick={() => setActiveTab('gantt')} className="text-xs text-amber-400 hover:text-amber-300 transition-colors">Tam ekran →</button>
-                                              </div>
-                                              {ganttTasks.length === 0 ? (
-                                                <div className="text-center py-4 text-slate-500"><CalendarDays className="w-7 h-7 mx-auto mb-1.5 opacity-30" /><p className="text-xs">Henüz timeline görevi eklenmemiş</p></div>
-                                              ) : (() => {
-                                                const gt = ganttTasks;
-                                                const gStarts = gt.map(t => new Date(t.startDate).getTime());
-                                                const gEnds = gt.map(t => new Date(t.endDate).getTime());
-                                                const gRangeStart = new Date(Math.min(...gStarts));
-                                                const gRangeEnd = new Date(Math.max(...gEnds));
-                                                gRangeStart.setDate(gRangeStart.getDate() - 3);
-                                                gRangeEnd.setDate(gRangeEnd.getDate() + 3);
-                                                const gTotalDays = Math.max(Math.round((gRangeEnd - gRangeStart) / 86400000) + 1, 7);
-                                                const gToday = new Date(); gToday.setHours(0,0,0,0);
-                                                const gTodayPct = Math.max(0, Math.min(100, ((gToday - gRangeStart) / (gRangeEnd - gRangeStart)) * 100));
-
-                                                // Month labels
-                                                const gMonths = [];
-                                                const gMCur = new Date(gRangeStart.getFullYear(), gRangeStart.getMonth(), 1);
-                                                while (gMCur <= gRangeEnd) {
-                                                  const mS = gMCur < gRangeStart ? gRangeStart : new Date(gMCur);
-                                                  const leftPct = ((mS - gRangeStart) / (gRangeEnd - gRangeStart)) * 100;
-                                                  gMonths.push({ label: gMCur.toLocaleDateString('tr-TR', { month: 'short', year: '2-digit' }), left: leftPct });
-                                                  gMCur.setMonth(gMCur.getMonth() + 1);
-                                                }
-
-                                                return (
-                                                  <div className="space-y-1">
-                                                    {/* Month header row */}
-                                                    <div className="relative h-5 mb-2 border-b border-white/5">
-                                                      {gMonths.map((m, i) => (
-                                                        <span key={i} className="absolute text-[10px] text-slate-500 font-medium capitalize" style={{ left: `${m.left}%` }}>{m.label}</span>
-                                                      ))}
-                                                    </div>
-                                                    {/* Task bars */}
-                                                    <div className="relative space-y-1.5">
-                                                      {/* Today marker */}
-                                                      {gTodayPct > 0 && gTodayPct < 100 && (
-                                                        <div className="absolute top-0 bottom-0 w-px bg-rose-500/60 z-10 pointer-events-none" style={{ left: `${gTodayPct}%` }}>
-                                                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-[7px] bg-rose-500/80 text-white px-1 rounded-sm font-bold">Bugün</div>
-                                                        </div>
-                                                      )}
-                                                      {gt.slice(0, 12).map(task => {
-                                                        const s = new Date(task.startDate); s.setHours(0,0,0,0);
-                                                        const e = new Date(task.endDate); e.setHours(0,0,0,0);
-                                                        const leftPct = Math.max(0, ((s - gRangeStart) / (gRangeEnd - gRangeStart)) * 100);
-                                                        const widthPct = Math.max(2, ((e - s + 86400000) / (gRangeEnd - gRangeStart)) * 100);
-                                                        const isLate = task.progress < 100 && e < gToday;
-                                                        return (
-                                                          <div key={task.id} className="flex items-center gap-2 group/bar">
-                                                            <span className="text-xs text-slate-400 w-20 truncate flex-shrink-0" title={task.name}>{task.name}</span>
-                                                            <div className="flex-1 relative h-5 rounded bg-white/5">
-                                                              <div
-                                                                className={`absolute top-0.5 bottom-0.5 rounded-sm transition-all ${isLate ? 'ring-1 ring-rose-400/50' : ''}`}
-                                                                style={{ left: `${leftPct}%`, width: `${widthPct}%`, backgroundColor: task.color || '#3b82f6', opacity: 0.85 }}
-                                                                title={`${task.name} (${task.startDate} → ${task.endDate}) %${task.progress}`}
-                                                              >
-                                                                {/* Progress fill inside bar */}
-                                                                <div className="absolute inset-0 rounded-sm overflow-hidden">
-                                                                  <div className="h-full bg-white/20" style={{ width: `${task.progress}%` }} />
-                                                                </div>
-                                                                {widthPct > 10 && <span className="absolute inset-0 flex items-center justify-center text-[8px] text-white font-bold drop-shadow">{task.progress}%</span>}
-                                                              </div>
-                                                              {isLate && <span className="absolute text-[8px] text-rose-400 font-bold" style={{ left: `${leftPct + widthPct + 0.5}%`, top: '2px' }}>⚠️</span>}
-                                                            </div>
-                                                          </div>
-                                                        );
-                                                      })}
-                                                      {gt.length > 12 && <p className="text-[10px] text-slate-500 text-center pt-1">+{gt.length - 12} görev daha</p>}
-                                                    </div>
-                                                    {/* Mini summary */}
-                                                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-white/5">
-                                                      <span className="text-xs text-slate-500">{gt.length} görev · Ort. %{gt.length > 0 ? Math.round(gt.reduce((a, t) => a + (t.progress || 0), 0) / gt.length) : 0}</span>
-                                                      {gt.filter(t => t.progress < 100 && t.endDate && new Date(t.endDate) < gToday).length > 0 && (
-                                                        <span className="text-xs text-rose-400 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" />{gt.filter(t => t.progress < 100 && t.endDate && new Date(t.endDate) < gToday).length} gecikmiş</span>
-                                                      )}
-                                                    </div>
-                                                  </div>
-                                                );
-                                              })()}
-                                            </div>
-                                          </div>
-
-                                          {/* ── ROW 5: 6 BABOK Döngü Kartları ── */}
-                                          <div>
-                                            <h3 className="text-base font-bold text-white mb-2.5 flex items-center gap-2"><LayoutGrid className="w-5 h-5 text-cyan-400" />BABOK Bilgi Alanları</h3>
-                                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                                              {babokData.map(ka => {
-                                                const done = ka.tasks.filter(t => completedTasks.includes(t.id)).length;
-                                                const subDone = ka.tasks.flatMap(t => t.checklist).filter(c => completedSubTasks.includes(c.id)).length;
-                                                const subTotal = ka.tasks.reduce((a, t) => a + t.checklist.length, 0);
-                                                const totalItems = ka.tasks.length + subTotal;
-                                                const doneItems = done + subDone;
-                                                const pct = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
-                                                const isComplete = totalItems > 0 && doneItems === totalItems;
-                                                return (
-                                                  <div key={ka.id} onClick={() => { setActiveTab('knowledge_areas'); setExpandedKA(ka.id); }}
-                                                    className={`glass-card p-4 cursor-pointer hover:scale-[1.02] transition-all group ${isComplete ? 'neon-border-cyan' : 'hover:border-white/20'}`}>
-                                                    <div className="flex items-center gap-3 mb-3">
-                                                      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${isComplete ? 'bg-emerald-500/15 border border-emerald-500/20' : ka.color}`}>
-                                                        {isComplete ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : React.cloneElement(ka.icon, { className: 'w-5 h-5' })}
-                                                      </div>
-                                                      <div className="flex-1 min-w-0">
-                                                        <h4 className={`font-bold text-sm truncate ${isComplete ? 'text-emerald-400' : 'text-white'}`}>{ka.title}</h4>
-                                                        <span className="text-xs text-slate-500">{doneItems}/{totalItems} görev</span>
-                                                      </div>
-                                                      {isComplete && <span className="text-[9px] bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full font-bold">✓</span>}
-                                                    </div>
-                                                    <div className="liquid-bar w-full h-2 mb-1.5">
-                                                      <div className={`liquid-bar-fill ${isComplete ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-cyan-500 to-blue-500'}`} style={{ width: `${pct}%` }} />
-                                                    </div>
-                                                    <div className="flex justify-between items-center">
-                                                      <span className="font-stat font-bold text-base text-slate-300">{pct}%</span>
-                                                      <span className="text-xs text-slate-500">{done}/{ka.tasks.length} ana · {subDone}/{subTotal} alt</span>
-                                                    </div>
-                                                  </div>
-                                                );
-                                              })}
-                                            </div>
-                                          </div>
-
-                                        </div>
-                                        );
-                                      })()}
-
-                                      {/* ASSUMPTIONS & CONSTRAINTS TAB */}
-                                      {activeTab === 'assumptions' && (
-                                        <div className="space-y-4">
-                                          <div className="flex items-center justify-between">
-                                            <div>
-                                              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><Lightbulb className="text-amber-400 w-5 h-5" />Varsayimlar ve Kisitlar</h2>
-                                              <p className="text-sm text-slate-400">{(activeProject.assumptions || []).length} kayit · {(activeProject.assumptions || []).filter(a => a.validationStatus === 'Dogrulanmadi').length} dogrulanmamis</p>
-                                            </div>
-                                            <button onClick={() => openAssumptionModal()} className="bg-amber-600/80 hover:bg-amber-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Varsayim Ekle</button>
-                                          </div>
-                                          {(activeProject.assumptions || []).length === 0 ? (
-                                            <div className="text-center py-20 glass-card p-8">
-                                              <Lightbulb className="w-14 h-14 mx-auto mb-4 text-amber-400/20 empty-state-icon" />
-                                              <p className="text-slate-300 font-medium">Henuz varsayim veya kisit eklenmemis.</p>
-                                              <p className="text-xs text-slate-400 mt-2">Projenin dayandigi varsayimlari ve kisitlari belgele.</p>
-                                              <button onClick={() => openAssumptionModal()} className="mt-4 text-xs text-amber-400 hover:text-amber-300 transition-colors">+ Varsayim Ekle</button>
-                                            </div>
-                                          ) : (
-                                            <div className="space-y-3">
-                                              {(activeProject.assumptions || []).map(a => (
-                                                <div key={a.id} className={`bg-white/5 rounded-xl border p-4 shadow-lg shadow-black/20 flex items-start gap-4 ${a.validationStatus === 'Curutuldu' ? 'border-l-4 border-l-rose-400' : 'border-l-4 border-l-amber-400/40'}`}>
-                                                  <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                                                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${a.type === 'Kisit' ? 'text-rose-700 bg-rose-100 border-rose-500/30' : 'text-amber-700 bg-amber-100 border-amber-500/30'}`}>{a.type === 'Kisit' ? 'Kisit' : 'Varsayim'}</span>
-                                                      <span className={`text-xs px-2 py-0.5 rounded-full ${a.validationStatus === 'Dogrulandi' ? 'bg-emerald-500/10 text-emerald-400' : a.validationStatus === 'Curutuldu' ? 'bg-rose-500/10 text-rose-400' : 'bg-amber-500/10 text-amber-400'}`}>{a.validationStatus}</span>
-                                                      <span className="text-xs bg-white/10 text-slate-400 px-2 py-0.5 rounded-full">{a.category}</span>
-                                                    </div>
-                                                    <p className="font-semibold text-slate-100">{a.title}</p>
-                                                    {a.content && <p className="text-xs text-slate-400 mt-1">{a.content}</p>}
-                                                    <p className="text-xs text-slate-500 mt-1">Sorumlu: {a.ownerId || '—'}{a.validationDate ? ' · Tarih: ' + a.validationDate : ''}</p>
-                                                  </div>
-                                                  <div className="flex items-center gap-1 shrink-0">
-                                                    <button onClick={() => openAssumptionModal(a)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
-                                                    <button onClick={() => deleteAssumption(a.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                                                  </div>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          )}
-                                        </div>
-                                      )}
-
-                                      {/* BUSINESS RULES TAB */}
-                                      {activeTab === 'businessrules' && (
-                                        <div className="space-y-4">
-                                          <div className="flex items-center justify-between">
-                                            <div>
-                                              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><BookOpen className="text-blue-400 w-5 h-5" />Is Kurallari</h2>
-                                              <p className="text-sm text-slate-400">{(activeProject.businessRules || []).length} kural · {(activeProject.businessRules || []).filter(r => r.status === 'Aktif').length} aktif</p>
-                                            </div>
-                                            <button onClick={() => openBRModal()} className="bg-blue-600/80 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Kural Ekle</button>
-                                          </div>
-                                          {(activeProject.businessRules || []).length === 0 ? (
-                                            <div className="text-center py-16 text-slate-400"><BookOpen className="w-10 h-10 mx-auto mb-3 opacity-30" /><p>Henuz is kurali eklenmemis.</p><button onClick={() => openBRModal()} className="mt-3 text-xs text-blue-400 hover:text-blue-300 transition-colors">+ Kural Ekle</button></div>
-                                          ) : (
-                                            <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 overflow-hidden" style={{ maxHeight: 'calc(100vh - 220px)' }}>
-                                              <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 220px)' }}>
-                                                <table className="w-full text-sm">
-                                                  <thead className="bg-white/5 border-b border-white/10 sticky top-0 z-10" style={{ backdropFilter: 'blur(12px)' }}>
-                                                    <tr>{['BR ID', 'Kural Basligi', 'Kategori', 'Kaynak', 'Versiyon', 'Durum', ''].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase">{h}</th>)}</tr>
-                                                  </thead>
-                                                  <tbody className="divide-y divide-slate-100/5">
-                                                    {(activeProject.businessRules || []).map(r => (
-                                                      <tr key={r.id} className={`hover:bg-white/5 transition-colors ${r.status === 'Gecersiz' ? 'opacity-50' : ''}`}>
-                                                        <td className="px-4 py-3 text-xs font-mono text-slate-400 whitespace-nowrap">{r.brId}</td>
-                                                        <td className={`px-4 py-3 font-medium text-slate-100 ${r.status === 'Gecersiz' ? 'line-through' : ''}`}>{r.title}</td>
-                                                        <td className="px-4 py-3"><span className="text-xs bg-white/10 text-slate-400 px-2 py-0.5 rounded-full">{r.category}</span></td>
-                                                        <td className="px-4 py-3 text-xs text-slate-400">{r.source}{r.sourceRef ? ` (${r.sourceRef})` : ''}</td>
-                                                        <td className="px-4 py-3 text-xs font-mono text-slate-400">{r.version}</td>
-                                                        <td className="px-4 py-3"><span className={`text-xs px-2 py-1 rounded-full font-medium ${r.status === 'Aktif' ? 'bg-emerald-500/10 text-emerald-400' : r.status === 'Revize Edildi' ? 'bg-amber-500/10 text-amber-400' : 'bg-white/10 text-slate-500'}`}>{r.status}</span></td>
-                                                        <td className="px-4 py-3">
-                                                          <div className="flex items-center gap-1">
-                                                            <button onClick={() => openBRModal(r)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
-                                                            <button onClick={() => deleteBR(r.id)} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
-                                                          </div>
-                                                        </td>
-                                                      </tr>
-                                                    ))}
-                                                  </tbody>
-                                                </table>
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
-                                      )}
-
-                                      {/* CHANGE REQUESTS TAB */}
-                                      {activeTab === 'changes' && (
-                                        <div className="space-y-4">
-                                          <div className="flex items-center justify-between">
-                                            <div>
-                                              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><RefreshCw className="text-amber-400 w-5 h-5" />Degisiklik Yonetimi</h2>
-                                              <p className="text-sm text-slate-400">{(activeProject.changeRequests || []).length} talep kayıtlı</p>
-                                            </div>
-                                            <button onClick={() => openCRModal()} className="bg-amber-600/80 hover:bg-amber-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />CR Ekle</button>
-                                          </div>
-                                          {/* Summary counters */}
-                                          <div className="grid grid-cols-4 gap-2">
-                                            {[
-                                              { label: 'Bekliyor', color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
-                                              { label: 'Onaylandi', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
-                                              { label: 'Reddedildi', color: 'text-rose-400 bg-rose-500/10 border-rose-500/20' },
-                                              { label: 'Ertelendi', color: 'text-slate-400 bg-white/5 border-white/10' },
-                                            ].map(({ label, color }) => (
-                                              <div key={label} className={`rounded-lg border px-3 py-2 text-center ${color}`}>
-                                                <span className="text-xl font-bold block">{(activeProject.changeRequests || []).filter(cr => cr.status === label).length}</span>
-                                                <span className="text-xs">{label}</span>
-                                              </div>
-                                            ))}
-                                          </div>
-                                          {(activeProject.changeRequests || []).length === 0 ? (
-                                            <div className="text-center py-20 glass-card p-8">
-                                              <RefreshCw className="w-14 h-14 mx-auto mb-4 text-amber-400/20 empty-state-icon" />
-                                              <p className="text-slate-300 font-medium">Henuz degisiklik talebi yok.</p>
-                                              <p className="text-xs text-slate-400 mt-2">Kapsam, gereksinim veya kisit degisikliklerini buradan yonet.</p>
-                                              <button onClick={() => openCRModal()} className="mt-4 text-xs text-amber-400 hover:text-amber-300 transition-colors">+ CR Ekle</button>
-                                            </div>
-                                          ) : (
-                                            <div className="space-y-3">
-                                              {(activeProject.changeRequests || []).map(cr => {
-                                                const statusColor = cr.status === 'Bekliyor' ? 'bg-amber-500/10 text-amber-400' : cr.status === 'Onaylandi' ? 'bg-emerald-500/10 text-emerald-400' : cr.status === 'Reddedildi' ? 'bg-rose-500/10 text-rose-400' : 'bg-white/10 text-slate-400';
-                                                const borderColor = cr.status === 'Bekliyor' ? 'border-l-amber-400' : cr.status === 'Onaylandi' ? 'border-l-emerald-400' : cr.status === 'Reddedildi' ? 'border-l-rose-400' : 'border-l-slate-500';
-                                                return (
-                                                  <div key={cr.id} className={`bg-white/5 rounded-xl border p-4 shadow-lg shadow-black/20 flex items-start gap-4 border-l-4 ${borderColor}`}>
-                                                    <div className="flex-1 min-w-0">
-                                                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                                                        <span className="text-xs font-mono text-slate-500 bg-white/5 px-2 py-0.5 rounded">{cr.crId}</span>
-                                                        <span className="text-xs bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full">{cr.changeType}</span>
-                                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor}`}>{cr.status}</span>
-                                                      </div>
-                                                      <p className="font-semibold text-slate-100">{cr.title}</p>
-                                                      <p className="text-xs text-slate-500 mt-0.5">{cr.affectedEntityType}{cr.affectedEntityId ? ` · ${cr.affectedEntityId}` : ''}{cr.createdAt ? ` · ${cr.createdAt}` : ''}</p>
-                                                      {cr.impactAnalysis && <p className="text-xs text-slate-400 italic mt-1">{cr.impactAnalysis}</p>}
-                                                    </div>
-                                                    <div className="flex items-center gap-1 shrink-0">
-                                                      <button onClick={() => openCRModal(cr)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
-                                                      <button onClick={() => deleteCR(cr.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                                                    </div>
-                                                  </div>
-                                                );
-                                              })}
-                                            </div>
-                                          )}
-                                        </div>
-                                      )}
-
-                                      {/* RISK REGISTER TAB */}
-                                      {activeTab === 'risks' && (
-                                        <div className="space-y-4">
-                                          <div className="flex items-center justify-between">
-                                            <div>
-                                              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><AlertTriangle className="text-rose-500 w-5 h-5" />Risk Kayıt Defteri</h2>
-                                              <p className="text-sm text-slate-400">{activeProject.risks.length} risk kayıtlı · {activeProject.risks.filter(r => getRiskLevel(r.probability, r.impact).label === 'Kritik').length} kritik</p>
-                                            </div>
-                                            <button onClick={() => openRiskModal()} className="bg-rose-600/80 hover:bg-rose-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Risk Ekle</button>
-                                          </div>
-                                          {activeProject.risks.length === 0 ? (
-                                            <div className="text-center py-20 glass-card p-8">
-                                              <AlertTriangle className="w-14 h-14 mx-auto mb-4 text-rose-500/20 empty-state-icon" />
-                                              <p className="text-slate-300 font-medium">Risk radarı temiz görünüyor.</p>
-                                              <p className="text-xs text-slate-400 mt-2">Sahada her şey yolunda mı? İlk riski tespit et.</p>
-                                              <button onClick={() => openRiskModal()} className="mt-4 text-xs text-rose-400 hover:text-rose-300 transition-colors">+ Risk Ekle</button>
-                                            </div>
-                                          ) : (
-                                            <div className="space-y-3">
-                                              {activeProject.risks.map(r => {
-                                                const lvl = getRiskLevel(r.probability, r.impact);
-                                                return (
-                                                  <div key={r.id} className={`bg-white/5 rounded-xl border p-4 shadow-lg shadow-black/20 flex items-start gap-4 ${lvl.cls.includes('rose') ? 'border-l-4 border-l-rose-400' : lvl.cls.includes('amber') ? 'border-l-4 border-l-amber-400' : 'border-l-4 border-l-emerald-400'}`}>
-                                                    <div className="flex-1 min-w-0">
-                                                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                                                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${lvl.cls}`}>{lvl.label}</span>
-                                                        <span className="text-xs bg-white/10 text-slate-400 px-2 py-0.5 rounded-full">{r.category}</span>
-                                                        <span className={`text-xs px-2 py-0.5 rounded-full ${r.status === 'Açık' ? 'bg-rose-500/10 text-rose-700' : r.status === 'Azaltıldı' ? 'bg-amber-500/10 text-amber-700' : 'bg-emerald-500/10 text-emerald-700'}`}>{r.status}</span>
-                                                      </div>
-                                                      <p className="font-semibold text-slate-100">{r.title}</p>
-                                                      {r.mitigation && <p className="text-xs text-slate-400 mt-1">Azaltma: {r.mitigation}</p>}
-                                                      <p className="text-xs text-slate-400 mt-1">Sorumlu: {r.owner || '—'} · Olas.: {PROB_LABELS[r.probability]} · Etki: {IMPACT_LABELS[r.impact]} · Skor: {r.probability * r.impact}</p>
-                                                    </div>
-                                                    <div className="flex items-center gap-1 shrink-0">
-                                                      <button onClick={() => openLinkCard('risk', r.id)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-cyan-400 transition-colors" title="Baglantilar"><ArrowUpRight className="w-4 h-4" /></button>
-                                                      <button onClick={() => openRiskModal(r)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
-                                                      <button onClick={() => deleteRisk(r.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                                                    </div>
-                                                  </div>
-                                                );
-                                              })}
-                                            </div>
-                                          )}
-                                        </div>
-                                      )}
-
-                                      {/* ACTION TRACKER TAB */}
-                                      {activeTab === 'actions' && (
-                                        <div className="space-y-4">
-                                          <div className="flex items-center justify-between">
-                                            <div>
-                                              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><ListChecks className="text-indigo-500 w-5 h-5" />Aksiyon Takip Listesi</h2>
-                                              <p className="text-sm text-slate-400">{activeProject.actions.length} aksiyon · {activeProject.actions.filter(isOverdue).length} gecikmiş</p>
-                                            </div>
-                                            <button onClick={() => openActionModal()} className="bg-indigo-600/80 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Aksiyon Ekle</button>
-                                          </div>
-                                          {activeProject.actions.length === 0 ? (
-                                            <div className="text-center py-20 glass-card p-8">
-                                              <ListChecks className="w-14 h-14 mx-auto mb-4 text-violet-500/20 empty-state-icon" />
-                                              <p className="text-slate-300 font-medium">Aksiyon listesi boş.</p>
-                                              <p className="text-xs text-slate-400 mt-2">Yapılması gerekeni not düş, takipte kal.</p>
-                                              <button onClick={() => openActionModal()} className="mt-4 text-xs text-violet-400 hover:text-violet-300 transition-colors">+ Aksiyon Ekle</button>
-                                            </div>
-                                          ) : (
-                                            <div className="space-y-3">
-                                              {activeProject.actions.map(a => {
-                                                const od = isOverdue(a);
-                                                return (
-                                                  <div key={a.id} className={`bg-white/5 rounded-xl border p-4 shadow-lg shadow-black/20 ${od ? 'border-l-4 border-l-rose-400 bg-rose-500/10' : ''}`}>
-                                                    <div className="flex items-start gap-4">
-                                                      <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                                                          <select value={a.status} onChange={e => quickUpdateActionStatus(a.id, e.target.value)} className={`text-xs font-bold px-2 py-1 rounded-full border cursor-pointer appearance-none text-center focus:outline-none focus:ring-2 focus:ring-indigo-300 ${a.status === 'Tamamlandı' ? 'bg-emerald-100 text-emerald-800 border-emerald-500/20' : a.status === 'Devam Ediyor' ? 'bg-blue-100 text-blue-800 border-blue-500/20' : 'bg-white/10 text-slate-300 border-white/10'}`} style={{ minWidth: 110 }}>
-                                                            {['Bekliyor', 'Devam Ediyor', 'Tamamlandı'].map(s => <option key={s} value={s}>{s}</option>)}
-                                                          </select>
-                                                          {od && <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full border border-rose-500/20 flex items-center gap-1"><Clock className="w-3 h-3" />Gecikmiş</span>}
-                                                        </div>
-                                                        <p className={`font-semibold ${a.status === 'Tamamlandı' ? 'line-through text-slate-400' : 'text-slate-100'}`}>{a.title}</p>
-                                                        <p className="text-xs text-slate-400 mt-1 flex items-center gap-2 flex-wrap">
-                                                          <span>Sorumlu: {a.owner || '—'} · Tarih: {a.dueDate || '—'}{a.source ? ` · Kaynak: ${a.source}` : ''}</span>
-                                                          {a.linkedRequirementId && <span className="text-xs font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded-full">{a.linkedRequirementId}</span>}
-                                                        </p>
-                                                      </div>
-                                                      <div className="flex items-center gap-1 shrink-0">
-                                                        <button onClick={() => openActionModal(a)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
-                                                        <button onClick={() => deleteAction(a.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                                                      </div>
-                                                    </div>
-                                                    {a.notes && (
-                                                      <div className="mt-2 pt-2 border-t border-white/10">
-                                                        <p className="text-xs text-slate-400"><span className="font-medium text-slate-400">Not:</span> {a.notes}</p>
-                                                      </div>
-                                                    )}
-                                                  </div>
-                                                );
-                                              })}
-                                            </div>
-                                          )}
-                                        </div>
-                                      )}
-
-                                      {/* STAKEHOLDER TAB */}
-                                      {activeTab === 'stakeholders' && (
-                                        <div className="space-y-4">
-                                          <div className="flex items-center justify-between">
-                                            <div>
-                                              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><UserPlus className="text-orange-500 w-5 h-5" />Paydaş Yönetimi</h2>
-                                              <p className="text-sm text-slate-400">{activeProject.stakeholders.length} paydaş kayıtlı</p>
-                                            </div>
-                                            <button onClick={() => openStakeholderModal()} className="bg-orange-500/100 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Paydaş Ekle</button>
-                                          </div>
-                                          {activeProject.stakeholders.length > 0 && (
-                                            <div className="bg-white/5 rounded-xl border border-white/10 p-5 shadow-lg shadow-black/20">
-                                              <div className="flex items-center justify-between mb-4">
-                                                <h3 className="text-sm font-bold text-slate-300">İlgi / Etki Matrisi</h3>
-                                                <div className="flex gap-3">
-                                                  {Object.entries(RACI_LABELS).map(([k, v]) => (
-                                                    <div key={k} className="flex items-center gap-1.5">
-                                                      <div className="w-3 h-3 rounded-full" style={{ background: k === 'R' ? '#3b82f6' : k === 'A' ? '#8b5cf6' : k === 'C' ? '#f59e0b' : '#94a3b8' }} />
-                                                      <span className="text-[10px] text-slate-400 font-medium">{k} — {v}</span>
-                                                    </div>
-                                                  ))}
-                                                </div>
-                                              </div>
-                                              <div className="relative border border-white/10 rounded-xl overflow-hidden" onClick={() => setFocusedStakeholderId(null)} style={{ height: Math.max(260, activeProject.stakeholders.length > 6 ? 340 : 280) }}>
-                                                {/* Quadrant backgrounds */}
-                                                <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
-                                                  <div className="bg-amber-500/15 border-r border-b border-dashed border-white/15" />
-                                                  <div className="bg-rose-500/15 border-b border-dashed border-white/15" />
-                                                  <div className="bg-emerald-500/10 border-r border-dashed border-white/15" />
-                                                  <div className="bg-blue-500/15" />
-                                                </div>
-                                                {/* Quadrant labels */}
-                                                <span className="absolute top-2 left-3 text-[10px] font-bold text-amber-600/70">İzle</span>
-                                                <span className="absolute top-2 right-3 text-[10px] font-bold text-rose-600/70">Yakından Yönet</span>
-                                                <span className="absolute bottom-2 left-3 text-[10px] font-bold text-emerald-600/60">Minimal Efor</span>
-                                                <span className="absolute bottom-2 right-3 text-[10px] font-bold text-blue-600/70">Bilgilendir</span>
-                                                {/* Axis labels */}
-                                                <div className="absolute left-0 top-1/2 -translate-y-1/2 -rotate-90 text-[9px] font-bold text-slate-400 tracking-wider">ETKİ →</div>
-                                                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-[9px] font-bold text-slate-400 tracking-wider mb-0.5">İLGİ →</div>
-                                                {(() => {
-                                                  const ITEM_W = 52, ITEM_H = 34;
-                                                  const placed = [];
-                                                  return activeProject.stakeholders.map(s => {
-                                                    const baseX = ((s.interest - 1) / 2) * 85 + 5;
-                                                    const baseY = 100 - ((s.influence - 1) / 2) * 85 - 10;
-                                                    let finalX = baseX, finalY = baseY;
-                                                    const collides = (cx, cy) => placed.some(p =>
-                                                      Math.abs(cx - p.x) < ITEM_W / (placed.length > 12 ? 3.5 : 4) &&
-                                                      Math.abs(cy - p.y) < ITEM_H / (placed.length > 12 ? 3.5 : 4)
-                                                    );
-                                                    if (collides(finalX, finalY)) {
-                                                      const spiralSteps = [
-                                                        [1, 0], [-1, 0], [0, 1], [0, -1],
-                                                        [1, 1], [-1, 1], [1, -1], [-1, -1],
-                                                        [2, 0], [-2, 0], [0, 2], [0, -2],
-                                                        [2, 1], [-2, 1], [2, -1], [-2, -1],
-                                                        [1, 2], [-1, 2], [1, -2], [-1, -2],
-                                                        [3, 0], [-3, 0], [0, 3], [0, -3],
-                                                        [2, 2], [-2, 2], [2, -2], [-2, -2],
-                                                        [3, 1], [-3, 1], [3, -1], [-3, -1],
-                                                        [1, 3], [-1, 3], [1, -3], [-1, -3],
-                                                        [3, 2], [-3, 2], [3, -2], [-3, -2],
-                                                        [4, 0], [-4, 0], [0, 4], [0, -4],
-                                                      ];
-                                                      const stepSize = placed.length > 12 ? 3.5 : 4.5;
-                                                      for (const [dx, dy] of spiralSteps) {
-                                                        const nx = baseX + dx * stepSize;
-                                                        const ny = baseY + dy * stepSize;
-                                                        if (nx >= 2 && nx <= 98 && ny >= 4 && ny <= 96 && !collides(nx, ny)) {
-                                                          finalX = nx; finalY = ny; break;
-                                                        }
-                                                      }
-                                                    }
-                                                    placed.push({ x: finalX, y: finalY });
-                                                    return (
-                                                      <div key={s.id} className={`absolute flex flex-col items-center transition-all duration-200 group/stakeholder ${focusedStakeholderId === s.id ? 'z-50' : 'z-[1]'}`} style={{ left: `${finalX}%`, top: `${finalY}%`, transform: 'translate(-50%,-50%)' }}>
-                                                        <div onClick={(e) => { e.stopPropagation(); setFocusedStakeholderId(focusedStakeholderId === s.id ? null : s.id); }} className={`w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-md ring-2 cursor-pointer transition-all ${focusedStakeholderId === s.id ? 'ring-cyan-400 scale-125' : 'ring-white hover:scale-110'}`} style={{ background: s.raci === 'R' ? '#3b82f6' : s.raci === 'A' ? '#8b5cf6' : s.raci === 'C' ? '#f59e0b' : '#94a3b8' }}>{s.name.charAt(0)}</div>
-                                                        <span className="text-[8px] text-slate-400 whitespace-nowrap mt-0.5 bg-white/60 px-1 rounded shadow-lg shadow-black/20">{s.name}</span>
-                                                        {/* Hover + Click Tooltip */}
-                                                        <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 transition-all duration-200 z-50 ${focusedStakeholderId === s.id ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible group-hover/stakeholder:opacity-100 group-hover/stakeholder:visible pointer-events-none'}`}>
-                                                          <div className="glass-panel px-3 py-2.5 rounded-xl shadow-2xl border border-white/15 min-w-[180px] text-left" style={{ backdropFilter: 'blur(20px)' }}>
-                                                            <p className="text-xs font-bold text-white truncate">{s.name}</p>
-                                                            {s.role && <p className="text-[10px] text-slate-400 mt-0.5">{s.role}</p>}
-                                                            {s.department && <p className="text-[10px] text-slate-500">{s.department}</p>}
-                                                            <div className="flex items-center gap-2 mt-1.5 pt-1.5 border-t border-white/10">
-                                                              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${RACI_COLORS[s.raci]}`}>{s.raci} — {RACI_LABELS[s.raci]}</span>
-                                                            </div>
-                                                            <div className="flex items-center gap-3 mt-1">
-                                                              <span className="text-[9px] text-slate-400">İlgi: <strong className="text-slate-300">{PROB_LABELS[s.interest]}</strong></span>
-                                                              <span className="text-[9px] text-slate-400">Etki: <strong className="text-slate-300">{PROB_LABELS[s.influence]}</strong></span>
-                                                            </div>
-                                                            {s.notes && <p className="text-[9px] text-slate-500 mt-1 italic truncate">{s.notes}</p>}
-                                                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-2 h-2 rotate-45 bg-white/10 border-r border-b border-white/15" />
-                                                          </div>
-                                                        </div>
-                                                      </div>
-                                                    );
-                                                  });
-                                                })()}
-                                              </div>
-                                            </div>
-                                          )}
-                                          {activeProject.stakeholders.length === 0 ? (
-                                            <div className="text-center py-16 text-slate-400"><Users className="w-10 h-10 mx-auto mb-3 opacity-30" /><p>Henüz paydaş eklenmemiş.</p></div>
-                                          ) : (
-                                            <div className="space-y-3">
-                                              {activeProject.stakeholders.map(s => (
-                                                <div key={s.id} className="bg-white/5 rounded-xl border border-white/10 p-4 shadow-lg shadow-black/20 flex items-center gap-4">
-                                                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0`} style={{ background: s.raci === 'R' ? '#3b82f6' : s.raci === 'A' ? '#8b5cf6' : s.raci === 'C' ? '#f59e0b' : '#94a3b8' }}>{s.name.charAt(0)}</div>
-                                                  <div className="flex-1 min-w-0">
-                                                    <p className="font-semibold text-slate-100">{s.name} <span className="text-slate-400 font-normal text-sm">— {s.role}</span></p>
-                                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${RACI_COLORS[s.raci]}`}>{s.raci} — {RACI_LABELS[s.raci]}</span>
-                                                      {s.department && <span className="text-xs text-slate-400">{s.department}</span>}
-                                                      <span className="text-xs text-slate-400">İlgi: {PROB_LABELS[s.interest]} · Etki: {PROB_LABELS[s.influence]}</span>
-                                                    </div>
-                                                    {s.notes && <p className="text-xs text-slate-400 mt-1 italic">{s.notes}</p>}
-                                                  </div>
-                                                  <div className="flex items-center gap-1 shrink-0">
-                                                    <button onClick={() => openLinkCard('stakeholder', s.id)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-cyan-400 transition-colors" title="Baglantilar"><ArrowUpRight className="w-4 h-4" /></button>
-                                                    <button onClick={() => openStakeholderModal(s)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
-                                                    <button onClick={() => deleteStakeholder(s.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                                                  </div>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          )}
-                                        </div>
-                                      )}
-
-                                      {/* REQUIREMENTS TAB */}
-                                      {activeTab === 'requirements' && (
-                                        <div className="space-y-4">
-                                          <div className="flex items-center justify-between flex-wrap gap-2">
-                                            <div>
-                                              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><BookMarked className="text-teal-500 w-5 h-5" />Gereksinim Takip Tablosu</h2>
-                                              <p className="text-sm text-slate-400">{activeProject.requirements.length} gereksinim · {activeProject.requirements.filter(r => r.status === 'Canlıda').length} canlıda</p>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                              <select value={reqFilter} onChange={e => setReqFilter(e.target.value)} className="text-xs border border-white/10 rounded-md px-2 py-1.5 bg-white/5 focus:outline-none focus:ring-1 focus:ring-teal-400">
-                                                <option value="all">Tüm Durumlar</option>
-                                                {Object.keys(REQ_STATUS_COLORS).map(s => <option key={s} value={s}>{s}</option>)}
-                                              </select>
-                                              <button onClick={() => openReqModal()} className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Gereksinim Ekle</button>
-                                            </div>
-                                          </div>
-                                          {activeProject.requirements.length === 0 ? (
-                                            <div className="text-center py-16 text-slate-400"><BookMarked className="w-10 h-10 mx-auto mb-3 opacity-30" /><p>Henüz gereksinim eklenmemiş.</p></div>
-                                          ) : (
-                                            <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 overflow-hidden" style={{ maxHeight: 'calc(100vh - 220px)' }}>
-                                              <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 220px)' }}>
-                                              <table className="w-full text-sm">
-                                                <thead className="bg-white/5 border-b border-white/10 sticky top-0 z-10" style={{ backdropFilter: 'blur(12px)' }}>
-                                                  <tr>{['ID', 'Gereksinim', 'Tür', 'Modül', 'MoSCoW', 'Durum', 'K.K.', 'Not', ''].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase">{h}</th>)}</tr>
-                                                </thead>
-                                                <tbody className="divide-y divide-slate-100">
-                                                  {activeProject.requirements.filter(r => reqFilter === 'all' || r.status === reqFilter).map(r => (
-                                                    <tr key={r.id} className="hover:bg-white/5 transition-colors">
-                                                      <td className="px-4 py-3 text-xs font-mono text-slate-400 whitespace-nowrap">{r.reqId}</td>
-                                                      <td className="px-4 py-3 font-medium text-slate-100">{r.name}</td>
-                                                      <td className="px-4 py-3 text-xs text-slate-400 max-w-[150px] truncate">{r.objective || '—'}</td>
-                                                      <td className="px-4 py-3 text-xs text-slate-400">{r.module || '—'}</td>
-                                                      <td className="px-4 py-3">{r.moscow ? <span className={`text-xs px-2 py-1 rounded-full font-medium ${r.moscow === 'Must' ? 'moscow-must' : r.moscow === 'Should' ? 'moscow-should' : r.moscow === 'Could' ? 'moscow-could' : 'moscow-wont'}`}>{r.moscow}</span> : <span className="text-xs text-slate-500">—</span>}</td>
-                                                      <td className="px-4 py-3"><span className={`text-xs px-2 py-1 rounded-full font-medium ${REQ_STATUS_COLORS[r.status] || 'bg-white/10 text-slate-300'}`}>{r.status}</span></td>
-                                                      <td className="px-4 py-3 text-center" title={r.acceptanceCriteria || 'Kabul kriteri girilmemis'}>{r.acceptanceCriteria ? <CheckCircle2 className="w-4 h-4 text-emerald-400 inline" /> : <X className="w-4 h-4 text-rose-400 inline" />}</td>
-                                                      <td className="px-4 py-3 text-xs text-slate-400 max-w-[150px] truncate" title={r.notes || ''}>{r.notes || '—'}</td>
-                                                      <td className="px-4 py-3">
-                                                        <div className="flex items-center gap-1">
-                                                          <button onClick={() => openLinkCard('requirement', r.id)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-cyan-400 transition-colors" title="Baglantilar"><ArrowUpRight className="w-3.5 h-3.5" /></button>
-                                                          <button onClick={() => openReqModal(r)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
-                                                          <button onClick={() => deleteReq(r.id)} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
-                                                        </div>
-                                                      </td>
-                                                    </tr>
-                                                  ))}
-                                                </tbody>
-                                              </table>
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
-                                      )}
-
-                                      {/* TRACEABILITY TAB */}
-                                      {activeTab === 'traceability' && (() => {
-                                        const reqs = activeProject.requirements || [];
-                                        const brs = activeProject.businessRules || [];
-                                        const crs = activeProject.changeRequests || [];
-                                        const assumptions = activeProject.assumptions || [];
-                                        const noAC = reqs.filter(r => !r.acceptanceCriteria);
-                                        const noObjective = reqs.filter(r => !r.objective);
-                                        const unvalidated = assumptions.filter(a => a.validationStatus === 'Dogrulanmadi');
-                                        const pendingCRs = crs.filter(cr => cr.status === 'Bekliyor');
-                                        const warnings = [
-                                          { count: noAC.length, text: 'Kabul kriteri (Acceptance Criteria) bos gereksinim', tab: 'requirements' },
-                                          { count: noObjective.length, text: 'Bagli is hedefi bos gereksinim', tab: 'requirements' },
-                                          { count: unvalidated.length, text: 'Dogrulanmamis varsayim', tab: 'assumptions' },
-                                          { count: pendingCRs.length, text: 'Bekleyen degisiklik talebi', tab: 'changes' },
-                                        ];
-                                        return (
-                                          <div className="space-y-4">
-                                            <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><ArrowUpRight className="text-cyan-400 w-5 h-5" />Traceability & Kalite Kontrol</h2>
-                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                              {/* Panel A: Kalite Uyarıları */}
-                                              <div className="glass-card p-4 space-y-2">
-                                                <h3 className="font-bold text-sm text-slate-300 mb-3">Kalite Kontrol</h3>
-                                                {warnings.map(({ count, text, tab }) => (
-                                                  <div key={text} className={`flex items-center justify-between p-2.5 rounded-lg ${count === 0 ? 'bg-emerald-500/5 border border-emerald-500/10' : 'bg-amber-500/5 border border-amber-500/20'}`}>
-                                                    <div className="flex items-center gap-2">
-                                                      {count === 0
-                                                        ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                                                        : <span className="text-xs font-bold bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full min-w-[24px] text-center">{count}</span>
-                                                      }
-                                                      <span className="text-xs text-slate-300">{text}</span>
-                                                    </div>
-                                                    {count > 0 && <button onClick={() => setActiveTab(tab)} className="text-xs text-cyan-400 hover:text-cyan-300 whitespace-nowrap transition-colors">Goruntule →</button>}
-                                                  </div>
-                                                ))}
-                                              </div>
-                                              {/* Panel B placeholder for small screens */}
-                                              <div className="glass-card p-4">
-                                                <h3 className="font-bold text-sm text-slate-300 mb-3">Ozet</h3>
-                                                <div className="space-y-1.5 text-xs text-slate-400">
-                                                  <p>Toplam gereksinim: <span className="text-slate-200 font-medium">{reqs.length}</span></p>
-                                                  <p>Is kurali: <span className="text-slate-200 font-medium">{brs.length}</span></p>
-                                                  <p>Degisiklik talebi: <span className="text-slate-200 font-medium">{crs.length}</span></p>
-                                                  <p>Varsayim / Kisit: <span className="text-slate-200 font-medium">{assumptions.length}</span></p>
-                                                </div>
-                                              </div>
-                                            </div>
-                                            {/* Panel B: İlişki Tablosu */}
-                                            {reqs.length > 0 && (
-                                              <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 overflow-hidden">
-                                                <div className="overflow-x-auto">
-                                                  <table className="w-full text-sm">
-                                                    <thead className="bg-white/5 border-b border-white/10 sticky top-0 z-10" style={{ backdropFilter: 'blur(12px)' }}>
-                                                      <tr>{['Req ID', 'Gereksinim', 'Is Hedefi', 'MoSCoW', 'Test ID', 'Durum', 'Bagli BR', 'CR Sayisi'].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase whitespace-nowrap">{h}</th>)}</tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-white/5">
-                                                      {reqs.map(r => {
-                                                        const linkedCRCount = crs.filter(cr => cr.affectedEntityId === r.reqId).length;
-                                                        const linkedBR = brs.find(br => br.linkedRequirements && br.linkedRequirements.includes(r.reqId));
-                                                        return (
-                                                          <tr key={r.id} className="hover:bg-white/5 transition-colors">
-                                                            <td className="px-4 py-3 text-xs font-mono text-slate-400 whitespace-nowrap">{r.reqId}</td>
-                                                            <td className="px-4 py-3 font-medium text-slate-100 max-w-[160px] truncate">{r.name}</td>
-                                                            <td className="px-4 py-3 text-xs text-slate-400 max-w-[120px] truncate">{r.objective || <span className="text-amber-400/60">—</span>}</td>
-                                                            <td className="px-4 py-3">{r.moscow ? <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${r.moscow === 'Must' ? 'moscow-must' : r.moscow === 'Should' ? 'moscow-should' : r.moscow === 'Could' ? 'moscow-could' : 'moscow-wont'}`}>{r.moscow}</span> : <span className="text-xs text-slate-500">—</span>}</td>
-                                                            <td className="px-4 py-3">{r.testId ? <span className="text-xs text-emerald-400 font-mono">{r.testId}</span> : <span className="text-xs text-amber-400/60">Eksik</span>}</td>
-                                                            <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${REQ_STATUS_COLORS[r.status] || 'bg-white/10 text-slate-300'}`}>{r.status}</span></td>
-                                                            <td className="px-4 py-3 text-xs text-slate-400">{linkedBR ? <span className="text-blue-400 font-mono">{linkedBR.brId}</span> : <span className="text-slate-600">—</span>}</td>
-                                                            <td className="px-4 py-3">{linkedCRCount > 0 ? <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold">{linkedCRCount}</span> : <span className="text-xs text-slate-600">—</span>}</td>
-                                                          </tr>
-                                                        );
-                                                      })}
-                                                    </tbody>
-                                                  </table>
-                                                </div>
-                                              </div>
-                                            )}
-                                          </div>
-                                        );
-                                      })()}
-
-                                      {/* MEETINGS TAB */}
-                                      {activeTab === 'meetings' && (
-                                        <div className="space-y-4">
-                                          <div className="flex items-center justify-between">
-                                            <div>
-                                              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><MessageSquare className="text-violet-500 w-5 h-5" />Toplantı Notları</h2>
-                                              <p className="text-sm text-slate-400">{activeProject.meetings.length} toplantı kaydı</p>
-                                            </div>
-                                            <button onClick={() => setShowMeetingModal(true)} className="bg-violet-600 hover:bg-violet-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Yeni Toplantı</button>
-                                          </div>
-                                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                                            <div className="space-y-2">
-                                              {activeProject.meetings.length === 0 && <div className="text-center py-12 text-slate-400"><MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-30" /><p className="text-sm">Henüz toplantı yok.</p></div>}
-                                              {activeProject.meetings.map(m => (
-                                                <div key={m.id} onClick={() => setSelectedMeeting(m)} className={`p-3 rounded-xl border cursor-pointer transition-all ${selectedMeeting?.id === m.id ? 'border-violet-400 bg-violet-500/10 shadow-lg shadow-black/20' : 'border-white/10 bg-white/5 hover:border-violet-500/20 hover:shadow-lg shadow-black/20'}`}>
-                                                  <p className="font-semibold text-sm text-slate-100 truncate">{m.topic}</p>
-                                                  <div className="flex items-center justify-between mt-1">
-                                                    <p className="text-xs text-slate-400">{m.date}</p>
-                                                    <div className="flex items-center gap-1">
-                                                      <span className="text-xs text-slate-400">{m.notes.length} not</span>
-                                                      <button onClick={e => { e.stopPropagation(); deleteMeeting(m.id); }} className="p-0.5 hover:text-rose-500 text-slate-300 transition-colors"><Trash2 className="w-3 h-3" /></button>
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              ))}
-                                            </div>
-                                            <div className="lg:col-span-2">
-                                              {!selectedMeeting ? (
-                                                <div className="text-center py-16 text-slate-400 border border-dashed border-white/10 rounded-xl"><StickyNote className="w-8 h-8 mx-auto mb-2 opacity-30" /><p className="text-sm">Sol taraftan bir toplantı seçin.</p></div>
-                                              ) : (
-                                                <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 p-5 space-y-4">
-                                                  <div className="flex items-start justify-between">
-                                                    <div><h3 className="font-bold text-slate-100">{selectedMeeting.topic}</h3><p className="text-xs text-slate-400 mt-0.5">{selectedMeeting.date} · {selectedMeeting.attendees}</p></div>
-                                                    <button onClick={() => generateMoM(selectedMeeting)} className="text-xs bg-white/10 hover:bg-slate-200 text-slate-300 px-2 py-1.5 rounded-md flex items-center gap-1.5 transition-colors"><ClipboardCopy className="w-3.5 h-3.5" />MoM Oluştur</button>
-                                                  </div>
-                                                  <div className="flex gap-2">
-                                                    <select value={newNoteType} onChange={e => setNewNoteType(e.target.value)} className="text-sm border border-white/10 rounded-lg px-3 py-2.5 bg-white/5 focus:outline-none focus:ring-1 focus:ring-violet-400 w-36">
-                                                      <option>Karar</option><option>Açık Nokta</option><option>Aksiyon</option><option>Gereksinim</option><option>Varsayim</option>
-                                                    </select>
-                                                    <textarea value={newNoteText} onChange={e => setNewNoteText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addNote(); } }} placeholder="Not ekle ve Enter'a bas... (Shift+Enter: yeni satır)" rows="2" className="flex-1 text-sm border border-white/10 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-violet-400 resize-none" />
-                                                    <button onClick={addNote} className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-lg text-sm transition-colors self-end"><Plus className="w-4 h-4" /></button>
-                                                  </div>
-                                                  {(() => {
-                                                    const mReqs = (activeProject.requirements || []).filter(r => r.sourceMeetingId === selectedMeeting.id);
-                                                    const mActions = (activeProject.actions || []).filter(a => a.source === selectedMeeting.topic);
-                                                    const mAss = (activeProject.assumptions || []).filter(a => a.sourceMeetingId === selectedMeeting.id);
-                                                    if (mReqs.length + mActions.length + mAss.length === 0) return null;
-                                                    return (
-                                                      <div className="flex items-center gap-2 flex-wrap text-xs">
-                                                        <span className="text-slate-500">Bu toplantidan uretilenler:</span>
-                                                        {mReqs.length > 0 && <button onClick={() => setActiveTab('requirements')} className="bg-teal-500/10 text-teal-400 border border-teal-500/20 px-2 py-0.5 rounded-full hover:bg-teal-500/20 transition-colors">{mReqs.length} gereksinim</button>}
-                                                        {mActions.length > 0 && <button onClick={() => setActiveTab('actions')} className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full hover:bg-indigo-500/20 transition-colors">{mActions.length} aksiyon</button>}
-                                                        {mAss.length > 0 && <button onClick={() => setActiveTab('assumptions')} className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full hover:bg-amber-500/20 transition-colors">{mAss.length} varsayim</button>}
-                                                      </div>
-                                                    );
-                                                  })()}
-                                                  <div className="space-y-2 max-h-[420px] overflow-y-auto">
-                                                    {selectedMeeting.notes.length === 0 && <p className="text-xs text-slate-400 text-center py-4">Henüz not yok. Yukarıdan ekleyin.</p>}
-                                                    {selectedMeeting.notes.map(n => (
-                                                      <div key={n.id} className={`flex items-start gap-2 p-2.5 rounded-lg border text-sm ${NOTE_TYPE_COLORS[n.type]}`}>
-                                                        <span className="text-xs font-bold whitespace-nowrap shrink-0 mt-0.5">{n.type}</span>
-                                                        <span className="flex-1">{n.text}</span>
-                                                        <button onClick={() => deleteNote(n.id)} className="shrink-0 opacity-50 hover:opacity-100 transition-opacity"><X className="w-3.5 h-3.5" /></button>
-                                                      </div>
-                                                    ))}
-                                                  </div>
-                                                </div>
-                                              )}
-                                            </div>
-                                          </div>
-                                        </div>
-                                      )}
-
-                                      {/* GANTT CHART TAB */}
-                                      {activeTab === 'gantt' && (() => {
-                                        const tasks = activeProject.ganttTasks || [];
-                                        const DAY_WIDTHS = { week: 40, month: 16, quarter: 6 };
-                                        const dayWidth = DAY_WIDTHS[ganttZoom];
-
-                                        let rangeStart, rangeEnd;
-                                        if (tasks.length > 0) {
-                                          const starts = tasks.map(t => new Date(t.startDate).getTime());
-                                          const ends = tasks.map(t => new Date(t.endDate).getTime());
-                                          rangeStart = new Date(Math.min(...starts));
-                                          rangeEnd = new Date(Math.max(...ends));
-                                          const pad = ganttZoom === 'week' ? 3 : ganttZoom === 'month' ? 7 : 14;
-                                          rangeStart.setDate(rangeStart.getDate() - pad);
-                                          rangeEnd.setDate(rangeEnd.getDate() + pad);
-                                        } else {
-                                          rangeStart = new Date(); rangeStart.setDate(1);
-                                          rangeEnd = new Date(); rangeEnd.setMonth(rangeEnd.getMonth() + 3);
-                                        }
-                                        const dow = rangeStart.getDay();
-                                        rangeStart.setDate(rangeStart.getDate() - (dow === 0 ? 6 : dow - 1));
-                                        rangeStart.setHours(0, 0, 0, 0);
-                                        rangeEnd.setHours(0, 0, 0, 0);
-
-                                        const diffDays = (a, b) => Math.round((a - b) / 86400000);
-                                        const totalDays = diffDays(rangeEnd, rangeStart) + 1;
-                                        const totalWidth = Math.max(totalDays * dayWidth, 600);
-
-                                        const today = new Date(); today.setHours(0, 0, 0, 0);
-                                        const todayPos = diffDays(today, rangeStart) * dayWidth;
-
-                                        const categories = [...new Set(tasks.map(t => t.category || 'Genel'))];
-                                        if (categories.length === 0) categories.push('Genel');
-
-                                        const monthHeaders = [];
-                                        const mCur = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 1);
-                                        while (mCur <= rangeEnd) {
-                                          const mStart = mCur < rangeStart ? new Date(rangeStart) : new Date(mCur);
-                                          const mLast = new Date(mCur.getFullYear(), mCur.getMonth() + 1, 0);
-                                          const mEnd = mLast > rangeEnd ? rangeEnd : mLast;
-                                          monthHeaders.push({
-                                            label: mCur.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }),
-                                            left: diffDays(mStart, rangeStart) * dayWidth,
-                                            width: (diffDays(mEnd, mStart) + 1) * dayWidth,
-                                          });
-                                          mCur.setMonth(mCur.getMonth() + 1);
-                                        }
-
-                                        const weekMarkers = [];
-                                        for (let i = 0; i < totalDays; i += 7) { weekMarkers.push(i * dayWidth); }
-
-                                        const getBarPos = (task) => {
-                                          const s = new Date(task.startDate); s.setHours(0, 0, 0, 0);
-                                          const e = new Date(task.endDate); e.setHours(0, 0, 0, 0);
-                                          return {
-                                            left: diffDays(s, rangeStart) * dayWidth,
-                                            width: Math.max((diffDays(e, s) + 1) * dayWidth, dayWidth),
-                                          };
-                                        };
-
-                                        const rows = [];
-                                        categories.forEach(cat => {
-                                          rows.push({ type: 'category', label: cat });
-                                          tasks.filter(t => (t.category || 'Genel') === cat).forEach(t => rows.push({ type: 'task', task: t }));
-                                        });
-
-                                        return (
-                                          <div className="space-y-4">
-                                            <div className="flex items-center justify-between flex-wrap gap-2">
-                                              <div>
-                                                <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-                                                  <CalendarDays className="text-cyan-500 w-5 h-5" />Proje Timeline
-                                                </h2>
-                                                <p className="text-sm text-slate-400">{tasks.length} görev{categories.length > 1 ? ` · ${categories.length} kategori` : ''}</p>
-                                              </div>
-                                              <div className="flex items-center gap-2">
-                                                <div className="flex items-center bg-white/10 rounded-lg p-0.5">
-                                                  {[['week', 'Hafta'], ['month', 'Ay'], ['quarter', 'Çeyrek']].map(([z, label]) => (
-                                                    <button key={z} onClick={() => setGanttZoom(z)} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${ganttZoom === z ? 'bg-white/5 text-cyan-700 shadow-lg shadow-black/20' : 'text-slate-400 hover:text-slate-300'}`}>{label}</button>
-                                                  ))}
-                                                </div>
-                                                <button onClick={() => openGanttModal()} className="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20">
-                                                  <Plus className="w-4 h-4" />Görev Ekle
-                                                </button>
-                                              </div>
-                                            </div>
-
-                                            {tasks.length === 0 ? (
-                                              <div className="text-center py-20 glass-card p-8">
-                                                <CalendarDays className="w-14 h-14 mx-auto mb-4 text-cyan-500/20 empty-state-icon" />
-                                                <p className="text-slate-300 font-medium">Zaman çizelgesi boş.</p>
-                                                <p className="text-xs text-slate-400 mt-2">Proje fazlarını ve görevlerini ekleyerek zaman çizelgenizi oluşturun.</p>
-                                                <button onClick={() => openGanttModal()} className="mt-4 text-xs text-cyan-400 hover:text-cyan-300 transition-colors">+ İlk Görevi Ekle</button>
-                                              </div>
-                                            ) : (
-                                              <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 overflow-hidden">
-                                                <div className="flex" style={{ maxHeight: 'calc(100vh - 260px)', minHeight: 200 }}>
-                                                  {/* Sidebar */}
-                                                  <div className="w-80 shrink-0 border-r border-white/10 bg-white/5 z-[2] overflow-y-auto">
-                                                    <div className="h-[52px] border-b border-white/10 flex items-end px-3 pb-1.5 sticky top-0 z-[3]" style={{ backdropFilter: 'blur(12px)', backgroundColor: 'rgba(255,255,255,0.05)' }}>
-                                                      <div className="flex items-center w-full">
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex-1">Görev Adı</span>
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 text-center">Sorumlu</span>
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14 text-right pr-8">%</span>
-                                                      </div>
-                                                    </div>
-                                                    {rows.map((row, idx) => row.type === 'category' ? (
-                                                      <div key={`cat-${idx}`} className="h-8 px-3 flex items-center bg-white/10 border-b border-white/10">
-                                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">{row.label}</span>
-                                                      </div>
-                                                    ) : (
-                                                      <div key={row.task.id} className="h-14 px-3 flex items-center border-b border-white/10 group hover:bg-white/5 transition-colors">
-                                                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                                                          <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: row.task.color }} />
-                                                          <span className="text-xs font-medium text-slate-300 truncate" title={row.task.name}>{row.task.name}</span>
-                                                        </div>
-                                                        <div className="w-24 text-center shrink-0 px-1">
-                                                          {row.task.assignedTo ? (
-                                                            <span className="text-[11px] text-slate-400 font-medium truncate block" title={row.task.assignedTo}>{row.task.assignedTo}</span>
-                                                          ) : (
-                                                            <span className="text-[10px] text-slate-300">—</span>
-                                                          )}
-                                                        </div>
-                                                        <div className="flex items-center gap-1 w-14 shrink-0 justify-end">
-                                                          <div className="w-8 bg-slate-200 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-cyan-500/100" style={{ width: `${row.task.progress || 0}%` }} /></div>
-                                                          <span className="text-[10px] font-medium text-slate-400">{row.task.progress || 0}%</span>
-                                                        </div>
-                                                        {(() => { const te = new Date(row.task.endDate); te.setHours(0,0,0,0); const isD = te < new Date(new Date().setHours(0,0,0,0)) && (row.task.progress || 0) < 100; return isD ? <span className="text-[9px] bg-rose-100 text-rose-700 px-1 py-0.5 rounded-full font-bold ml-1 shrink-0" title={row.task.delayReason || 'Gecikmiş'}>⚠️</span> : null; })()}
-                                                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
-                                                          <button onClick={() => openGanttModal(row.task)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-600"><Pencil className="w-3 h-3" /></button>
-                                                          <button onClick={() => deleteGanttTask(row.task.id)} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-600"><Trash2 className="w-3 h-3" /></button>
-                                                        </div>
-                                                      </div>
-                                                    ))}
-                                                  </div>
-
-                                                  {/* Timeline */}
-                                                  <div className="flex-1 overflow-x-auto overflow-y-auto">
-                                                    <div style={{ width: totalWidth, minWidth: '100%' }} className="relative">
-                                                      {/* Month header */}
-                                                      <div className="h-[26px] border-b border-white/10 relative bg-white/5 sticky top-0 z-[1]">
-                                                        {monthHeaders.map((m, i) => (
-                                                          <div key={i} className="absolute top-0 h-full flex items-center border-r border-white/10 overflow-hidden" style={{ left: m.left, width: m.width }}>
-                                                            <span className="text-[10px] font-bold text-slate-400 px-2 truncate capitalize">{m.label}</span>
-                                                          </div>
-                                                        ))}
-                                                      </div>
-
-                                                      {/* Sub-header */}
-                                                      <div className="h-[26px] border-b border-white/10 relative bg-white/5 sticky top-[26px] z-[1]">
-                                                        {Array.from({ length: totalDays }, (_, i) => {
-                                                          const d = new Date(rangeStart); d.setDate(d.getDate() + i);
-                                                          const isMonday = d.getDay() === 1;
-                                                          const isFirst = d.getDate() === 1;
-                                                          const isWeekend = d.getDay() === 0 || d.getDay() === 6;
-                                                          const show = ganttZoom === 'week' || (ganttZoom === 'month' && isMonday) || (ganttZoom === 'quarter' && isFirst);
-                                                          return show ? (
-                                                            <div key={i} className="absolute top-0 h-full flex items-center" style={{ left: i * dayWidth }}>
-                                                              <span className={`text-[9px] px-0.5 ${isWeekend ? 'text-rose-300' : 'text-slate-400'}`}>
-                                                                {ganttZoom === 'week' ? d.getDate() : ganttZoom === 'month' ? `${d.getDate()}/${d.getMonth() + 1}` : d.toLocaleDateString('tr-TR', { month: 'short' })}
-                                                              </span>
-                                                            </div>
-                                                          ) : null;
-                                                        })}
-                                                      </div>
-
-                                                      {/* Task rows */}
-                                                      {rows.map((row, idx) => row.type === 'category' ? (
-                                                        <div key={`cat-${idx}`} className="h-8 border-b border-white/10 bg-white/40 flex items-center px-2"><span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{row.label}</span></div>
-                                                      ) : (() => {
-                                                        const taskEnd = new Date(row.task.endDate); taskEnd.setHours(0,0,0,0);
-                                                        const isDelayed = taskEnd < today && (row.task.progress || 0) < 100;
-                                                        const delayDays = isDelayed ? diffDays(today, taskEnd) : 0;
-                                                        return (
-                                                        <div key={row.task.id} className="h-14 border-b border-white/10 relative">
-                                                          <div
-                                                            className={`absolute top-2 h-10 rounded-md shadow-lg shadow-black/20 cursor-pointer hover:brightness-110 transition-all flex flex-col justify-center px-2 overflow-hidden ${isDelayed ? 'ring-2 ring-rose-400 ring-offset-1' : ''}`}
-                                                            style={{ left: getBarPos(row.task).left, width: getBarPos(row.task).width, backgroundColor: row.task.color || '#3b82f6' }}
-                                                            onClick={() => openGanttModal(row.task)}
-                                                            title={`${row.task.name}\n${row.task.startDate} → ${row.task.endDate}\nİlerleme: %${row.task.progress || 0}${row.task.assignedTo ? '\nSorumlu: ' + row.task.assignedTo : ''}${isDelayed ? '\n⚠️ ' + delayDays + ' gün gecikme' : ''}${row.task.delayReason ? '\nNeden: ' + row.task.delayReason : ''}`}
-                                                          >
-                                                            {getBarPos(row.task).width > 70 && <span className="text-[10px] text-white font-medium truncate drop-shadow-lg shadow-black/20 leading-tight">{row.task.name}</span>}
-                                                            {getBarPos(row.task).width > 100 && row.task.assignedTo && <span className="text-[9px] text-white/80 truncate leading-tight">{row.task.assignedTo}</span>}
-                                                            {getBarPos(row.task).width > 50 && <div className="w-full bg-white/10 rounded-full h-1.5 mt-0.5"><div className="h-1.5 rounded-full bg-white/40" style={{ width: `${row.task.progress || 0}%` }} /></div>}
-                                                          </div>
-                                                          {isDelayed && (
-                                                            <div className="absolute top-0 right-0 flex items-center" style={{ left: getBarPos(row.task).left + getBarPos(row.task).width + 4, top: 8 }}>
-                                                              <span className="text-[9px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded-full font-bold whitespace-nowrap flex items-center gap-0.5" title={row.task.delayReason || ''}><AlertTriangle className="w-3 h-3" />{delayDays}g gecikme</span>
-                                                            </div>
-                                                          )}
-                                                        </div>
-                                                        );
-                                                      })())}  
-
-                                                      {/* Weekend columns overlay */}
-                                                      {ganttZoom !== 'quarter' && (
-                                                        <div className="absolute inset-0 pointer-events-none" style={{ top: 52 }}>
-                                                          {Array.from({ length: totalDays }, (_, i) => {
-                                                            const d = new Date(rangeStart); d.setDate(d.getDate() + i);
-                                                            return (d.getDay() === 0 || d.getDay() === 6) ? (
-                                                              <div key={i} className="absolute top-0 bottom-0 bg-white/10" style={{ left: i * dayWidth, width: dayWidth }} />
-                                                            ) : null;
-                                                          })}
-                                                        </div>
-                                                      )}
-
-                                                      {/* Week separator lines */}
-                                                      <div className="absolute inset-0 pointer-events-none" style={{ top: 52 }}>
-                                                        {weekMarkers.map((left, i) => (
-                                                          <div key={i} className="absolute top-0 bottom-0 border-l border-white/10/80" style={{ left }} />
-                                                        ))}
-                                                      </div>
-
-                                                      {/* Today line */}
-                                                      {todayPos >= 0 && todayPos <= totalWidth && (
-                                                        <div className="absolute top-0 bottom-0 z-[3] pointer-events-none" style={{ left: todayPos }}>
-                                                          <div className="w-0.5 h-full bg-rose-500/100 opacity-80" />
-                                                          <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-rose-500/100 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-b-md shadow-lg shadow-black/20 whitespace-nowrap">Bugün</div>
-                                                        </div>
-                                                      )}
-                                                    </div>
-                                                  </div>
-                                                </div>
-
-                                                {/* Summary bar */}
-                                                <div className="border-t border-white/10 bg-white/5 px-4 py-3">
-                                                  <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-                                                    <span className="text-xs font-bold text-slate-400">{tasks.length} görev</span>
-                                                    {tasks.length > 0 && (() => { const avg = Math.round(tasks.reduce((a, t) => a + (t.progress || 0), 0) / tasks.length); return <span className="text-xs font-medium text-cyan-600">Ortalama İlerleme: %{avg}</span>; })()}
-                                                    {(() => { const delayed = tasks.filter(t => { const te = new Date(t.endDate); te.setHours(0,0,0,0); return te < today && (t.progress || 0) < 100; }); return delayed.length > 0 ? <span className="text-xs font-medium text-rose-600 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" />{delayed.length} gecikmiş görev</span> : null; })()}
-                                                  </div>
-                                                  <div className="flex flex-wrap gap-x-5 gap-y-1.5">
-                                                    {tasks.map(t => {
-                                                      const s = new Date(t.startDate);
-                                                      const e = new Date(t.endDate);
-                                                      const dur = diffDays(e, s) + 1;
-                                                      const isPast = e < today;
-                                                      const isActive = s <= today && today <= e;
-                                                      return (
-                                                        <div key={t.id} className="flex items-center gap-1.5 text-xs">
-                                                          <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: t.color }} />
-                                                          <span className={`font-medium ${isPast ? 'text-slate-400 line-through' : isActive ? 'text-cyan-700' : 'text-slate-400'}`}>{t.name}</span>
-                                                          <span className="text-slate-400">{dur}g</span>
-                                                          <span className="text-[9px] text-cyan-600 font-medium">%{t.progress || 0}</span>
-                                                          {t.assignedTo && <span className="text-xs text-slate-400 font-medium">· {t.assignedTo}</span>}
-                                                          {isActive && <span className="text-[9px] bg-cyan-100 text-cyan-700 px-1.5 py-0.5 rounded-full font-medium">Aktif</span>}
-                                                          {isPast && <span className="text-[9px] bg-white/10 text-slate-400 px-1.5 py-0.5 rounded-full">Bitti</span>}
-                                                        </div>
-                                                      );
-                                                    })}
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            )}
-                                          </div>
-                                        );
-                                      })()}
-
-                                      {/* TAB 1: KNOWLEDGE AREAS (Proje Kontrol Listesi) */}
-                                      {activeTab === 'knowledge_areas' && (
-                                        <>
-                                          {/* AI CONTEXT INPUT SECTON */}
-                                          <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 p-5 rounded-xl border border-indigo-500/15 mb-6 shadow-lg shadow-black/20">
-                                            <div className="flex items-start gap-3 mb-3">
-                                              <Bot className="w-6 h-6 text-indigo-600 shrink-0 mt-0.5" />
-                                              <div>
-                                                <h3 className="font-bold text-indigo-900 text-lg flex items-center gap-2">
-                                                  ✨ Yapay Zeka (AI) İçin Proje Bağlamı
-                                                </h3>
-                                                <p className="text-sm text-indigo-700 mt-1">
-                                                  Aşağıya projenizi kısaca özetleyin (Örn: "Restoranlar için QR menü uygulaması", "Banka çalışanları için yeni izin sistemi"). Yapay zeka, bu bilgiye dayanarak her BABOK adımı için size özel doküman taslakları üretecektir.
-                                                </p>
-                                              </div>
-                                            </div>
-                                            <textarea
-                                              className="w-full p-3 rounded-lg border border-indigo-500/20 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all text-sm text-slate-300 resize-none"
-                                              rows="3"
-                                              placeholder="Projenizin konusu ve hedefleri nedir?"
-                                              value={projectContext}
-                                              onChange={(e) => {
-                                                setProjectContext(e.target.value);
-                                                setIsContextSaved(false);
-                                              }}
-                                            ></textarea>
-                                            <div className="mt-3 flex justify-end items-center gap-3">
-                                              {isContextSaved && (
-                                                <span className="text-sm text-emerald-600 font-medium flex items-center gap-1.5 animate-in fade-in slide-in-from-right-2 duration-300">
-                                                  <CheckCircle2 className="w-4 h-4" /> Bağlam Kaydedildi!
-                                                </span>
-                                              )}
-                                              <button
-                                                onClick={() => {
-                                                  if (projectContext.trim()) {
-                                                    setIsContextSaved(true);
-                                                    setTimeout(() => setIsContextSaved(false), 3000);
-                                                  }
-                                                }}
-                                                className="bg-indigo-600/80 hover:bg-indigo-500 text-white text-sm font-medium py-2 px-5 rounded-md transition-colors shadow-lg shadow-black/20 flex items-center gap-2"
-                                              >
-                                                Kaydet ve Onayla
-                                              </button>
-                                            </div>
-                                          </div>
-
-                                          {babokData.map((ka) => {
-                                            const kaCompletedTasks = ka.tasks.filter(t => completedTasks.includes(t.id)).length;
-                                            const isAllComplete = kaCompletedTasks === ka.tasks.length;
-                                            const isExpanded = expandedKA === ka.id;
-
-                                            return (
-                                              <div key={ka.id} className={`bg-white/5 rounded-xl shadow-lg shadow-black/20 border ${isAllComplete ? 'border-green-500/20' : 'border-white/10'} overflow-hidden transition-all mb-4`}>
-                                                {/* KA Header */}
-                                                <div
-                                                  className={`p-4 cursor-pointer flex items-center justify-between hover:bg-white/5 transition-colors ${isExpanded ? 'bg-white/5 border-b border-white/10' : ''}`}
-                                                  onClick={() => setExpandedKA(isExpanded ? null : ka.id)}
-                                                >
-                                                  <div className="flex items-center gap-4">
-                                                    <div className={`p-2 rounded-lg ${ka.color} ${isAllComplete ? 'bg-green-100 border-green-500/20' : ''}`}>
-                                                      {isAllComplete ? <CheckCircle2 className="w-6 h-6 text-green-600" /> : ka.icon}
-                                                    </div>
-                                                    <div>
-                                                      <h2 className={`font-bold text-lg ${ka.headerColor}`}>{ka.title}</h2>
-                                                      <p className="text-sm text-slate-400 hidden md:block">{ka.description}</p>
-                                                    </div>
-                                                  </div>
-                                                  <div className="flex items-center gap-2">
-                                                    {!isAllComplete && (
-                                                      <button
-                                                        onClick={(e) => markAllKA(ka, e)}
-                                                        className="text-xs text-emerald-700 bg-emerald-500/10 hover:bg-emerald-100 border border-emerald-500/20 px-2 py-1 rounded-md transition-colors shrink-0"
-                                                      >
-                                                        Tümünü İşaretle
-                                                      </button>
-                                                    )}
-                                                    <span className="text-sm font-medium text-slate-400 bg-white/10 px-2 py-1 rounded-md">
-                                                      {kaCompletedTasks}/{ka.tasks.length}
-                                                    </span>
-                                                    {isExpanded ? <ChevronDown className="text-slate-400" /> : <ChevronRight className="text-slate-400" />}
-                                                  </div>
-                                                </div>
-
-                                                {/* KA Tasks */}
-                                                {isExpanded && (
-                                                  <div className="divide-y divide-slate-100 bg-white/5">
-                                                    {ka.tasks.map(task => {
-                                                      const isTaskCompleted = completedTasks.includes(task.id);
-                                                      const isTaskSelected = selectedTask?.id === task.id;
-
-                                                      // Calculate subtask progress
-                                                      const subTasksTotal = task.checklist.length;
-                                                      const subTasksCompleted = task.checklist.filter(c => completedSubTasks.includes(c.id)).length;
-                                                      const subTaskProgress = Math.round((subTasksCompleted / subTasksTotal) * 100) || 0;
-
-                                                      return (
-                                                        <div key={task.id} className="flex flex-col">
-                                                          <div
-                                                            className={`p-4 pl-6 md:pl-16 flex items-center gap-3 cursor-pointer hover:bg-white/5 transition-colors ${isTaskSelected ? 'bg-white/5' : ''}`}
-                                                            onClick={() => handleTaskClick(task)}
-                                                          >
-                                                            <button
-                                                              onClick={(e) => toggleTask(task.id, e)}
-                                                              className="focus:outline-none shrink-0"
-                                                              title="Ana Görevi Tamamla"
-                                                            >
-                                                              {isTaskCompleted ? (
-                                                                <CheckCircle2 className="w-6 h-6 text-green-500 hover:text-green-600 transition-colors" />
-                                                              ) : (
-                                                                <Circle className="w-6 h-6 text-slate-300 hover:text-blue-500 transition-colors" />
-                                                              )}
-                                                            </button>
-
-                                                            <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-2">
-                                                              <span className={`font-medium ${isTaskCompleted ? 'text-slate-400 line-through' : 'text-slate-300'}`}>
-                                                                {task.name}
-                                                              </span>
-
-                                                              {/* Mini progress indicator for subtasks */}
-                                                              <div className="flex items-center gap-2 w-24">
-                                                                <div className="w-full bg-slate-200 rounded-full h-1.5">
-                                                                  <div className={`h-1.5 rounded-full ${subTaskProgress === 100 ? 'bg-green-500' : 'bg-blue-400'}`} style={{ width: `${subTaskProgress}%` }}></div>
-                                                                </div>
-                                                                <span className="text-[10px] text-slate-400 font-medium">{subTasksCompleted}/{subTasksTotal}</span>
-                                                              </div>
-                                                            </div>
-
-                                                            {isTaskSelected ? <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" /> : <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />}
-                                                          </div>
-
-                                                          {/* Task Detail Inline Drawer with Checklist */}
-                                                          {isTaskSelected && (
-                                                            <div className="pl-14 md:pl-24 pr-4 pb-4 bg-white/5">
-                                                              <div className="bg-white/5 border border-white/10 rounded-lg p-5 shadow-lg shadow-black/20">
-
-                                                                <div className="flex justify-between items-start gap-4 mb-4">
-                                                                  <p className="text-sm text-slate-400 italic border-l-2 border-white/15 pl-3">
-                                                                    {task.purpose}
-                                                                  </p>
-                                                                  {/* AI Generator Button */}
-                                                                  <button
-                                                                    onClick={() => handleOpenAIModal(task, ka.title)}
-                                                                    className="shrink-0 bg-indigo-600/80 hover:bg-indigo-500 text-white text-xs font-bold py-2 px-3 rounded-md flex items-center gap-1.5 transition-colors shadow-lg shadow-black/20"
-                                                                  >
-                                                                    <Sparkles className="w-3.5 h-3.5" />
-                                                                    <span>AI Taslak Üret</span>
-                                                                  </button>
-                                                                </div>
-
-                                                                {/* Deliverables Banner */}
-                                                                <div className="bg-white/5 border border-white/10 rounded-md p-3 mb-5 flex gap-3 items-center">
-                                                                  <FileText className="w-5 h-5 text-slate-400 shrink-0" />
-                                                                  <div>
-                                                                    <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Beklenen Çıktılar (Deliverables)</h5>
-                                                                    <p className="text-sm font-medium text-slate-100">{task.deliverables}</p>
-                                                                  </div>
-                                                                </div>
-
-                                                                {/* Actionable Detailed Checklist */}
-                                                                <h4 className="font-bold text-slate-100 mb-3 flex items-center gap-2">
-                                                                  <CheckSquare className="w-4 h-4 text-blue-600" /> Operasyonel Checklist
-                                                                </h4>
-
-                                                                <div className="space-y-2 mb-6">
-                                                                  {task.checklist.map((item) => {
-                                                                    const isChecked = completedSubTasks.includes(item.id);
-                                                                    return (
-                                                                      <div
-                                                                        key={item.id}
-                                                                        className={`flex items-start gap-3 p-3 rounded-md border cursor-pointer transition-colors ${isChecked ? 'bg-green-50/50 border-green-100' : 'bg-white/5 border-white/10 hover:border-blue-500/30 hover:bg-white/5'}`}
-                                                                        onClick={() => toggleSubTask(item.id)}
-                                                                      >
-                                                                        <div className="mt-0.5 shrink-0">
-                                                                          {isChecked ? (
-                                                                            <CheckSquare className="w-5 h-5 text-green-600" />
-                                                                          ) : (
-                                                                            <Square className="w-5 h-5 text-slate-300" />
-                                                                          )}
-                                                                        </div>
-                                                                        <span className={`text-sm leading-relaxed ${isChecked ? 'text-slate-400 line-through' : 'text-slate-300'}`}>
-                                                                          {item.text}
-                                                                        </span>
-                                                                      </div>
-                                                                    );
-                                                                  })}
-                                                                </div>
-
-                                                                {/* Tip Box */}
-                                                                <div className="bg-amber-500/10 border border-amber-500/20 rounded-md p-3 flex gap-3 items-start">
-                                                                  <Lightbulb className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                                                                  <p className="text-sm text-amber-900 leading-relaxed">
-                                                                    <strong className="block mb-1">Analist İpucu:</strong> {task.tips}
-                                                                  </p>
-                                                                </div>
-
-                                                              </div>
-                                                            </div>
-                                                          )}
-                                                        </div>
-                                                      );
-                                                    })}
-                                                  </div>
-                                                )}
-                                              </div>
-                                            );
-                                          })}
-                                        </>
-                                      )}
-
-                                      {/* TAB 2: TECHNIQUES (Teknikler) */}
-                                      {activeTab === 'techniques' && (
-                                        <div className="space-y-4">
-                                          <div className="bg-emerald-500/10 text-emerald-800 p-4 rounded-lg flex gap-3 items-start border border-emerald-100 mb-6">
-                                            <Wrench className="w-5 h-5 shrink-0 mt-0.5" />
-                                            <p className="text-sm">
-                                              <strong>İş Analizi Teknikleri:</strong> BABOK'ta 50'den fazla teknik bulunur. Burada en sık kullanılan ve her analistin alet çantasında bulunması gereken temel yöntemleri bulabilirsiniz.
-                                            </p>
-                                          </div>
-                                          <div className="flex gap-2 mb-4 flex-wrap">
-                                            {[['all', 'Tümü'], ...babokData.map(ka => [ka.id, ka.title.split(' ')[0]])].map(([id, lbl]) => (
-                                              <button key={id} onClick={() => setTechFilter(id)} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors border ${techFilter === id ? 'bg-emerald-600/80 text-white border-emerald-600' : 'bg-white/5 text-slate-400 border-white/10 hover:border-emerald-500/30'}`}>{lbl}</button>
-                                            ))}
-                                          </div>
-                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {techniquesData.filter(t => techFilter === 'all' || t.relatedKA.includes(techFilter)).map(tech => (
-                                              <div key={tech.id} className="bg-white/5 p-5 rounded-xl border border-white/10 shadow-lg shadow-black/20 hover:shadow-md transition-shadow">
-                                                <h3 className="font-bold text-lg text-slate-100 mb-2">{tech.name}</h3>
-                                                <p className="text-sm text-slate-400 mb-4">{tech.desc}</p>
-                                                <div className="bg-white/5 p-3 rounded-md border border-white/10">
-                                                  <span className="text-xs font-bold text-slate-400 uppercase">En İyi Nerede Kullanılır?</span>
-                                                  <p className="text-sm text-slate-300 mt-1">{tech.bestFor}</p>
-                                                </div>
-                                              </div>
-                                            ))}
-                                          </div>
-                                        </div>
-                                      )}
-
-                                      {/* TAB 3: TEMPLATES (Doküman Şablonları) */}
-                                      {activeTab === 'templates' && (
-                                        <div className="space-y-4">
-                                          <div className="bg-amber-500/10 text-amber-800 p-4 rounded-lg flex gap-3 items-start border border-amber-100 mb-6">
-                                            <FileStack className="w-5 h-5 shrink-0 mt-0.5" />
-                                            <p className="text-sm">
-                                              <strong>BABOK Doküman Şablonları:</strong> Bir iş analizi projesinde standart olarak bulunması gereken temel belgelerin yapısal (iskelet) şablonlarıdır. Herhangi bir şablonu kopyalayarak projenizdeki ilgili Word dokümanına, Confluence sayfasına veya Jira Issue açıklamasına doğrudan yapıştırabilir ve altlarını kendi projenize göre doldurabilirsiniz.
-                                            </p>
-                                          </div>
-
-                                          <div className="space-y-6">
-                                            {templatesData.map(tpl => (
-                                              <div key={tpl.id} className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 overflow-hidden">
-                                                <div className="bg-white/5 border-b border-white/10 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                                  <div>
-                                                    <h3 className="font-bold text-lg text-slate-100 flex items-center gap-2">
-                                                      <FileText className="w-5 h-5 text-indigo-500" />
-                                                      {tpl.name}
-                                                    </h3>
-                                                    <p className="text-sm text-slate-400 mt-1">{tpl.purpose}</p>
-                                                  </div>
-                                                  <div className="flex items-center gap-2 shrink-0 self-start md:self-auto flex-wrap">
-                                                    <button
-                                                      onClick={() => { navigator.clipboard.writeText(tpl.format); alert(tpl.name + ' panoya kopyalandı!'); }}
-                                                      className="bg-white/5 border border-white/15 hover:bg-white/10 text-slate-300 py-1.5 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-2 shadow-lg shadow-black/20"
-                                                    >
-                                                      <ClipboardCopy className="w-4 h-4" />
-                                                      Şablonu Kopyala
-                                                    </button>
-                                                    {['tpl_raci', 'tpl_mom', 'tpl_tm'].includes(tpl.id) && (
-                                                      <button
-                                                        onClick={() => generateLiveTemplate(tpl.id)}
-                                                        className="bg-teal-600/20 border border-teal-500/30 hover:bg-teal-600/30 text-teal-300 py-1.5 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-2 shadow-lg shadow-black/20"
-                                                      >
-                                                        <RefreshCw className="w-4 h-4" />
-                                                        Canli Veriden Doldur
-                                                      </button>
-                                                    )}
-                                                  </div>
-                                                </div>
-                                                <div className="p-4 bg-slate-900 text-green-400 font-mono text-sm overflow-x-auto whitespace-pre-wrap leading-relaxed">
-                                                  {tpl.format}
-                                                </div>
-                                              </div>
-                                            ))}
-                                          </div>
-                                        </div>
-                                      )}
-
-                                      {/* TAB 4: COMPETENCIES (Yetkinlikler) */}
-                                      {activeTab === 'competencies' && (
-                                        <div className="space-y-4">
-                                          <div className="bg-purple-500/10 text-purple-800 p-4 rounded-lg flex gap-3 items-start border border-purple-100 mb-6">
-                                            <BrainCircuit className="w-5 h-5 shrink-0 mt-0.5" />
-                                            <p className="text-sm">
-                                              <strong>Temel Yetkinlikler:</strong> Başarılı bir iş analisti olmak sadece teknikleri bilmekle değil, doğru iletişim ve analitik düşünce yapısına sahip olmakla ilgilidir.
-                                            </p>
-                                          </div>
-                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {competenciesData.map(comp => (
-                                              <div key={comp.id} className="bg-white/5 p-5 rounded-xl border border-white/10 border-l-4 border-l-purple-400 shadow-lg shadow-black/20 hover:shadow-md transition-shadow">
-                                                <h3 className="font-bold text-lg text-slate-100 mb-2">{comp.name}</h3>
-                                                <p className="text-sm text-slate-400">{comp.desc}</p>
-                                              </div>
-                                            ))}
-                                          </div>
-                                        </div>
-                                      )}
-
-                                    </div>
-                                  </main>
-
-                                  {/* RESET CONFIRM */}
-                                  {showResetConfirm && (
-                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                                      <div className="glass-panel p-6 max-w-sm w-full shadow-2xl">
-                                        <h3 className="font-bold text-lg text-white mb-2">İlerlemeyi Sıfırla?</h3>
-                                        <p className="text-sm text-slate-400 mb-5">Bu projede tamamlanan tüm ana görev ve alt görevler sıfırlanacak. Bu işlem geri alınamaz!</p>
-                                        <div className="flex justify-end gap-3">
-                                          <button onClick={() => setShowResetConfirm(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
-                                          <button onClick={resetProgress} className="px-4 py-2 text-sm bg-rose-600/80 hover:bg-rose-500 text-white rounded-md font-medium">Sıfırla</button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* PROJECT MODAL */}
-                                  {showProjectModal && (
-                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                                      <div className="glass-panel p-6 shadow-2xl max-w-sm w-full">
-                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><FolderPlus className="text-blue-500 w-5 h-5" />Yeni Proje</h3>
-                                        <input value={newProjectName} onChange={e => setNewProjectName(e.target.value)} onKeyDown={e => e.key === 'Enter' && createProject()} placeholder="Proje adı..." className="w-full border border-white/10 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 mb-4" autoFocus />
-                                        <div className="flex justify-end gap-3">
-                                          <button onClick={() => { setShowProjectModal(false); setNewProjectName(''); }} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
-                                          <button onClick={createProject} className="px-4 py-2 text-sm bg-blue-600/80 hover:bg-blue-500 text-white rounded-md font-medium">Oluştur</button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* BUSINESS RULE MODAL */}
-                                  {showBRModal && (
-                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                                      <div className="glass-panel p-6 shadow-2xl max-w-lg w-full">
-                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><BookOpen className="text-blue-400 w-5 h-5" />{editingBR ? 'Is Kuralini Duzenle' : 'Yeni Is Kurali'}</h3>
-                                        <div className="space-y-3">
-                                          <input value={brForm.title} onChange={e => setBrForm({ ...brForm, title: e.target.value })} placeholder="Kural basligi*" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
-                                          <textarea value={brForm.ruleText} onChange={e => setBrForm({ ...brForm, ruleText: e.target.value })} placeholder="[Kosul] durumunda [eylem] yapilmalidir*" rows="3" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none" />
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <div><label className="text-xs text-slate-400 block mb-1">Kategori</label>
-                                              <select value={brForm.category} onChange={e => setBrForm({ ...brForm, category: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                                {['Hesaplama', 'Surec', 'Veri', 'Erisim', 'Dogrulama', 'Bildirim'].map(c => <option key={c} value={c}>{c}</option>)}
-                                              </select>
-                                            </div>
-                                            <div><label className="text-xs text-slate-400 block mb-1">Kaynak</label>
-                                              <select value={brForm.source} onChange={e => setBrForm({ ...brForm, source: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                                {['Mevzuat', 'Sirket Politikasi', 'Paydas Karari', 'Sektor Standardi'].map(s => <option key={s} value={s}>{s}</option>)}
-                                              </select>
-                                            </div>
-                                          </div>
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <input value={brForm.sourceRef} onChange={e => setBrForm({ ...brForm, sourceRef: e.target.value })} placeholder="Kaynak ref. (orn: Madde 5/3)" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                            <input value={brForm.version} onChange={e => setBrForm({ ...brForm, version: e.target.value })} placeholder="Versiyon (orn: v1.0)" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          </div>
-                                          <div><label className="text-xs text-slate-400 block mb-1">Durum</label>
-                                            <select value={brForm.status} onChange={e => setBrForm({ ...brForm, status: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                              {['Aktif', 'Revize Edildi', 'Gecersiz'].map(s => <option key={s} value={s}>{s}</option>)}
-                                            </select>
-                                          </div>
-                                          <textarea value={brForm.notes} onChange={e => setBrForm({ ...brForm, notes: e.target.value })} placeholder="Not (opsiyonel)" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
-                                          {editingBR && brForm.version !== editingBR.version && (
-                                            <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 text-xs text-amber-300">
-                                              <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                                              <span>Versiyon degisti — eski kayit &quot;Revize Edildi&quot; durumuna cekilecek.</span>
-                                            </div>
-                                          )}
-                                        </div>
-                                        <div className="flex justify-end gap-3 mt-5">
-                                          <button onClick={() => setShowBRModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Iptal</button>
-                                          <button onClick={saveBR} className="px-4 py-2 text-sm bg-blue-600/80 hover:bg-blue-500 text-white rounded-md font-medium">Kaydet</button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* CHANGE REQUEST MODAL */}
-                                  {showCRModal && (
-                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                                      <div className="glass-panel p-6 shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><RefreshCw className="text-amber-400 w-5 h-5" />{editingCR ? 'CR Duzenle' : 'Yeni Degisiklik Talebi'}</h3>
-                                        <div className="space-y-3">
-                                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Bolum 1 — Talep Bilgileri</p>
-                                          <input value={crForm.title} onChange={e => setCrForm({ ...crForm, title: e.target.value })} placeholder="Talep basligi*" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <div><label className="text-xs text-slate-400 block mb-1">Degisiklik Turu</label>
-                                              <select value={crForm.changeType} onChange={e => setCrForm({ ...crForm, changeType: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                                {['Kapsam Genislemesi', 'Duzeltme', 'Iptal', 'Yeni Ekleme', 'Erteleme'].map(c => <option key={c} value={c}>{c}</option>)}
-                                              </select>
-                                            </div>
-                                            <div><label className="text-xs text-slate-400 block mb-1">Etkilenen Alan</label>
-                                              <select value={crForm.affectedEntityType} onChange={e => setCrForm({ ...crForm, affectedEntityType: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                                {['Gereksinim', 'Is Kurali', 'Varsayim', 'Risk'].map(c => <option key={c} value={c}>{c}</option>)}
-                                              </select>
-                                            </div>
-                                          </div>
-                                          <input value={crForm.affectedEntityId} onChange={e => setCrForm({ ...crForm, affectedEntityId: e.target.value })} placeholder="Etkilenen kayit ID (orn: REQ-003)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          <textarea value={crForm.changeDescription} onChange={e => setCrForm({ ...crForm, changeDescription: e.target.value })} placeholder="Degisiklik aciklamasi*" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
-                                          <textarea value={crForm.businessDriver} onChange={e => setCrForm({ ...crForm, businessDriver: e.target.value })} placeholder="Is gerekce / tetikleyici*" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
-                                          <input value={crForm.requestingStakeholderId} onChange={e => setCrForm({ ...crForm, requestingStakeholderId: e.target.value })} placeholder="Talep eden paydas (opsiyonel)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          {editingCR && (
-                                            <>
-                                              <div className="border-t border-white/10 pt-3">
-                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Bolum 2 — Karar</p>
-                                              </div>
-                                              <textarea value={crForm.impactAnalysis} onChange={e => setCrForm({ ...crForm, impactAnalysis: e.target.value })} placeholder="Etki analizi" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
-                                              <div><label className="text-xs text-slate-400 block mb-1">Durum</label>
-                                                <select value={crForm.status} onChange={e => setCrForm({ ...crForm, status: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                                  {['Bekliyor', 'Onaylandi', 'Reddedildi', 'Ertelendi'].map(s => <option key={s} value={s}>{s}</option>)}
-                                                </select>
-                                              </div>
-                                              {crForm.status !== 'Bekliyor' && (
-                                                <div><label className="text-xs text-slate-400 block mb-1">Karar Tarihi</label>
-                                                  <input type="date" value={crForm.decisionDate} onChange={e => setCrForm({ ...crForm, decisionDate: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                                </div>
-                                              )}
-                                              <textarea value={crForm.decisionNote} onChange={e => setCrForm({ ...crForm, decisionNote: e.target.value })} placeholder="Karar notu" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
-                                            </>
-                                          )}
-                                        </div>
-                                        <div className="flex justify-end gap-3 mt-5">
-                                          <button onClick={() => setShowCRModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Iptal</button>
-                                          <button onClick={saveCR} className="px-4 py-2 text-sm bg-amber-600/80 hover:bg-amber-500 text-white rounded-md font-medium">Kaydet</button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* RISK MODAL */}
-                                  {showRiskModal && (
-                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                                      <div className="glass-panel p-6 shadow-2xl max-w-lg w-full">
-                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><AlertTriangle className="text-rose-500 w-5 h-5" />{editingRisk ? 'Riski Düzenle' : 'Yeni Risk'}</h3>
-                                        <div className="space-y-3">
-                                          <input value={riskForm.title} onChange={e => setRiskForm({ ...riskForm, title: e.target.value })} placeholder="Risk başlığı*" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300" />
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <div><label className="text-xs text-slate-400 block mb-1">Kategori</label>
-                                              <select value={riskForm.category} onChange={e => setRiskForm({ ...riskForm, category: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                                <option value="">Kategori seçin</option>
-                                                {['Paydas', 'Kapsam', 'Veri', 'Degisim Yonetimi', 'Teknik', 'Zaman', 'Butce', 'Yasal'].map(c => <option key={c} value={c}>{c}</option>)}
-                                              </select>
-                                            </div>
-                                            <div><label className="text-xs text-slate-400 block mb-1">Durum</label>
-                                              <select value={riskForm.status} onChange={e => setRiskForm({ ...riskForm, status: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                                {['Açık', 'Azaltıldı', 'Kapatıldı'].map(s => <option key={s}>{s}</option>)}
-                                              </select>
-                                            </div>
-                                          </div>
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <div><label className="text-xs text-slate-400 block mb-1">Olasılık: {PROB_LABELS[riskForm.probability]}</label>
-                                              <input type="range" min="1" max="3" value={riskForm.probability} onChange={e => setRiskForm({ ...riskForm, probability: Number(e.target.value) })} className="w-full accent-rose-500" />
-                                            </div>
-                                            <div><label className="text-xs text-slate-400 block mb-1">Etki: {IMPACT_LABELS[riskForm.impact]}</label>
-                                              <input type="range" min="1" max="3" value={riskForm.impact} onChange={e => setRiskForm({ ...riskForm, impact: Number(e.target.value) })} className="w-full accent-rose-500" />
-                                            </div>
-                                          </div>
-                                          <div className={`text-center text-sm font-bold py-2 rounded-lg border ${getRiskLevel(riskForm.probability, riskForm.impact).cls}`}>
-                                            Risk Skoru: {riskForm.probability * riskForm.impact} — {getRiskLevel(riskForm.probability, riskForm.impact).label}
-                                          </div>
-                                          <input value={riskForm.owner} onChange={e => setRiskForm({ ...riskForm, owner: e.target.value })} placeholder="Sorumlu kişi" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          <textarea value={riskForm.mitigation} onChange={e => setRiskForm({ ...riskForm, mitigation: e.target.value })} placeholder="Azaltma stratejisi..." rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <input value={riskForm.linkedRequirementId} onChange={e => setRiskForm({ ...riskForm, linkedRequirementId: e.target.value })} placeholder="Bagli gereksinim ID (orn: REQ-003)" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                            <input value={riskForm.linkedAssumptionId} onChange={e => setRiskForm({ ...riskForm, linkedAssumptionId: e.target.value })} placeholder="Tetikleyen varsayim ID (orn: ASM-001)" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          </div>
-                                          <input value={riskForm.triggerDescription} onChange={e => setRiskForm({ ...riskForm, triggerDescription: e.target.value })} placeholder="Erken uyarı işareti (risk gerceklesirse ne olur?)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                        </div>
-                                        <div className="flex justify-end gap-3 mt-5">
-                                          <button onClick={() => setShowRiskModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
-                                          <button onClick={saveRisk} className="px-4 py-2 text-sm bg-rose-600/80 hover:bg-rose-500 text-white rounded-md font-medium">Kaydet</button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* ASSUMPTION MODAL */}
-                                  {showAssumptionModal && (
-                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                                      <div className="glass-panel p-6 shadow-2xl max-w-lg w-full">
-                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><Lightbulb className="text-amber-400 w-5 h-5" />{editingAssumption ? 'Duzenle' : 'Yeni Varsayim / Kisit'}</h3>
-                                        <div className="space-y-3">
-                                          <input value={assumptionForm.title} onChange={e => setAssumptionForm({ ...assumptionForm, title: e.target.value })} placeholder="Baslik*" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
-                                          <textarea value={assumptionForm.content} onChange={e => setAssumptionForm({ ...assumptionForm, content: e.target.value })} placeholder="Aciklama / icerik*" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <div><label className="text-xs text-slate-400 block mb-1">Tip</label>
-                                              <select value={assumptionForm.type} onChange={e => setAssumptionForm({ ...assumptionForm, type: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                                <option value="Varsayim">Varsayim</option>
-                                                <option value="Kisit">Kisit</option>
-                                              </select>
-                                            </div>
-                                            <div><label className="text-xs text-slate-400 block mb-1">Kategori</label>
-                                              <select value={assumptionForm.category} onChange={e => setAssumptionForm({ ...assumptionForm, category: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                                {['Teknik', 'Is', 'Paydas', 'Zaman', 'Butce', 'Yasal', 'Organizasyonel'].map(c => <option key={c} value={c}>{c}</option>)}
-                                              </select>
-                                            </div>
-                                          </div>
-                                          <input value={assumptionForm.ownerId} onChange={e => setAssumptionForm({ ...assumptionForm, ownerId: e.target.value })} placeholder="Sorumlu (opsiyonel)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          <div><label className="text-xs text-slate-400 block mb-1">Dogrulama Durumu</label>
-                                            <select value={assumptionForm.validationStatus} onChange={e => setAssumptionForm({ ...assumptionForm, validationStatus: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                              <option value="Dogrulanmadi">Dogrulanmadi</option>
-                                              <option value="Dogrulandi">Dogrulandi</option>
-                                              <option value="Curutuldu">Curutuldu</option>
-                                            </select>
-                                          </div>
-                                          {assumptionForm.validationStatus !== 'Dogrulanmadi' && (
-                                            <div><label className="text-xs text-slate-400 block mb-1">Dogrulama Tarihi</label>
-                                              <input type="date" value={assumptionForm.validationDate} onChange={e => setAssumptionForm({ ...assumptionForm, validationDate: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                            </div>
-                                          )}
-                                          <textarea value={assumptionForm.notes} onChange={e => setAssumptionForm({ ...assumptionForm, notes: e.target.value })} placeholder="Not (opsiyonel)" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
-                                        </div>
-                                        <div className="flex justify-end gap-3 mt-5">
-                                          <button onClick={() => setShowAssumptionModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Iptal</button>
-                                          <button onClick={saveAssumption} className="px-4 py-2 text-sm bg-amber-600/80 hover:bg-amber-500 text-white rounded-md font-medium">Kaydet</button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* ACTION MODAL */}
-                                  {showActionModal && (
-                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                                      <div className="glass-panel p-6 shadow-2xl max-w-md w-full">
-                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><ListChecks className="text-indigo-500 w-5 h-5" />{editingAction ? 'Aksiyonu Düzenle' : 'Yeni Aksiyon'}</h3>
-                                        <div className="space-y-3">
-                                          <input value={actionForm.title} onChange={e => setActionForm({ ...actionForm, title: e.target.value })} placeholder="Aksiyon başlığı*" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <input value={actionForm.owner} onChange={e => setActionForm({ ...actionForm, owner: e.target.value })} placeholder="Sorumlu kişi" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                            <input type="date" value={actionForm.dueDate} onChange={e => setActionForm({ ...actionForm, dueDate: e.target.value })} className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          </div>
-                                          <select value={actionForm.status} onChange={e => setActionForm({ ...actionForm, status: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                            {['Bekliyor', 'Devam Ediyor', 'Tamamlandı'].map(s => <option key={s}>{s}</option>)}
-                                          </select>
-                                          <input value={actionForm.source} onChange={e => setActionForm({ ...actionForm, source: e.target.value })} placeholder="Kaynak (ör. Toplantı adı)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          <input value={actionForm.linkedRequirementId || ''} onChange={e => setActionForm({ ...actionForm, linkedRequirementId: e.target.value })} placeholder="Bagli gereksinim ID (orn: REQ-003)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          <textarea value={actionForm.notes || ''} onChange={e => setActionForm({ ...actionForm, notes: e.target.value })} placeholder="Not / Açıklama (opsiyonel)" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none" />
-                                        </div>
-                                        <div className="flex justify-end gap-3 mt-5">
-                                          <button onClick={() => setShowActionModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
-                                          <button onClick={saveAction} className="px-4 py-2 text-sm bg-indigo-600/80 hover:bg-indigo-500 text-white rounded-md font-medium">Kaydet</button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* STAKEHOLDER MODAL */}
-                                  {showStakeholderModal && (
-                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                                      <div className="glass-panel p-6 shadow-2xl max-w-md w-full">
-                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><UserPlus className="text-orange-500 w-5 h-5" />{editingStakeholder ? 'Paydaşı Düzenle' : 'Yeni Paydaş'}</h3>
-                                        <div className="space-y-3">
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <input value={stakeholderForm.name} onChange={e => setStakeholderForm({ ...stakeholderForm, name: e.target.value })} placeholder="Paydaş adı*" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-200" />
-                                            <input value={stakeholderForm.role} onChange={e => setStakeholderForm({ ...stakeholderForm, role: e.target.value })} placeholder="Rol/Ünvan" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          </div>
-                                          <input value={stakeholderForm.department} onChange={e => setStakeholderForm({ ...stakeholderForm, department: e.target.value })} placeholder="Departman" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <div><label className="text-xs text-slate-400 block mb-1">İlgi: {PROB_LABELS[stakeholderForm.interest]}</label>
-                                              <input type="range" min="1" max="3" value={stakeholderForm.interest} onChange={e => setStakeholderForm({ ...stakeholderForm, interest: Number(e.target.value) })} className="w-full accent-orange-500" />
-                                            </div>
-                                            <div><label className="text-xs text-slate-400 block mb-1">Etki: {PROB_LABELS[stakeholderForm.influence]}</label>
-                                              <input type="range" min="1" max="3" value={stakeholderForm.influence} onChange={e => setStakeholderForm({ ...stakeholderForm, influence: Number(e.target.value) })} className="w-full accent-orange-500" />
-                                            </div>
-                                          </div>
-                                          <div><label className="text-xs text-slate-400 block mb-1">RACI Rolü</label>
-                                            <div className="flex gap-2">
-                                              {Object.entries(RACI_LABELS).map(([k, v]) => (
-                                                <button key={k} onClick={() => setStakeholderForm({ ...stakeholderForm, raci: k })} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors border ${stakeholderForm.raci === k ? RACI_COLORS[k] + ' border-current' : 'border-white/10 text-slate-400 hover:bg-white/5'}`}>{k}</button>
-                                              ))}
-                                            </div>
-                                            <p className="text-xs text-slate-400 mt-1">{RACI_LABELS[stakeholderForm.raci]}</p>
-                                          </div>
-                                          <textarea value={stakeholderForm.notes} onChange={e => setStakeholderForm({ ...stakeholderForm, notes: e.target.value })} placeholder="Notlar..." rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
-                                        </div>
-                                        <div className="flex justify-end gap-3 mt-5">
-                                          <button onClick={() => setShowStakeholderModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
-                                          <button onClick={saveStakeholder} className="px-4 py-2 text-sm bg-orange-500/100 hover:bg-orange-600 text-white rounded-md font-medium">Kaydet</button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* REQUIREMENT MODAL */}
-                                  {showReqModal && (
-                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                                      <div className="glass-panel p-6 shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><BookMarked className="text-teal-500 w-5 h-5" />{editingReq ? 'Gereksinimi Düzenle' : 'Yeni Gereksinim'}</h3>
-                                        <div className="space-y-3">
-                                          <input value={reqForm.name} onChange={e => setReqForm({ ...reqForm, name: e.target.value })} placeholder="Gereksinim adı*" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300" />
-                                          <input value={reqForm.objective} onChange={e => setReqForm({ ...reqForm, objective: e.target.value })} placeholder="Bağlı iş hedefi" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <input value={reqForm.module} onChange={e => setReqForm({ ...reqForm, module: e.target.value })} placeholder="Modül/Ekran" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                            <input value={reqForm.testId} onChange={e => setReqForm({ ...reqForm, testId: e.target.value })} placeholder="Test ID" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          </div>
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <select value={reqForm.status} onChange={e => setReqForm({ ...reqForm, status: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                              {Object.keys(REQ_STATUS_COLORS).map(s => <option key={s}>{s}</option>)}
-                                            </select>
-                                            <select value={reqForm.moscow} onChange={e => setReqForm({ ...reqForm, moscow: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                              <option value="">MoSCoW Seçin</option>
-                                              <option value="Must">Must Have</option>
-                                              <option value="Should">Should Have</option>
-                                              <option value="Could">Could Have</option>
-                                              <option value="Wont">Won't Have</option>
-                                            </select>
-                                          </div>
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <select value={reqForm.requirementType} onChange={e => setReqForm({ ...reqForm, requirementType: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                              <option value="">Gereksinim Türü</option>
-                                              {['Is Gereksinimi', 'Paydas Gereksinimi', 'Cozum Gereksinimi', 'Gecis Gereksinimi'].map(t => <option key={t} value={t}>{t}</option>)}
-                                            </select>
-                                            <select value={reqForm.approvalStatus} onChange={e => setReqForm({ ...reqForm, approvalStatus: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                              {['Taslak', 'Incelemede', 'Onaylandi', 'Reddedildi', 'Revize Gerekiyor'].map(s => <option key={s} value={s}>{s}</option>)}
-                                            </select>
-                                          </div>
-                                          <div className="border-l-4 border-amber-400 pl-3 space-y-1">
-                                            <label className="text-xs font-bold text-amber-400 block">Kabul Kriteri (Acceptance Criteria)</label>
-                                            <textarea value={reqForm.acceptanceCriteria} onChange={e => setReqForm({ ...reqForm, acceptanceCriteria: e.target.value })} placeholder="Bu gereksinim ne zaman karsilanmis sayilir?" rows="3" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
-                                          </div>
-                                          <select value={reqForm.babokKnowledgeArea} onChange={e => setReqForm({ ...reqForm, babokKnowledgeArea: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                            <option value="">BABOK Bilgi Alani (istege bagli)</option>
-                                            {babokData.map(ka => <option key={ka.id} value={ka.id}>{ka.title}</option>)}
-                                          </select>
-                                          <textarea value={reqForm.notes} onChange={e => setReqForm({ ...reqForm, notes: e.target.value })} placeholder="Not / Açıklama (opsiyonel)" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
-                                        </div>
-                                        <div className="flex justify-end gap-3 mt-5">
-                                          <button onClick={() => setShowReqModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
-                                          <button onClick={saveReq} className="px-4 py-2 text-sm bg-teal-600 hover:bg-teal-700 text-white rounded-md font-medium">Kaydet</button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* LINK CARD MODAL */}
-                                  {showLinkCard && linkCardEntity && (() => {
-                                    const { type, id } = linkCardEntity;
-                                    const crs = activeProject.changeRequests || [];
-                                    const meetings = activeProject.meetings || [];
-                                    const actions = activeProject.actions || [];
-
-                                    if (type === 'requirement') {
-                                      const req = (activeProject.requirements || []).find(r => r.id === id);
-                                      if (!req) return null;
-                                      const linkedCRs = crs.filter(cr => cr.affectedEntityId === req.reqId);
-                                      return (
-                                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                                          <div className="glass-panel p-6 shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
-                                            <div className="flex items-center justify-between mb-4">
-                                              <h3 className="font-bold text-lg text-slate-100 flex items-center gap-2"><ArrowUpRight className="text-cyan-400 w-5 h-5" /><span className="font-mono text-cyan-400">{req.reqId}</span>{req.name}</h3>
-                                              <button onClick={closeLinkCard} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400"><X className="w-4 h-4" /></button>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-                                              {[['Is Hedefi', req.objective], ['Modul', req.module], ['MoSCoW', req.moscow], ['Durum', req.status], ['Test ID', req.testId], ['Not', req.notes]].map(([k, v]) => (
-                                                <div key={k} className="bg-white/5 rounded-lg p-2.5"><span className="text-xs text-slate-500 block">{k}</span><span className="text-slate-200">{v || '—'}</span></div>
-                                              ))}
-                                            </div>
-                                            <div className="space-y-2">
-                                              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Bagli Degisiklik Talepleri ({linkedCRs.length})</p>
-                                              {linkedCRs.length === 0 ? <p className="text-xs text-slate-500 py-2">Bagli CR bulunamadi.</p> : linkedCRs.map(cr => (
-                                                <div key={cr.id} className="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-2">
-                                                  <span className="text-xs font-mono text-slate-400">{cr.crId}</span>
-                                                  <span className="text-xs text-slate-300 flex-1">{cr.title}</span>
-                                                  <span className={`text-xs px-2 py-0.5 rounded-full ${cr.status === 'Bekliyor' ? 'bg-amber-500/10 text-amber-400' : cr.status === 'Onaylandi' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>{cr.status}</span>
-                                                </div>
-                                              ))}
-                                              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-3">Bagli Is Kurallari</p>
-                                              <p className="text-xs text-slate-500 py-1">Otomatik esleme icin BR olusturma sirasinda req ID girin.</p>
-                                            </div>
-                                            <div className="flex justify-end mt-4"><button onClick={closeLinkCard} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Kapat</button></div>
-                                          </div>
-                                        </div>
-                                      );
-                                    }
-
-                                    if (type === 'stakeholder') {
-                                      const s = (activeProject.stakeholders || []).find(st => st.id === id);
-                                      if (!s) return null;
-                                      const relMeetings = meetings.filter(m => m.attendees && m.attendees.toLowerCase().includes(s.name.toLowerCase()));
-                                      const openActions = actions.filter(a => a.owner && a.owner.toLowerCase() === s.name.toLowerCase() && a.status !== 'Tamamlandi');
-                                      return (
-                                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                                          <div className="glass-panel p-6 shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
-                                            <div className="flex items-center justify-between mb-4">
-                                              <h3 className="font-bold text-lg text-slate-100 flex items-center gap-2"><ArrowUpRight className="text-cyan-400 w-5 h-5" />{s.name}</h3>
-                                              <button onClick={closeLinkCard} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400"><X className="w-4 h-4" /></button>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-                                              {[['Rol', s.role], ['Departman', s.department], ['RACI', `${s.raci} — ${RACI_LABELS[s.raci]}`], ['Ilgi / Etki', `${PROB_LABELS[s.interest]} / ${PROB_LABELS[s.influence]}`]].map(([k, v]) => (
-                                                <div key={k} className="bg-white/5 rounded-lg p-2.5"><span className="text-xs text-slate-500 block">{k}</span><span className="text-slate-200">{v || '—'}</span></div>
-                                              ))}
-                                            </div>
-                                            <div className="space-y-3">
-                                              <div>
-                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Katildigi Toplantilar ({relMeetings.length})</p>
-                                                {relMeetings.length === 0 ? <p className="text-xs text-slate-500">Toplanti bulunamadi.</p> : relMeetings.map(m => <div key={m.id} className="text-xs bg-white/5 rounded px-3 py-1.5 text-slate-300">{m.date} — {m.topic}</div>)}
-                                              </div>
-                                              <div>
-                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Acik Aksiyonlar ({openActions.length})</p>
-                                                {openActions.length === 0 ? <p className="text-xs text-slate-500">Acik aksiyon yok.</p> : openActions.map(a => <div key={a.id} className="text-xs bg-white/5 rounded px-3 py-1.5 text-slate-300">{a.title} <span className="text-slate-500">· {a.dueDate || 'Tarih yok'}</span></div>)}
-                                              </div>
-                                            </div>
-                                            <div className="flex justify-end mt-4"><button onClick={closeLinkCard} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Kapat</button></div>
-                                          </div>
-                                        </div>
-                                      );
-                                    }
-
-                                    if (type === 'risk') {
-                                      const risk = (activeProject.risks || []).find(r => r.id === id);
-                                      if (!risk) return null;
-                                      const lvl = getRiskLevel(risk.probability, risk.impact);
-                                      const linkedCRs = crs.filter(cr => cr.affectedEntityType === 'Risk');
-                                      return (
-                                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                                          <div className="glass-panel p-6 shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
-                                            <div className="flex items-center justify-between mb-4">
-                                              <h3 className="font-bold text-lg text-slate-100 flex items-center gap-2"><ArrowUpRight className="text-cyan-400 w-5 h-5" />{risk.title}</h3>
-                                              <button onClick={closeLinkCard} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400"><X className="w-4 h-4" /></button>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-                                              {[['Kategori', risk.category], ['Risk Skoru', `${risk.probability * risk.impact} — ${lvl.label}`], ['Durum', risk.status], ['Sorumlu', risk.owner], ['Azaltma', risk.mitigation]].map(([k, v]) => (
-                                                <div key={k} className="bg-white/5 rounded-lg p-2.5"><span className="text-xs text-slate-500 block">{k}</span><span className="text-slate-200">{v || '—'}</span></div>
-                                              ))}
-                                            </div>
-                                            <div>
-                                              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Bagli Degisiklik Talepleri ({linkedCRs.length})</p>
-                                              {linkedCRs.length === 0 ? <p className="text-xs text-slate-500 py-1">Bagli CR bulunamadi.</p> : linkedCRs.map(cr => (
-                                                <div key={cr.id} className="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-2 mb-1">
-                                                  <span className="text-xs font-mono text-slate-400">{cr.crId}</span>
-                                                  <span className="text-xs text-slate-300 flex-1">{cr.title}</span>
-                                                  <span className={`text-xs px-2 py-0.5 rounded-full ${cr.status === 'Bekliyor' ? 'bg-amber-500/10 text-amber-400' : cr.status === 'Onaylandi' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>{cr.status}</span>
-                                                </div>
-                                              ))}
-                                            </div>
-                                            <div className="flex justify-end mt-4"><button onClick={closeLinkCard} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Kapat</button></div>
-                                          </div>
-                                        </div>
-                                      );
-                                    }
-                                    return null;
-                                  })()}
-
-                                  {/* MEETING MODAL */}
-                                  {showMeetingModal && (
-                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                                      <div className="glass-panel p-6 shadow-2xl max-w-md w-full">
-                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><MessageSquare className="text-violet-500 w-5 h-5" />Yeni Toplantı</h3>
-                                        <div className="space-y-3">
-                                          <input value={meetingForm.topic} onChange={e => setMeetingForm({ ...meetingForm, topic: e.target.value })} placeholder="Toplantı konusu*" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" />
-                                          <input value={meetingForm.attendees} onChange={e => setMeetingForm({ ...meetingForm, attendees: e.target.value })} placeholder="Katılımcılar (ör. Ahmet, Ayşe, Mehmet)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          <input type="date" value={meetingForm.date} onChange={e => setMeetingForm({ ...meetingForm, date: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                        </div>
-                                        <div className="flex justify-end gap-3 mt-5">
-                                          <button onClick={() => setShowMeetingModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
-                                          <button onClick={saveMeeting} className="px-4 py-2 text-sm bg-violet-600 hover:bg-violet-700 text-white rounded-md font-medium">Oluştur</button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* GANTT TASK MODAL */}
-                                  {showGanttModal && (
-                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                                      <div className="glass-panel p-6 shadow-2xl max-w-md w-full">
-                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><CalendarDays className="text-cyan-500 w-5 h-5" />{editingGanttTask ? 'Görevi Düzenle' : 'Yeni Görev / Faz'}</h3>
-                                        <div className="space-y-3">
-                                          <input value={ganttForm.name} onChange={e => setGanttForm({ ...ganttForm, name: e.target.value })} placeholder="Görev/Faz adı*" className="w-full border border-white/10 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300" autoFocus />
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <input value={ganttForm.category} onChange={e => setGanttForm({ ...ganttForm, category: e.target.value })} placeholder="Kategori (ör. Faz 1)" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                            <input value={ganttForm.assignedTo} onChange={e => setGanttForm({ ...ganttForm, assignedTo: e.target.value })} placeholder="Sorumlu kişi" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-                                          </div>
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <div>
-                                              <label className="text-xs text-slate-400 block mb-1">Başlangıç Tarihi*</label>
-                                              <input type="date" value={ganttForm.startDate} onChange={e => setGanttForm({ ...ganttForm, startDate: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300" />
-                                            </div>
-                                            <div>
-                                              <label className="text-xs text-slate-400 block mb-1">Bitiş Tarihi*</label>
-                                              <input type="date" value={ganttForm.endDate} onChange={e => setGanttForm({ ...ganttForm, endDate: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300" />
-                                            </div>
-                                          </div>
-                                          <div>
-                                            <label className="text-xs text-slate-400 block mb-1">İlerleme: <span className="font-bold text-cyan-700">%{ganttForm.progress}</span></label>
-                                            <input type="range" min="0" max="100" step="5" value={ganttForm.progress} onChange={e => setGanttForm({ ...ganttForm, progress: Number(e.target.value) })} className="w-full accent-cyan-500" />
-                                            <div className="flex justify-between text-[9px] text-slate-400"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
-                                          </div>
-                                          <div>
-                                            <label className="text-xs text-slate-400 block mb-1.5">Renk</label>
-                                            <div className="flex gap-2 flex-wrap">
-                                              {GANTT_COLORS.map(c => (
-                                                <button key={c} onClick={() => setGanttForm({ ...ganttForm, color: c })} className={`w-7 h-7 rounded-lg transition-all ${ganttForm.color === c ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : 'hover:scale-105'}`} style={{ backgroundColor: c }} />
-                                              ))}
-                                            </div>
-                                          </div>
-                                          <div>
-                                            <label className="text-xs text-slate-400 block mb-1">Gecikme Nedeni <span className="text-slate-300">(varsa)</span></label>
-                                            <textarea value={ganttForm.delayReason || ''} onChange={e => setGanttForm({ ...ganttForm, delayReason: e.target.value })} placeholder="Gecikme varsa nedenini yazın..." rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 resize-none" />
-                                          </div>
-                                          {ganttForm.startDate && ganttForm.endDate && new Date(ganttForm.endDate) >= new Date(ganttForm.startDate) && (
-                                            <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3 text-center">
-                                              <span className="text-sm font-bold text-cyan-700">
-                                                Süre: {Math.round((new Date(ganttForm.endDate) - new Date(ganttForm.startDate)) / 86400000) + 1} gün
-                                              </span>
-                                            </div>
-                                          )}
-                                        </div>
-                                        <div className="flex justify-end gap-3 mt-5">
-                                          <button onClick={() => setShowGanttModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
-                                          <button onClick={saveGanttTask} className="px-4 py-2 text-sm bg-cyan-600 hover:bg-cyan-700 text-white rounded-md font-medium">Kaydet</button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* AI GENERATION MODAL */}
-                                  {isAiModalOpen && (
-                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                                      <div className="glass-panel w-full shadow-2xl max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
-
-                                        {/* Modal Header */}
-                                        <div className="bg-indigo-600/80 p-4 flex justify-between items-center">
-                                          <div className="flex items-center gap-2 text-white">
-                                            <Sparkles className="w-5 h-5" />
-                                            <h3 className="font-bold text-lg">AI Taslak: {activeAiTask?.name}</h3>
-                                          </div>
-                                          <button
-                                            onClick={() => setIsAiModalOpen(false)}
-                                            className="text-indigo-100 hover:text-white transition-colors focus:outline-none"
-                                          >
-                                            <X className="w-6 h-6" />
-                                          </button>
-                                        </div>
-
-                                        {/* Modal Body */}
-                                        <div className="p-6 overflow-y-auto flex-1 bg-white/5">
-                                          {aiLoading ? (
-                                            <div className="flex flex-col items-center justify-center h-48 text-indigo-600">
-                                              <Loader2 className="w-10 h-10 animate-spin mb-4" />
-                                              <p className="font-medium">Proje bağlamınıza göre özel dokümanlar hazırlanıyor...</p>
-                                              <p className="text-sm text-slate-400 mt-2">Bu işlem birkaç saniye sürebilir.</p>
-                                            </div>
-                                          ) : (
-                                            <div className="bg-white/5 border border-white/10 rounded-xl p-6 shadow-lg shadow-black/20 overflow-x-auto">
-                                              <div
-                                                className="text-slate-300 leading-relaxed text-[15px]"
-                                                dangerouslySetInnerHTML={formatMarkdown(aiResult)}
-                                              />
-                                            </div>
-                                          )}
-                                        </div>
-
-                                        {/* Modal Footer */}
-                                        <div className="bg-white/5 border-t border-white/10 p-4 flex justify-end gap-3">
-                                          <button
-                                            onClick={() => setIsAiModalOpen(false)}
-                                            className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-slate-100 hover:bg-white/10 rounded-md transition-colors"
-                                          >
-                                            Kapat
-                                          </button>
-                                          {!aiLoading && (
-                                            <button
-                                              onClick={handleRegenerateAI}
-                                              className="px-4 py-2 text-sm font-medium bg-white/5 text-slate-300 hover:bg-white/10 rounded-md transition-colors flex items-center gap-2"
-                                            >
-                                              <RotateCcw className="w-4 h-4" />
-                                              Yeniden \u00dcret
-                                            </button>
-                                          )}
-                                          {!aiLoading && (
-                                            <button
-                                              onClick={copyToClipboard}
-                                              className="px-4 py-2 text-sm font-medium bg-indigo-500/10 text-indigo-700 hover:bg-indigo-100 rounded-md transition-colors flex items-center gap-2"
-                                            >
-                                              <Copy className="w-4 h-4" />
-                                              Kopyala
-                                            </button>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
+          {/* DASHBOARD TAB */}
+          {activeTab === 'dashboard' && (
+            <DashboardTab
+              activeProject={activeProject}
+              babokData={babokData}
+              completedTasks={completedTasks}
+              completedSubTasks={completedSubTasks}
+              totalTasks={totalTasks}
+              totalSubTasks={totalSubTasks}
+              overallProgress={overallProgress}
+              setActiveTab={setActiveTab}
+              setExpandedKA={setExpandedKA}
+              RingChart={RingChart}
+            />
+          )}
+
+          {/* ASSUMPTIONS & CONSTRAINTS TAB */}
+          {activeTab === 'assumptions' && (
+            <AssumptionsTab
+              activeProject={activeProject}
+              openAssumptionModal={openAssumptionModal}
+              deleteAssumption={deleteAssumption}
+            />
+          )}
+
+          {/* BUSINESS RULES TAB */}
+          {activeTab === 'businessrules' && (
+            <BusinessRulesTab
+              activeProject={activeProject}
+              openBRModal={openBRModal}
+              deleteBR={deleteBR}
+            />
+          )}
+
+          {/* CHANGE REQUESTS TAB */}
+          {activeTab === 'changes' && (
+            <ChangesTab
+              activeProject={activeProject}
+              openCRModal={openCRModal}
+              deleteCR={deleteCR}
+            />
+          )}
+
+          {/* RISK REGISTER TAB */}
+          {activeTab === 'risks' && (
+            <RisksTab
+              activeProject={activeProject}
+              openRiskModal={openRiskModal}
+              deleteRisk={deleteRisk}
+              openLinkCard={openLinkCard}
+            />
+          )}
+
+          {/* ACTION TRACKER TAB */}
+          {activeTab === 'actions' && (
+            <ActionsTab
+              activeProject={activeProject}
+              openActionModal={openActionModal}
+              deleteAction={deleteAction}
+              quickUpdateActionStatus={quickUpdateActionStatus}
+            />
+          )}
+
+          {/* STAKEHOLDER TAB */}
+          {activeTab === 'stakeholders' && (
+            <StakeholdersTab
+              activeProject={activeProject}
+              openStakeholderModal={openStakeholderModal}
+              deleteStakeholder={deleteStakeholder}
+              openLinkCard={openLinkCard}
+              focusedStakeholderId={focusedStakeholderId}
+              setFocusedStakeholderId={setFocusedStakeholderId}
+            />
+          )}
+
+          {/* REQUIREMENTS TAB */}
+          {activeTab === 'requirements' && (
+            <RequirementsTab
+              activeProject={activeProject}
+              openReqModal={openReqModal}
+              deleteReq={deleteReq}
+              openLinkCard={openLinkCard}
+              reqFilter={reqFilter}
+              setReqFilter={setReqFilter}
+            />
+          )}
+
+          {/* TRACEABILITY TAB */}
+          {activeTab === 'traceability' && (
+            <TraceabilityTab
+              activeProject={activeProject}
+              setActiveTab={setActiveTab}
+            />
+          )}
+
+          {/* MEETINGS TAB */}
+          {activeTab === 'meetings' && (
+            <MeetingsTab
+              activeProject={activeProject}
+              selectedMeeting={selectedMeeting}
+              setSelectedMeeting={setSelectedMeeting}
+              setShowMeetingModal={setShowMeetingModal}
+              deleteMeeting={deleteMeeting}
+              newNoteType={newNoteType}
+              setNewNoteType={setNewNoteType}
+              newNoteText={newNoteText}
+              setNewNoteText={setNewNoteText}
+              addNote={addNote}
+              deleteNote={deleteNote}
+              generateMoM={generateMoM}
+              setActiveTab={setActiveTab}
+            />
+          )}
+
+          {/* GANTT CHART TAB */}
+          {activeTab === 'gantt' && (
+            <GanttTab
+              activeProject={activeProject}
+              openGanttModal={openGanttModal}
+              deleteGanttTask={deleteGanttTask}
+              ganttZoom={ganttZoom}
+              setGanttZoom={setGanttZoom}
+            />
+          )}
+
+          {/* KNOWLEDGE AREAS TAB */}
+          {activeTab === 'knowledge_areas' && (
+            <KnowledgeAreasTab
+              babokData={babokData}
+              completedTasks={completedTasks}
+              completedSubTasks={completedSubTasks}
+              expandedKA={expandedKA}
+              setExpandedKA={setExpandedKA}
+              selectedTask={selectedTask}
+              handleTaskClick={handleTaskClick}
+              toggleTask={toggleTask}
+              toggleSubTask={toggleSubTask}
+              markAllKA={markAllKA}
+              projectContext={projectContext}
+              setProjectContext={setProjectContext}
+              isContextSaved={isContextSaved}
+              setIsContextSaved={setIsContextSaved}
+              handleOpenAIModal={handleOpenAIModal}
+            />
+          )}
+
+          {/* TECHNIQUES TAB */}
+          {activeTab === 'techniques' && (
+            <TechniquesTab
+              babokData={babokData}
+              techFilter={techFilter}
+              setTechFilter={setTechFilter}
+            />
+          )}
+
+          {/* TEMPLATES TAB */}
+          {activeTab === 'templates' && (
+            <TemplatesTab
+              generateLiveTemplate={generateLiveTemplate}
+            />
+          )}
+
+          {/* COMPETENCIES TAB */}
+          {activeTab === 'competencies' && (
+            <CompetenciesTab />
+          )}
+
+        </div>
+        </main>
+
+        {/* ===== MODALS ===== */}
+
+        {/* BUSINESS RULE MODAL */}
+        {showBRModal && (
+          <BusinessRuleModal
+            form={brForm}
+            setForm={setBrForm}
+            onSave={saveBR}
+            onClose={() => setShowBRModal(false)}
+            editingBR={editingBR}
+          />
+        )}
+
+        {/* CHANGE REQUEST MODAL */}
+        {showCRModal && (
+          <ChangeRequestModal
+            form={crForm}
+            setForm={setCrForm}
+            onSave={saveCR}
+            onClose={() => setShowCRModal(false)}
+            editingCR={editingCR}
+          />
+        )}
+
+        {/* RISK MODAL */}
+        {showRiskModal && (
+          <RiskModal
+            form={riskForm}
+            setForm={setRiskForm}
+            onSave={saveRisk}
+            onClose={() => setShowRiskModal(false)}
+            editingRisk={editingRisk}
+          />
+        )}
+
+        {/* ASSUMPTION MODAL */}
+        {showAssumptionModal && (
+          <AssumptionModal
+            form={assumptionForm}
+            setForm={setAssumptionForm}
+            onSave={saveAssumption}
+            onClose={() => setShowAssumptionModal(false)}
+            editingAssumption={editingAssumption}
+          />
+        )}
+
+        {/* ACTION MODAL */}
+        {showActionModal && (
+          <ActionModal
+            form={actionForm}
+            setForm={setActionForm}
+            onSave={saveAction}
+            onClose={() => setShowActionModal(false)}
+            editingAction={editingAction}
+          />
+        )}
+
+        {/* STAKEHOLDER MODAL */}
+        {showStakeholderModal && (
+          <StakeholderModal
+            form={stakeholderForm}
+            setForm={setStakeholderForm}
+            onSave={saveStakeholder}
+            onClose={() => setShowStakeholderModal(false)}
+            editingStakeholder={editingStakeholder}
+          />
+        )}
+
+        {/* REQUIREMENT MODAL */}
+        {showReqModal && (
+          <RequirementModal
+            form={reqForm}
+            setForm={setReqForm}
+            onSave={saveReq}
+            onClose={() => setShowReqModal(false)}
+            editingReq={editingReq}
+            babokData={babokData}
+          />
+        )}
+
+        {/* LINK CARD MODAL */}
+        {showLinkCard && linkCardEntity && (
+          <LinkCardModal
+            activeProject={activeProject}
+            linkCardEntity={linkCardEntity}
+            onClose={closeLinkCard}
+          />
+        )}
+
+        {/* MEETING MODAL */}
+        {showMeetingModal && (
+          <MeetingModal
+            form={meetingForm}
+            setForm={setMeetingForm}
+            onSave={saveMeeting}
+            onClose={() => setShowMeetingModal(false)}
+          />
+        )}
+
+        {/* GANTT TASK MODAL */}
+        {showGanttModal && (
+          <GanttModal
+            form={ganttForm}
+            setForm={setGanttForm}
+            onSave={saveGanttTask}
+            onClose={() => setShowGanttModal(false)}
+            editingGanttTask={editingGanttTask}
+          />
+        )}
+
+        {/* AI GENERATION MODAL */}
+        {isAiModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="glass-panel w-full shadow-2xl max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+
+              {/* Modal Header */}
+              <div className="bg-indigo-600/80 p-4 flex justify-between items-center">
+                <div className="flex items-center gap-2 text-white">
+                  <Sparkles className="w-5 h-5" />
+                  <h3 className="font-bold text-lg">AI Taslak: {activeAiTask?.name}</h3>
+                </div>
+                <button
+                  onClick={() => setIsAiModalOpen(false)}
+                  className="text-indigo-100 hover:text-white transition-colors focus:outline-none"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 overflow-y-auto flex-1 bg-white/5">
+                {aiLoading ? (
+                  <div className="flex flex-col items-center justify-center h-48 text-indigo-600">
+                    <Loader2 className="w-10 h-10 animate-spin mb-4" />
+                    <p className="font-medium">Proje bağlamınıza göre özel dokümanlar hazırlanıyor...</p>
+                    <p className="text-sm text-slate-400 mt-2">Bu işlem birkaç saniye sürebilir.</p>
+                  </div>
+                ) : (
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-6 shadow-lg shadow-black/20 overflow-x-auto">
+                    <div
+                      className="text-slate-300 leading-relaxed text-[15px]"
+                      dangerouslySetInnerHTML={formatMarkdown(aiResult)}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="bg-white/5 border-t border-white/10 p-4 flex justify-end gap-3">
+                <button
+                  onClick={() => setIsAiModalOpen(false)}
+                  className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-slate-100 hover:bg-white/10 rounded-md transition-colors"
+                >
+                  Kapat
+                </button>
+                {!aiLoading && (
+                  <button
+                    onClick={handleRegenerateAI}
+                    className="px-4 py-2 text-sm font-medium bg-white/5 text-slate-300 hover:bg-white/10 rounded-md transition-colors flex items-center gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Yeniden Üret
+                  </button>
+                )}
+                {!aiLoading && (
+                  <button
+                    onClick={copyToClipboard}
+                    className="px-4 py-2 text-sm font-medium bg-indigo-500/10 text-indigo-700 hover:bg-indigo-100 rounded-md transition-colors flex items-center gap-2"
+                  >
+                    <Copy className="w-4 h-4" />
+                    Kopyala
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* RESET CONFIRM MODAL */}
+        {showResetConfirm && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="glass-panel p-6 shadow-2xl max-w-sm w-full">
+              <h3 className="font-bold text-lg text-slate-100 mb-2">İlerlemeyi Sıfırla</h3>
+              <p className="text-sm text-slate-400 mb-5">Bu proje için tüm checklist ilerlemesi silinecek. Bu işlem geri alınamaz.</p>
+              <div className="flex justify-end gap-3">
+                <button onClick={() => setShowResetConfirm(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+                <button onClick={resetProgress} className="px-4 py-2 text-sm bg-rose-600/80 hover:bg-rose-500 text-white rounded-md font-medium">Sıfırla</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PROJECT CREATE MODAL */}
+        {showProjectModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="glass-panel p-6 shadow-2xl max-w-sm w-full">
+              <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><FolderPlus className="text-cyan-400 w-5 h-5" />Yeni Proje Oluştur</h3>
+              <input
+                value={newProjectName}
+                onChange={e => setNewProjectName(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && createProject()}
+                placeholder="Proje adı*"
+                className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-300 mb-4"
+                autoFocus
+              />
+              <div className="flex justify-end gap-3">
+                <button onClick={() => setShowProjectModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+                <button onClick={createProject} className="px-4 py-2 text-sm bg-cyan-600/80 hover:bg-cyan-500 text-white rounded-md font-medium">Oluştur</button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>{/* end lg:ml-[78px] */}
 
