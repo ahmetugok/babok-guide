@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, LayoutGrid, Lightbulb, BookOpen, RefreshCw, AlertTriangle,
   ListChecks, Users, BookMarked, ArrowUpRight, MessageSquare, CalendarDays,
-  Wrench, FileStack, BrainCircuit
+  Wrench, FileStack, BrainCircuit, Download
 } from 'lucide-react';
 
 export const TAB_ITEMS = [
@@ -20,6 +20,7 @@ export const TAB_ITEMS = [
   { id: 'techniques', label: 'Teknikler', Icon: Wrench },
   { id: 'templates', label: 'Dokümanlar', Icon: FileStack },
   { id: 'competencies', label: 'Yetkinlikler', Icon: BrainCircuit },
+  { id: 'export', label: 'Export', Icon: Download },
 ];
 
 export const MOBILE_TABS = TAB_ITEMS.filter(t => ['dashboard','risks','actions','gantt','meetings'].includes(t.id));

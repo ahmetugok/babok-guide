@@ -38,6 +38,7 @@ import { RequirementModal } from './modals/RequirementModal.jsx';
 import { LinkCardModal } from './modals/LinkCardModal.jsx';
 import { MeetingModal } from './modals/MeetingModal.jsx';
 import { GanttModal } from './modals/GanttModal.jsx';
+import { ExportModal } from './modals/ExportModal.jsx';
 
 // --- BABOK KNOWLEDGE AREAS AND DETAILED TASKS DATA ---
 const babokData = [
@@ -910,8 +911,8 @@ Yanıtın tamamı Türkçe olmalıdır.
     { id: 'techniques', label: 'Teknikler', Icon: Wrench },
     { id: 'templates', label: 'Dokümanlar', Icon: FileStack },
     { id: 'competencies', label: 'Yetkinlikler', Icon: BrainCircuit },
+    { id: 'export', label: 'Export', Icon: Download },
   ];
-  const MOBILE_TABS = TAB_ITEMS.filter(t => ['dashboard','risks','actions','gantt','meetings'].includes(t.id));
 
   // Ring Chart SVG component
   const RingChart = ({ progress, size = 160, stroke = 10 }) => {
@@ -937,6 +938,10 @@ Yanıtın tamamı Türkçe olmalıdır.
 
   // Mobile fab menu
   const [showFabMenu, setShowFabMenu] = useState(false);
+  // Mobile all-modules drawer
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  // Export modal
+  const [showExportModal, setShowExportModal] = useState(false);
 
   return (
     <div className={`aura-void min-h-screen font-sans ${darkMode ? 'theme-dark text-slate-200' : 'theme-light text-slate-800'}`}>
@@ -948,7 +953,10 @@ Yanıtın tamamı Türkçe olmalıdır.
       {/* ===== FLOATING DOCK NAVIGATION (Desktop) ===== */}
       <nav className="aura-dock hidden lg:flex">
         {TAB_ITEMS.map(({ id, label, Icon }) => (
-          <button key={id} onClick={() => { setActiveTab(id); setShowDashboardDetail(null); }}
+          <button key={id} onClick={() => {
+            if (id === 'export') { setShowExportModal(true); return; }
+            setActiveTab(id); setShowDashboardDetail(null);
+          }}
             className={`aura-dock-item ${activeTab === id ? 'active' : ''}`} title={label}>
             <Icon className="w-[18px] h-[18px]" />
             <span className="dock-label">{label}</span>
@@ -968,9 +976,9 @@ Yanıtın tamamı Türkçe olmalıdır.
                 <Download className="w-4 h-4 text-cyan-400" />
                 <span>JSON Yedek</span>
               </button>
-              <button onClick={() => { exportMarkdown(); setShowBackupMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-white/10 transition-colors">
+              <button onClick={() => { setShowExportModal(true); setShowBackupMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-white/10 transition-colors">
                 <FileText className="w-4 h-4 text-violet-400" />
-                <span>Markdown (.md)</span>
+                <span>BABOK Raporu</span>
               </button>
               <div className="border-t border-white/10 my-1" />
               <button onClick={() => { saveAllToVault(); setShowBackupMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-white/10 transition-colors">
@@ -1445,20 +1453,55 @@ Yanıtın tamamı Türkçe olmalıdır.
           </div>
         )}
 
+        {/* EXPORT MODAL */}
+        <ExportModal
+          isOpen={showExportModal}
+          onClose={() => setShowExportModal(false)}
+          activeProject={activeProject}
+        />
+
       </div>{/* end lg:ml-[78px] */}
 
       {/* ===== MOBILE BOTTOM NAV ===== */}
       <nav className="aura-mobile-nav lg:hidden">
-        {MOBILE_TABS.map(({ id, Icon }) => (
-          <button key={id} onClick={() => { setActiveTab(id); setShowDashboardDetail(null); setShowFabMenu(false); }}
+        {[TAB_ITEMS[0], TAB_ITEMS[5], TAB_ITEMS[6], TAB_ITEMS[8]].map(({ id, Icon }) => (
+          <button key={id} onClick={() => { setActiveTab(id); setShowDashboardDetail(null); setShowFabMenu(false); setShowMobileMenu(false); }}
             className={`mobile-nav-item ${activeTab === id ? 'active' : ''}`}>
             <Icon className="w-5 h-5" />
           </button>
         ))}
+        <button onClick={() => { setShowMobileMenu(true); setShowFabMenu(false); }} className="mobile-nav-item">
+          <LayoutGrid className="w-5 h-5" />
+        </button>
         <button onClick={() => setShowFabMenu(!showFabMenu)} className="aura-fab">
           {showFabMenu ? <X className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
         </button>
       </nav>
+
+      {/* ===== MOBILE ALL-MODULES DRAWER ===== */}
+      {showMobileMenu && (
+        <div className="fixed inset-0 z-60 lg:hidden flex flex-col justify-end" onClick={() => setShowMobileMenu(false)}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="relative glass-panel rounded-t-2xl p-5 pb-8 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm font-bold text-slate-300">Tüm Modüller</p>
+              <button onClick={() => setShowMobileMenu(false)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {TAB_ITEMS.map(({ id, label, Icon }) => (
+                <button key={id} onClick={() => {
+                  setShowMobileMenu(false);
+                  if (id === 'export') { setShowExportModal(true); return; }
+                  setActiveTab(id); setShowDashboardDetail(null);
+                }} className={`flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl text-center transition-colors ${activeTab === id ? 'bg-cyan-500/15 text-cyan-400' : 'hover:bg-white/5 text-slate-400'}`}>
+                  <Icon className="w-5 h-5" />
+                  <span className="text-[10px] font-medium leading-tight">{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* FAB Quick-Add Menu (Mobile) */}
       {showFabMenu && (

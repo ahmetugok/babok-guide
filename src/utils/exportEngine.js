@@ -301,6 +301,21 @@ function section8(p) {
   return lines.join('\n');
 }
 
+// ── Section array (for modal preview tabs) ────────────────────────────────────
+export function generateBABOKSections(project) {
+  const p = project || {};
+  return [
+    section1(p),
+    section2(p),
+    section3(p),
+    section4(p),
+    section5(p),
+    section6(p),
+    section7(p),
+    section8(p),
+  ];
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 export function generateBABOKReport(project) {
   try {
