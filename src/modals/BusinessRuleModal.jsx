@@ -1,7 +1,8 @@
 import React from 'react';
 import { BookOpen, AlertTriangle } from 'lucide-react';
+import { EntitySelector } from '../components/EntitySelector.jsx';
 
-export function BusinessRuleModal({ form, setForm, onSave, onClose, editingBR }) {
+export function BusinessRuleModal({ form, setForm, onSave, onClose, editingBR, activeProject }) {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="glass-panel p-6 shadow-2xl max-w-lg w-full">
@@ -29,6 +30,9 @@ export function BusinessRuleModal({ form, setForm, onSave, onClose, editingBR })
             <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
               {['Aktif', 'Revize Edildi', 'Gecersiz'].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
+          </div>
+          <div><label className="text-xs text-slate-400 block mb-1">Sorumlu Paydaş</label>
+            <EntitySelector entityType="stakeholder" activeProject={activeProject} value={form.linkedStakeholderId || ''} onChange={id => setForm({ ...form, linkedStakeholderId: id })} placeholder="Paydaş seçin…" />
           </div>
           <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Not (opsiyonel)" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
           {editingBR && form.version !== editingBR.version && (

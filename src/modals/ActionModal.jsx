@@ -17,6 +17,9 @@ export function ActionModal({ form, setForm, onSave, onClose, editingAction, act
             {['Bekliyor', 'Devam Ediyor', 'Tamamlandı'].map(s => <option key={s}>{s}</option>)}
           </select>
           <input value={form.source} onChange={e => setForm({ ...form, source: e.target.value })} placeholder="Kaynak (ör. Toplantı adı)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+          <div><label className="text-xs text-slate-400 block mb-1">Bağlı Toplantı</label>
+            <EntitySelector entityType="meeting" activeProject={activeProject} value={form.sourceMeetingId || ''} onChange={id => setForm({ ...form, sourceMeetingId: id })} placeholder="Toplantı seçin…" />
+          </div>
           <div><label className="text-xs text-slate-400 block mb-1">Bağlı Gereksinim</label>
             <EntitySelector entityType="requirement" activeProject={activeProject} value={form.linkedRequirementId || ''} onChange={id => setForm({ ...form, linkedRequirementId: id })} placeholder="Gereksinim seçin…" />
           </div>

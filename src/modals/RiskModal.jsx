@@ -45,6 +45,9 @@ export function RiskModal({ form, setForm, onSave, onClose, editingRisk, activeP
               <EntitySelector entityType="assumption" activeProject={activeProject} value={form.linkedAssumptionId} onChange={id => setForm({ ...form, linkedAssumptionId: id })} placeholder="Varsayım seçin…" />
             </div>
           </div>
+          <div><label className="text-xs text-slate-400 block mb-1">Etkilenen Paydaş</label>
+            <EntitySelector entityType="stakeholder" activeProject={activeProject} value={form.affectedStakeholderId} onChange={id => setForm({ ...form, affectedStakeholderId: id })} placeholder="Paydaş seçin…" />
+          </div>
           <input value={form.triggerDescription} onChange={e => setForm({ ...form, triggerDescription: e.target.value })} placeholder="Erken uyarı işareti (risk gerceklesirse ne olur?)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
         </div>
         <div className="flex justify-end gap-3 mt-5">

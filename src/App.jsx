@@ -578,7 +578,7 @@ export default function App() {
   const deleteAssumption = (id) => { if (window.confirm('Varsayimi silmek istiyor musunuz?')) updateActive(p => ({ ...p, assumptions: p.assumptions.filter(a => a.id !== id) })); };
 
   // --- ACTION ---
-  const openActionModal = (action = null) => { setEditingAction(action); setActionForm(action ? { linkedRequirementId: '', ...action, notes: action.notes || '' } : { title: '', owner: '', dueDate: '', status: 'Bekliyor', source: '', notes: '', linkedRequirementId: '' }); setShowActionModal(true); };
+  const openActionModal = (action = null) => { setEditingAction(action); setActionForm(action ? { linkedRequirementId: '', sourceMeetingId: '', ...action, notes: action.notes || '' } : { title: '', owner: '', dueDate: '', status: 'Bekliyor', source: '', notes: '', linkedRequirementId: '', sourceMeetingId: '' }); setShowActionModal(true); };
   const quickUpdateActionStatus = (actionId, newStatus) => { updateActive(p => ({ ...p, actions: p.actions.map(a => a.id === actionId ? { ...a, status: newStatus } : a) })); };
   const saveAction = () => {
     if (!actionForm.title.trim()) return;
@@ -1234,6 +1234,7 @@ Yanıtın tamamı Türkçe olmalıdır.
             onSave={saveBR}
             onClose={() => setShowBRModal(false)}
             editingBR={editingBR}
+            activeProject={activeProject}
           />
         )}
 
@@ -1245,6 +1246,7 @@ Yanıtın tamamı Türkçe olmalıdır.
             onSave={saveCR}
             onClose={() => setShowCRModal(false)}
             editingCR={editingCR}
+            activeProject={activeProject}
           />
         )}
 
@@ -1268,6 +1270,7 @@ Yanıtın tamamı Türkçe olmalıdır.
             onSave={saveAssumption}
             onClose={() => setShowAssumptionModal(false)}
             editingAssumption={editingAssumption}
+            activeProject={activeProject}
           />
         )}
 
