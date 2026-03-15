@@ -9,7 +9,8 @@ import {
 } from 'lucide-react';
 
 import { DEFAULT_PROJECT, PROB_LABELS, RACI_LABELS, templatesData } from './constants/index.js';
-import { generateId, getRiskLevel, formatMarkdown } from './utils.js';
+import { generateId, formatMarkdown } from './utils.js';
+import { generateBABOKReport } from './utils/exportEngine.js';
 
 import { DashboardTab } from './tabs/DashboardTab.jsx';
 import { KnowledgeAreasTab } from './tabs/KnowledgeAreasTab.jsx';
@@ -789,10 +790,12 @@ export default function App() {
 
   // --- EXPORT ---
   const exportMarkdown = () => {
-    const p = activeProject;
-    const lines = [`# BABOK Proje Raporu: ${p.name}`, `**Tarih:** ${new Date().toLocaleDateString('tr-TR')}`, `**Bağlam:** ${p.projectContext || '-'}`, '', `## İlerleme`, `- Ana: ${p.completedTasks.length}/${totalTasks}`, `- Alt: ${p.completedSubTasks.length}/${totalSubTasks}`, '', `## Riskler`, ...p.risks.map(r => `- [${getRiskLevel(r.probability, r.impact).label}] ${r.title} | ${r.owner}`), '', `## Aksiyonlar`, ...p.actions.map(a => `- [${a.status}] ${a.title} | ${a.owner} | ${a.dueDate}`), '', `## Paydaşlar`, ...p.stakeholders.map(s => `- ${s.name} (${s.role}) | ${s.raci} — ${RACI_LABELS[s.raci]} | Dept: ${s.department || '-'} | İlgi: ${PROB_LABELS[s.interest]} | Etki: ${PROB_LABELS[s.influence]}`), '', `## Gereksinimler`, ...p.requirements.map(r => `- ${r.reqId}: ${r.name} | ${r.status}`), '', `## Zaman Çizelgesi (Gantt)`, ...(p.ganttTasks || []).map(g => `- ${g.name} | ${g.startDate} → ${g.endDate} | ${g.category || 'Genel'} | %${g.progress || 0} | ${g.assignedTo || '-'}`)];
-    const blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${p.name}_BABOK.md`; a.click(); URL.revokeObjectURL(url);
+    const report = generateBABOKReport(activeProject);
+    const blob = new Blob([report], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `${activeProject.name}_BABOK.md`; a.click();
+    URL.revokeObjectURL(url);
   };
 
   // --- AI HELPER ---
