@@ -1256,6 +1256,7 @@ Yanıtın tamamı Türkçe olmalıdır.
             onSave={saveRisk}
             onClose={() => setShowRiskModal(false)}
             editingRisk={editingRisk}
+            activeProject={activeProject}
           />
         )}
 
@@ -1278,6 +1279,7 @@ Yanıtın tamamı Türkçe olmalıdır.
             onSave={saveAction}
             onClose={() => setShowActionModal(false)}
             editingAction={editingAction}
+            activeProject={activeProject}
           />
         )}
 

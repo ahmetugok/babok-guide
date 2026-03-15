@@ -1,7 +1,8 @@
 import React from 'react';
 import { ListChecks } from 'lucide-react';
+import { EntitySelector } from '../components/EntitySelector.jsx';
 
-export function ActionModal({ form, setForm, onSave, onClose, editingAction }) {
+export function ActionModal({ form, setForm, onSave, onClose, editingAction, activeProject }) {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="glass-panel p-6 shadow-2xl max-w-md w-full">
@@ -16,7 +17,9 @@ export function ActionModal({ form, setForm, onSave, onClose, editingAction }) {
             {['Bekliyor', 'Devam Ediyor', 'Tamamlandı'].map(s => <option key={s}>{s}</option>)}
           </select>
           <input value={form.source} onChange={e => setForm({ ...form, source: e.target.value })} placeholder="Kaynak (ör. Toplantı adı)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-          <input value={form.linkedRequirementId || ''} onChange={e => setForm({ ...form, linkedRequirementId: e.target.value })} placeholder="Bagli gereksinim ID (orn: REQ-003)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+          <div><label className="text-xs text-slate-400 block mb-1">Bağlı Gereksinim</label>
+            <EntitySelector entityType="requirement" activeProject={activeProject} value={form.linkedRequirementId || ''} onChange={id => setForm({ ...form, linkedRequirementId: id })} placeholder="Gereksinim seçin…" />
+          </div>
           <textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Not / Açıklama (opsiyonel)" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none" />
         </div>
         <div className="flex justify-end gap-3 mt-5">

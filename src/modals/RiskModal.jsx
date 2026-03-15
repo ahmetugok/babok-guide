@@ -2,8 +2,9 @@ import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { PROB_LABELS, IMPACT_LABELS } from '../constants/index.js';
 import { getRiskLevel } from '../utils.js';
+import { EntitySelector } from '../components/EntitySelector.jsx';
 
-export function RiskModal({ form, setForm, onSave, onClose, editingRisk }) {
+export function RiskModal({ form, setForm, onSave, onClose, editingRisk, activeProject }) {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="glass-panel p-6 shadow-2xl max-w-lg w-full">
@@ -37,8 +38,12 @@ export function RiskModal({ form, setForm, onSave, onClose, editingRisk }) {
           <input value={form.owner} onChange={e => setForm({ ...form, owner: e.target.value })} placeholder="Sorumlu kişi" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
           <textarea value={form.mitigation} onChange={e => setForm({ ...form, mitigation: e.target.value })} placeholder="Azaltma stratejisi..." rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
           <div className="grid grid-cols-2 gap-3">
-            <input value={form.linkedRequirementId} onChange={e => setForm({ ...form, linkedRequirementId: e.target.value })} placeholder="Bagli gereksinim ID (orn: REQ-003)" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
-            <input value={form.linkedAssumptionId} onChange={e => setForm({ ...form, linkedAssumptionId: e.target.value })} placeholder="Tetikleyen varsayim ID (orn: ASM-001)" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+            <div><label className="text-xs text-slate-400 block mb-1">Bağlı Gereksinim</label>
+              <EntitySelector entityType="requirement" activeProject={activeProject} value={form.linkedRequirementId} onChange={id => setForm({ ...form, linkedRequirementId: id })} placeholder="Gereksinim seçin…" />
+            </div>
+            <div><label className="text-xs text-slate-400 block mb-1">Tetikleyen Varsayım</label>
+              <EntitySelector entityType="assumption" activeProject={activeProject} value={form.linkedAssumptionId} onChange={id => setForm({ ...form, linkedAssumptionId: id })} placeholder="Varsayım seçin…" />
+            </div>
           </div>
           <input value={form.triggerDescription} onChange={e => setForm({ ...form, triggerDescription: e.target.value })} placeholder="Erken uyarı işareti (risk gerceklesirse ne olur?)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
         </div>
