@@ -395,14 +395,14 @@ const generateId = () => `id_${Date.now()}_${Math.random().toString(36).substr(2
 const DEFAULT_PROJECT = {
   id: 'proj_1', name: 'Ana Proje', projectContext: '',
   completedTasks: [], completedSubTasks: [],
-  risks: [], actions: [], stakeholders: [], requirements: [], meetings: [], ganttTasks: [], reqCounter: 1,
+  risks: [], assumptions: [], businessRules: [], changeRequests: [], actions: [], stakeholders: [], requirements: [], meetings: [], ganttTasks: [], reqCounter: 1, brCounter: 1, crCounter: 1,
 };
 const PROB_LABELS = ['', 'Düşük', 'Orta', 'Yüksek'];
 const IMPACT_LABELS = ['', 'Düşük', 'Orta', 'Yüksek'];
 const RACI_LABELS = { R: 'Sorumlu', A: 'Onaylayan', C: 'Danışılan', I: 'Bilgilendirilen' };
 const RACI_COLORS = { R: 'bg-blue-100 text-blue-800', A: 'bg-purple-100 text-purple-800', C: 'bg-amber-100 text-amber-800', I: 'bg-white/10 text-slate-300' };
 const REQ_STATUS_COLORS = { 'Taslak': 'req-status-taslak', 'İncelemede': 'req-status-incelemede', 'Onaylandı': 'req-status-onaylandi', 'Geliştiriliyor': 'req-status-gelistiriliyor', 'Test': 'req-status-test', 'Canlıda': 'req-status-canlida' };
-const NOTE_TYPE_COLORS = { 'Karar': 'bg-blue-500/15 text-blue-300 border-blue-500/20', 'Açık Nokta': 'bg-rose-500/15 text-rose-300 border-rose-500/20', 'Aksiyon': 'bg-amber-500/15 text-amber-300 border-amber-500/20' };
+const NOTE_TYPE_COLORS = { 'Karar': 'bg-blue-500/15 text-blue-300 border-blue-500/20', 'Açık Nokta': 'bg-rose-500/15 text-rose-300 border-rose-500/20', 'Aksiyon': 'bg-amber-500/15 text-amber-300 border-amber-500/20', 'Gereksinim': 'bg-teal-500/15 text-teal-300 border-teal-500/20', 'Varsayim': 'bg-amber-500/10 text-amber-200 border-amber-400/20' };
 
 // --- BABOK UNDERLYING COMPETENCIES DATA ---
 const competenciesData = [
@@ -555,22 +555,37 @@ export default function App() {
   // Risk states
   const [showRiskModal, setShowRiskModal] = useState(false);
   const [editingRisk, setEditingRisk] = useState(null);
-  const [riskForm, setRiskForm] = useState({ title: '', category: 'Teknik', probability: 2, impact: 2, owner: '', mitigation: '', status: 'Açık' });
+  const [riskForm, setRiskForm] = useState({ title: '', category: '', probability: 2, impact: 2, owner: '', mitigation: '', status: 'Açık', linkedRequirementId: '', linkedAssumptionId: '', affectedStakeholderId: '', triggerDescription: '' });
+
+  // Assumption states
+  const [showAssumptionModal, setShowAssumptionModal] = useState(false);
+  const [editingAssumption, setEditingAssumption] = useState(null);
+  const [assumptionForm, setAssumptionForm] = useState({ title: '', content: '', type: 'Varsayim', category: 'Is', ownerId: '', validationStatus: 'Dogrulanmadi', validationDate: '', linkedRequirements: '', linkedRisks: '', notes: '' });
 
   // Action states
   const [showActionModal, setShowActionModal] = useState(false);
   const [editingAction, setEditingAction] = useState(null);
-  const [actionForm, setActionForm] = useState({ title: '', owner: '', dueDate: '', status: 'Bekliyor', source: '', notes: '' });
+  const [actionForm, setActionForm] = useState({ title: '', owner: '', dueDate: '', status: 'Bekliyor', source: '', notes: '', linkedRequirementId: '' });
 
   // Stakeholder states
   const [showStakeholderModal, setShowStakeholderModal] = useState(false);
   const [editingStakeholder, setEditingStakeholder] = useState(null);
   const [stakeholderForm, setStakeholderForm] = useState({ name: '', role: '', department: '', interest: 2, influence: 2, raci: 'I', notes: '' });
 
+  // Business Rule states
+  const [showBRModal, setShowBRModal] = useState(false);
+  const [editingBR, setEditingBR] = useState(null);
+  const [brForm, setBrForm] = useState({ title: '', ruleText: '', category: 'Surec', source: 'Sirket Politikasi', sourceRef: '', version: 'v1.0', status: 'Aktif', linkedRequirements: '', linkedStakeholderId: '', notes: '' });
+
+  // Change Request states
+  const [showCRModal, setShowCRModal] = useState(false);
+  const [editingCR, setEditingCR] = useState(null);
+  const [crForm, setCrForm] = useState({ title: '', changeType: 'Yeni Ekleme', affectedEntityType: 'Gereksinim', affectedEntityId: '', changeDescription: '', businessDriver: '', requestingStakeholderId: '', impactAnalysis: '', linkedMeetingId: '', status: 'Bekliyor', decisionDate: '', decisionNote: '' });
+
   // Requirement states
   const [showReqModal, setShowReqModal] = useState(false);
   const [editingReq, setEditingReq] = useState(null);
-  const [reqForm, setReqForm] = useState({ name: '', objective: '', module: '', status: 'Taslak', testId: '', notes: '', moscow: '' });
+  const [reqForm, setReqForm] = useState({ name: '', objective: '', module: '', status: 'Taslak', testId: '', notes: '', moscow: '', requirementType: '', sourceMeetingId: '', acceptanceCriteria: '', approvalStatus: 'Taslak', approvedById: '', babokKnowledgeArea: '' });
   const [reqFilter, setReqFilter] = useState('all');
 
   // Meeting states
@@ -656,7 +671,7 @@ export default function App() {
     if (s >= 4) return { label: 'Orta', cls: 'text-amber-700 bg-amber-100 border-amber-500/30', dot: 'bg-amber-500/100' };
     return { label: 'Düşük', cls: 'text-emerald-700 bg-emerald-100 border-emerald-500/30', dot: 'bg-emerald-500/100' };
   };
-  const openRiskModal = (risk = null) => { setEditingRisk(risk); setRiskForm(risk || { title: '', category: 'Teknik', probability: 2, impact: 2, owner: '', mitigation: '', status: 'Açık' }); setShowRiskModal(true); };
+  const openRiskModal = (risk = null) => { setEditingRisk(risk); setRiskForm(risk ? { linkedRequirementId: '', linkedAssumptionId: '', affectedStakeholderId: '', triggerDescription: '', ...risk } : { title: '', category: '', probability: 2, impact: 2, owner: '', mitigation: '', status: 'Açık', linkedRequirementId: '', linkedAssumptionId: '', affectedStakeholderId: '', triggerDescription: '' }); setShowRiskModal(true); };
   const saveRisk = () => {
     if (!riskForm.title.trim()) return;
     updateActive(p => ({ ...p, risks: editingRisk ? p.risks.map(r => r.id === editingRisk.id ? { ...riskForm, id: editingRisk.id } : r) : [...p.risks, { ...riskForm, id: generateId() }] }));
@@ -664,9 +679,18 @@ export default function App() {
   };
   const deleteRisk = (id) => { if (window.confirm('Riski silmek istiyor musunuz?')) updateActive(p => ({ ...p, risks: p.risks.filter(r => r.id !== id) })); };
 
+  // --- ASSUMPTION ---
+  const openAssumptionModal = (item = null) => { setEditingAssumption(item); setAssumptionForm(item || { title: '', content: '', type: 'Varsayim', category: 'Is', ownerId: '', validationStatus: 'Dogrulanmadi', validationDate: '', linkedRequirements: '', linkedRisks: '', notes: '' }); setShowAssumptionModal(true); };
+  const saveAssumption = () => {
+    if (!assumptionForm.title.trim() || !assumptionForm.content.trim()) return;
+    updateActive(p => ({ ...p, assumptions: editingAssumption ? p.assumptions.map(a => a.id === editingAssumption.id ? { ...assumptionForm, id: editingAssumption.id } : a) : [...(p.assumptions || []), { ...assumptionForm, id: generateId() }] }));
+    setShowAssumptionModal(false);
+  };
+  const deleteAssumption = (id) => { if (window.confirm('Varsayimi silmek istiyor musunuz?')) updateActive(p => ({ ...p, assumptions: p.assumptions.filter(a => a.id !== id) })); };
+
   // --- ACTION ---
   const isOverdue = (a) => a.status !== 'Tamamlandı' && a.dueDate && new Date(a.dueDate) < new Date();
-  const openActionModal = (action = null) => { setEditingAction(action); setActionForm(action ? { ...action, notes: action.notes || '' } : { title: '', owner: '', dueDate: '', status: 'Bekliyor', source: '', notes: '' }); setShowActionModal(true); };
+  const openActionModal = (action = null) => { setEditingAction(action); setActionForm(action ? { linkedRequirementId: '', ...action, notes: action.notes || '' } : { title: '', owner: '', dueDate: '', status: 'Bekliyor', source: '', notes: '', linkedRequirementId: '' }); setShowActionModal(true); };
   const quickUpdateActionStatus = (actionId, newStatus) => { updateActive(p => ({ ...p, actions: p.actions.map(a => a.id === actionId ? { ...a, status: newStatus } : a) })); };
   const saveAction = () => {
     if (!actionForm.title.trim()) return;
@@ -684,8 +708,30 @@ export default function App() {
   };
   const deleteStakeholder = (id) => { if (window.confirm('Paydaşı silmek istiyor musunuz?')) updateActive(p => ({ ...p, stakeholders: p.stakeholders.filter(s => s.id !== id) })); };
 
+  // --- BUSINESS RULE ---
+  const openBRModal = (item = null) => { setEditingBR(item); setBrForm(item ? { ...item } : { title: '', ruleText: '', category: 'Surec', source: 'Sirket Politikasi', sourceRef: '', version: 'v1.0', status: 'Aktif', linkedRequirements: '', linkedStakeholderId: '', notes: '' }); setShowBRModal(true); };
+  const saveBR = () => {
+    if (!brForm.title.trim() || !brForm.ruleText.trim()) return;
+    updateActive(p => { const cnt = p.brCounter || 1; return { ...p, businessRules: editingBR ? p.businessRules.map(r => r.id === editingBR.id ? { ...brForm, id: editingBR.id, brId: editingBR.brId } : r) : [...(p.businessRules || []), { ...brForm, id: generateId(), brId: `BR-${String(cnt).padStart(3, '0')}` }], brCounter: editingBR ? cnt : cnt + 1 }; });
+    setShowBRModal(false);
+  };
+  const deleteBR = (id) => { if (window.confirm('Is kuralini silmek istiyor musunuz?')) updateActive(p => ({ ...p, businessRules: p.businessRules.filter(r => r.id !== id) })); };
+
+  // --- LINK CARD ---
+  const openLinkCard = (type, id) => { setLinkCardEntity({ type, id }); setShowLinkCard(true); };
+  const closeLinkCard = () => { setShowLinkCard(false); setLinkCardEntity(null); };
+
+  // --- CHANGE REQUEST ---
+  const openCRModal = (item = null) => { setEditingCR(item); setCrForm(item ? { ...item } : { title: '', changeType: 'Yeni Ekleme', affectedEntityType: 'Gereksinim', affectedEntityId: '', changeDescription: '', businessDriver: '', requestingStakeholderId: '', impactAnalysis: '', linkedMeetingId: '', status: 'Bekliyor', decisionDate: '', decisionNote: '' }); setShowCRModal(true); };
+  const saveCR = () => {
+    if (!crForm.title.trim() || !crForm.changeDescription.trim() || !crForm.businessDriver.trim()) return;
+    updateActive(p => { const cnt = p.crCounter || 1; return { ...p, changeRequests: editingCR ? p.changeRequests.map(r => r.id === editingCR.id ? { ...crForm, id: editingCR.id, crId: editingCR.crId, createdAt: editingCR.createdAt } : r) : [...(p.changeRequests || []), { ...crForm, id: generateId(), crId: `CR-${String(cnt).padStart(3, '0')}`, createdAt: new Date().toISOString().split('T')[0] }], crCounter: editingCR ? cnt : cnt + 1 }; });
+    setShowCRModal(false);
+  };
+  const deleteCR = (id) => { if (window.confirm('Degisiklik talebini silmek istiyor musunuz?')) updateActive(p => ({ ...p, changeRequests: p.changeRequests.filter(r => r.id !== id) })); };
+
   // --- REQUIREMENT ---
-  const openReqModal = (r = null) => { setEditingReq(r); setReqForm(r ? { ...r, notes: r.notes || '', moscow: r.moscow || '' } : { name: '', objective: '', module: '', status: 'Taslak', testId: '', notes: '', moscow: '' }); setShowReqModal(true); };
+  const openReqModal = (r = null) => { setEditingReq(r); setReqForm(r ? { requirementType: '', sourceMeetingId: '', acceptanceCriteria: '', approvalStatus: 'Taslak', approvedById: '', babokKnowledgeArea: '', ...r, notes: r.notes || '', moscow: r.moscow || '' } : { name: '', objective: '', module: '', status: 'Taslak', testId: '', notes: '', moscow: '', requirementType: '', sourceMeetingId: '', acceptanceCriteria: '', approvalStatus: 'Taslak', approvedById: '', babokKnowledgeArea: '' }); setShowReqModal(true); };
   const saveReq = () => {
     if (!reqForm.name.trim()) return;
     updateActive(p => { const cnt = p.reqCounter || 1; return { ...p, requirements: editingReq ? p.requirements.map(r => r.id === editingReq.id ? { ...reqForm, id: editingReq.id, reqId: editingReq.reqId } : r) : [...p.requirements, { ...reqForm, id: generateId(), reqId: `REQ-${String(cnt).padStart(3, '0')}` }], reqCounter: editingReq ? cnt : cnt + 1 }; });
@@ -706,13 +752,53 @@ export default function App() {
     const note = { id: generateId(), type: newNoteType, text: newNoteText };
     const upd = { ...selectedMeeting, notes: [...selectedMeeting.notes, note] };
     if (newNoteType === 'Aksiyon') {
-      const newAction = { id: generateId(), title: newNoteText, owner: '', dueDate: '', status: 'Bekliyor', source: selectedMeeting.topic, notes: '' };
+      const newAction = { id: generateId(), title: newNoteText, owner: '', dueDate: '', status: 'Bekliyor', source: selectedMeeting.topic, notes: '', linkedRequirementId: '' };
       updateActive(p => ({ ...p, meetings: p.meetings.map(m => m.id === selectedMeeting.id ? upd : m), actions: [...p.actions, newAction] }));
+    } else if (newNoteType === 'Gereksinim') {
+      const newReq = { id: generateId(), reqId: `REQ-${String(activeProject.reqCounter || 1).padStart(3, '0')}`, name: newNoteText, objective: '', module: '', status: 'Taslak', testId: '', moscow: '', notes: '', requirementType: '', acceptanceCriteria: '', sourceMeetingId: selectedMeeting.id, approvalStatus: 'Taslak', approvedById: '', babokKnowledgeArea: '' };
+      updateActive(p => ({ ...p, meetings: p.meetings.map(m => m.id === selectedMeeting.id ? upd : m), requirements: [...p.requirements, newReq], reqCounter: (p.reqCounter || 1) + 1 }));
+    } else if (newNoteType === 'Varsayim') {
+      const newAss = { id: generateId(), title: newNoteText, content: '', type: 'Varsayim', category: 'Is', validationStatus: 'Dogrulanmadi', ownerId: '', linkedRequirements: [], linkedRisks: [], notes: '', sourceMeetingId: selectedMeeting.id };
+      updateActive(p => ({ ...p, meetings: p.meetings.map(m => m.id === selectedMeeting.id ? upd : m), assumptions: [...(p.assumptions || []), newAss] }));
     } else {
       updateActive(p => ({ ...p, meetings: p.meetings.map(m => m.id === selectedMeeting.id ? upd : m) }));
     }
     setSelectedMeeting(upd); setNewNoteText('');
   };
+  const generateLiveTemplate = (templateId) => {
+    const reqs = activeProject.requirements || [];
+    const stakeholders = activeProject.stakeholders || [];
+    const meetings = activeProject.meetings || [];
+    let text = '';
+    if (templateId === 'tpl_raci') {
+      const header = `| Paydas Adi / Departman | Projedeki Rolu | Ilgi | Etki | RACI Rolu |\n| :--- | :--- | :--- | :--- | :--- |`;
+      const rows = stakeholders.length > 0
+        ? stakeholders.map(s => `| ${s.name}${s.department ? ` (${s.department})` : ''} | ${s.role || '—'} | ${PROB_LABELS[s.interest] || '—'} | ${PROB_LABELS[s.influence] || '—'} | ${s.raci} — ${RACI_LABELS[s.raci]} |`).join('\n')
+        : '| (Henüz paydas eklenmemis) | — | — | — | — |';
+      text = `${header}\n${rows}`;
+    } else if (templateId === 'tpl_mom') {
+      const mtg = meetings[meetings.length - 1];
+      if (!mtg) { alert('Henuz toplanti kaydedilmemis.'); return; }
+      const lines = [`# Toplanti Tutanagi`, `**Konu:** ${mtg.topic}`, `**Tarih:** ${mtg.date}`, `**Katilimcilar:** ${mtg.attendees || '—'}`, ''];
+      ['Karar', 'Açık Nokta', 'Aksiyon', 'Gereksinim', 'Varsayim'].forEach(type => {
+        const it = mtg.notes.filter(n => n.type === type);
+        if (it.length) { lines.push(`## ${type}lar`); it.forEach((n, i) => lines.push(`${i + 1}. ${n.text}`)); lines.push(''); }
+      });
+      text = lines.join('\n');
+    } else if (templateId === 'tpl_tm') {
+      const header = `| Req ID | Is Hedefi / Kapsam | Gereksinim Adi | Ilgili Modul | Test Senaryosu ID | Durum |\n| :--- | :--- | :--- | :--- | :--- | :--- |`;
+      const rows = reqs.length > 0
+        ? reqs.map(r => `| ${r.reqId} | ${r.objective || '—'} | ${r.name} | ${r.module || '—'} | ${r.testId || '—'} | ${r.status} |`).join('\n')
+        : '| (Henüz gereksinim eklenmemis) | — | — | — | — | — |';
+      text = `${header}\n${rows}`;
+    } else {
+      const tpl = templatesData.find(t => t.id === templateId);
+      if (tpl) text = tpl.format;
+    }
+    navigator.clipboard.writeText(text);
+    alert('Canli veri ile doldurulmus sablon panoya kopyalandi!');
+  };
+
   const deleteNote = (nid) => { const upd = { ...selectedMeeting, notes: selectedMeeting.notes.filter(n => n.id !== nid) }; updateActive(p => ({ ...p, meetings: p.meetings.map(m => m.id === selectedMeeting.id ? upd : m) })); setSelectedMeeting(upd); };
   const generateMoM = (mtg) => {
     const lines = [`# Toplantı Tutanağı`, `**Konu:** ${mtg.topic}`, `**Tarih:** ${mtg.date}`, `**Katılımcılar:** ${mtg.attendees}`, ''];
@@ -938,6 +1024,10 @@ Yanıtın tamamı Türkçe olmalıdır.
 
   };
 
+  // Link card state
+  const [showLinkCard, setShowLinkCard] = useState(false);
+  const [linkCardEntity, setLinkCardEntity] = useState(null);
+
   // Mobile fab menu
   const [showFabMenu, setShowFabMenu] = useState(false);
 
@@ -945,10 +1035,14 @@ Yanıtın tamamı Türkçe olmalıdır.
   const TAB_ITEMS = [
     { id: 'dashboard', label: 'Dashboard', Icon: LayoutDashboard },
     { id: 'knowledge_areas', label: 'Checklistler', Icon: LayoutGrid },
+    { id: 'assumptions', label: 'Varsayimlar', Icon: Lightbulb },
+    { id: 'businessrules', label: 'Is Kurallari', Icon: BookOpen },
+    { id: 'changes', label: 'Degisiklikler', Icon: RefreshCw },
     { id: 'risks', label: 'Riskler', Icon: AlertTriangle },
     { id: 'actions', label: 'Aksiyonlar', Icon: ListChecks },
     { id: 'stakeholders', label: 'Paydaşlar', Icon: Users },
     { id: 'requirements', label: 'Gereksinimler', Icon: BookMarked },
+    { id: 'traceability', label: 'Traceability', Icon: ArrowUpRight },
     { id: 'meetings', label: 'Toplantılar', Icon: MessageSquare },
     { id: 'gantt', label: 'Timeline', Icon: CalendarDays },
     { id: 'techniques', label: 'Teknikler', Icon: Wrench },
@@ -1155,8 +1249,93 @@ Yanıtın tamamı Türkçe olmalıdır.
                                             </div>
                                           </div>
 
-                                          {/* ── ROW 2: 4 Stat Cards ── */}
-                                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+                                          {/* ── PROAKTIF BLOK: Bugun Ne Yapmaliyim? ── */}
+                                          {(() => {
+                                            const today = new Date();
+                                            const weekLater = new Date(today.getTime() + 7 * 86400000);
+                                            const allReqs = activeProject.requirements || [];
+                                            const allAss = activeProject.assumptions || [];
+                                            const allCRs = activeProject.changeRequests || [];
+                                            const allGantt = activeProject.ganttTasks || [];
+
+                                            const noAC = allReqs.filter(r => !r.acceptanceCriteria);
+                                            const refutedAss = allAss.filter(a => a.validationStatus === 'Curutuldu');
+                                            const approvedNoBiz = allCRs.filter(cr => cr.status === 'Onaylandi' && !cr.impactAnalysis);
+                                            const unvalidatedAss = allAss.filter(a => a.validationStatus === 'Dogrulanmadi');
+                                            const dueSoonGantt = allGantt.filter(gt => gt.progress < 100 && gt.endDate && new Date(gt.endDate) <= weekLater && new Date(gt.endDate) >= today);
+                                            const pendingCRs = allCRs.filter(cr => cr.status === 'Bekliyor');
+                                            const overdue = overdueActions;
+
+                                            const redItems = [
+                                              { count: noAC.length, icon: <X className="w-3.5 h-3.5" />, text: 'Kabul kriteri bos gereksinim', tab: 'requirements' },
+                                              { count: refutedAss.length, icon: <AlertTriangle className="w-3.5 h-3.5" />, text: 'Curutulmus varsayim', tab: 'assumptions' },
+                                              { count: approvedNoBiz.length, icon: <RefreshCw className="w-3.5 h-3.5" />, text: 'Etki analizi bos onaylanmis CR', tab: 'changes' },
+                                            ].filter(i => i.count > 0);
+
+                                            const yellowItems = [
+                                              { count: unvalidatedAss.length, icon: <Lightbulb className="w-3.5 h-3.5" />, text: 'Dogrulanmamis varsayim', tab: 'assumptions' },
+                                              { count: dueSoonGantt.length, icon: <CalendarDays className="w-3.5 h-3.5" />, text: 'Bu hafta biten timeline gorevi', tab: 'gantt' },
+                                              { count: pendingCRs.length, icon: <RefreshCw className="w-3.5 h-3.5" />, text: 'Bekleyen degisiklik talebi', tab: 'changes' },
+                                            ].filter(i => i.count > 0);
+
+                                            const blueItems = [
+                                              { count: overdue.length, icon: <Clock className="w-3.5 h-3.5" />, text: 'Gecikmi aksiyonlar', tab: 'actions' },
+                                            ].filter(i => i.count > 0);
+
+                                            const allClear = redItems.length + yellowItems.length + blueItems.length === 0;
+
+                                            return (
+                                              <div className="glass-card p-4">
+                                                <h3 className="font-bold text-sm text-slate-200 flex items-center gap-2 mb-3">
+                                                  <Sparkles className="w-4 h-4 text-amber-400" />
+                                                  Bugun Ne Yapmaliyim?
+                                                </h3>
+                                                {allClear ? (
+                                                  <div className="text-center py-3 text-emerald-400 font-medium text-sm bg-emerald-500/5 rounded-lg border border-emerald-500/15">
+                                                    🎉 Her sey yolunda gorunuyor. Harika is!
+                                                  </div>
+                                                ) : (
+                                                  <div className="space-y-1.5">
+                                                    {redItems.map(({ count, icon, text, tab }) => (
+                                                      <button key={text} onClick={() => setActiveTab(tab)} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/15 transition-colors text-left">
+                                                        <span className="text-rose-400 shrink-0">{icon}</span>
+                                                        <span className="text-xs text-rose-300 flex-1">{text}</span>
+                                                        <span className="text-xs font-bold bg-rose-500/30 text-rose-200 px-2 py-0.5 rounded-full shrink-0">{count}</span>
+                                                      </button>
+                                                    ))}
+                                                    {yellowItems.map(({ count, icon, text, tab }) => (
+                                                      <button key={text} onClick={() => setActiveTab(tab)} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/15 transition-colors text-left">
+                                                        <span className="text-amber-400 shrink-0">{icon}</span>
+                                                        <span className="text-xs text-amber-300 flex-1">{text}</span>
+                                                        <span className="text-xs font-bold bg-amber-500/30 text-amber-200 px-2 py-0.5 rounded-full shrink-0">{count}</span>
+                                                      </button>
+                                                    ))}
+                                                    {blueItems.map(({ count, icon, text, tab }) => (
+                                                      <button key={text} onClick={() => setActiveTab(tab)} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/15 transition-colors text-left">
+                                                        <span className="text-blue-400 shrink-0">{icon}</span>
+                                                        <span className="text-xs text-blue-300 flex-1">{text}</span>
+                                                        <span className="text-xs font-bold bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded-full shrink-0">{count}</span>
+                                                      </button>
+                                                    ))}
+                                                  </div>
+                                                )}
+                                              </div>
+                                            );
+                                          })()}
+
+                                          {/* ── ROW 2: 5 Stat Cards ── */}
+                                          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5">
+                                            {/* Unvalidated Assumptions */}
+                                            <div onClick={() => setActiveTab('assumptions')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform group" style={{ borderLeft: '2px solid rgba(251,191,36,0.4)' }}>
+                                              <div className="flex items-center justify-between mb-2">
+                                                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/10">
+                                                  <Lightbulb className="w-5 h-5 text-amber-400" />
+                                                </div>
+                                              </div>
+                                              <span className="font-stat text-3xl font-black text-amber-400">{(activeProject.assumptions || []).filter(a => a.validationStatus === 'Dogrulanmadi').length}</span>
+                                              <span className="text-sm text-slate-400 block mt-0.5">Dogrulanmamis Varsayim</span>
+                                              <span className="text-xs text-slate-500 block">{(activeProject.assumptions || []).length} toplam</span>
+                                            </div>
                                             {/* Open Risks */}
                                             <div onClick={() => setActiveTab('risks')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform neon-border-crimson group">
                                               <div className="flex items-center justify-between mb-2">
@@ -1206,6 +1385,20 @@ Yanıtın tamamı Türkçe olmalıdır.
                                               <span className="text-xs text-slate-500 block">{ganttTasks.filter(gt => gt.progress === 100).length} tamamlandı</span>
                                             </div>
                                           </div>
+
+                                          {/* ── ROW 2b: CR Banner ── */}
+                                          {(() => { const pendingCRs = (activeProject.changeRequests || []).filter(cr => cr.status === 'Bekliyor'); return pendingCRs.length > 0 ? (
+                                            <div onClick={() => setActiveTab('changes')} className="glass-card px-4 py-3 cursor-pointer hover:scale-[1.01] transition-transform flex items-center justify-between" style={{ borderLeft: '3px solid rgba(251,191,36,0.6)' }}>
+                                              <div className="flex items-center gap-3">
+                                                <RefreshCw className="w-5 h-5 text-amber-400 shrink-0" />
+                                                <div>
+                                                  <span className="font-bold text-amber-400 text-lg">{pendingCRs.length}</span>
+                                                  <span className="text-sm text-slate-400 ml-2">bekleyen degisiklik talebi</span>
+                                                </div>
+                                              </div>
+                                              <span className="text-xs text-amber-400 hover:text-amber-300">Tamamini gor →</span>
+                                            </div>
+                                          ) : null; })()}
 
                                           {/* ── ROW 3: Open Risks & Actions ── */}
                                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
@@ -1421,6 +1614,152 @@ Yanıtın tamamı Türkçe olmalıdır.
                                         );
                                       })()}
 
+                                      {/* ASSUMPTIONS & CONSTRAINTS TAB */}
+                                      {activeTab === 'assumptions' && (
+                                        <div className="space-y-4">
+                                          <div className="flex items-center justify-between">
+                                            <div>
+                                              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><Lightbulb className="text-amber-400 w-5 h-5" />Varsayimlar ve Kisitlar</h2>
+                                              <p className="text-sm text-slate-400">{(activeProject.assumptions || []).length} kayit · {(activeProject.assumptions || []).filter(a => a.validationStatus === 'Dogrulanmadi').length} dogrulanmamis</p>
+                                            </div>
+                                            <button onClick={() => openAssumptionModal()} className="bg-amber-600/80 hover:bg-amber-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Varsayim Ekle</button>
+                                          </div>
+                                          {(activeProject.assumptions || []).length === 0 ? (
+                                            <div className="text-center py-20 glass-card p-8">
+                                              <Lightbulb className="w-14 h-14 mx-auto mb-4 text-amber-400/20 empty-state-icon" />
+                                              <p className="text-slate-300 font-medium">Henuz varsayim veya kisit eklenmemis.</p>
+                                              <p className="text-xs text-slate-400 mt-2">Projenin dayandigi varsayimlari ve kisitlari belgele.</p>
+                                              <button onClick={() => openAssumptionModal()} className="mt-4 text-xs text-amber-400 hover:text-amber-300 transition-colors">+ Varsayim Ekle</button>
+                                            </div>
+                                          ) : (
+                                            <div className="space-y-3">
+                                              {(activeProject.assumptions || []).map(a => (
+                                                <div key={a.id} className={`bg-white/5 rounded-xl border p-4 shadow-lg shadow-black/20 flex items-start gap-4 ${a.validationStatus === 'Curutuldu' ? 'border-l-4 border-l-rose-400' : 'border-l-4 border-l-amber-400/40'}`}>
+                                                  <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${a.type === 'Kisit' ? 'text-rose-700 bg-rose-100 border-rose-500/30' : 'text-amber-700 bg-amber-100 border-amber-500/30'}`}>{a.type === 'Kisit' ? 'Kisit' : 'Varsayim'}</span>
+                                                      <span className={`text-xs px-2 py-0.5 rounded-full ${a.validationStatus === 'Dogrulandi' ? 'bg-emerald-500/10 text-emerald-400' : a.validationStatus === 'Curutuldu' ? 'bg-rose-500/10 text-rose-400' : 'bg-amber-500/10 text-amber-400'}`}>{a.validationStatus}</span>
+                                                      <span className="text-xs bg-white/10 text-slate-400 px-2 py-0.5 rounded-full">{a.category}</span>
+                                                    </div>
+                                                    <p className="font-semibold text-slate-100">{a.title}</p>
+                                                    {a.content && <p className="text-xs text-slate-400 mt-1">{a.content}</p>}
+                                                    <p className="text-xs text-slate-500 mt-1">Sorumlu: {a.ownerId || '—'}{a.validationDate ? ' · Tarih: ' + a.validationDate : ''}</p>
+                                                  </div>
+                                                  <div className="flex items-center gap-1 shrink-0">
+                                                    <button onClick={() => openAssumptionModal(a)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
+                                                    <button onClick={() => deleteAssumption(a.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                                  </div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+
+                                      {/* BUSINESS RULES TAB */}
+                                      {activeTab === 'businessrules' && (
+                                        <div className="space-y-4">
+                                          <div className="flex items-center justify-between">
+                                            <div>
+                                              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><BookOpen className="text-blue-400 w-5 h-5" />Is Kurallari</h2>
+                                              <p className="text-sm text-slate-400">{(activeProject.businessRules || []).length} kural · {(activeProject.businessRules || []).filter(r => r.status === 'Aktif').length} aktif</p>
+                                            </div>
+                                            <button onClick={() => openBRModal()} className="bg-blue-600/80 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Kural Ekle</button>
+                                          </div>
+                                          {(activeProject.businessRules || []).length === 0 ? (
+                                            <div className="text-center py-16 text-slate-400"><BookOpen className="w-10 h-10 mx-auto mb-3 opacity-30" /><p>Henuz is kurali eklenmemis.</p><button onClick={() => openBRModal()} className="mt-3 text-xs text-blue-400 hover:text-blue-300 transition-colors">+ Kural Ekle</button></div>
+                                          ) : (
+                                            <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 overflow-hidden" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+                                              <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+                                                <table className="w-full text-sm">
+                                                  <thead className="bg-white/5 border-b border-white/10 sticky top-0 z-10" style={{ backdropFilter: 'blur(12px)' }}>
+                                                    <tr>{['BR ID', 'Kural Basligi', 'Kategori', 'Kaynak', 'Versiyon', 'Durum', ''].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase">{h}</th>)}</tr>
+                                                  </thead>
+                                                  <tbody className="divide-y divide-slate-100/5">
+                                                    {(activeProject.businessRules || []).map(r => (
+                                                      <tr key={r.id} className={`hover:bg-white/5 transition-colors ${r.status === 'Gecersiz' ? 'opacity-50' : ''}`}>
+                                                        <td className="px-4 py-3 text-xs font-mono text-slate-400 whitespace-nowrap">{r.brId}</td>
+                                                        <td className={`px-4 py-3 font-medium text-slate-100 ${r.status === 'Gecersiz' ? 'line-through' : ''}`}>{r.title}</td>
+                                                        <td className="px-4 py-3"><span className="text-xs bg-white/10 text-slate-400 px-2 py-0.5 rounded-full">{r.category}</span></td>
+                                                        <td className="px-4 py-3 text-xs text-slate-400">{r.source}{r.sourceRef ? ` (${r.sourceRef})` : ''}</td>
+                                                        <td className="px-4 py-3 text-xs font-mono text-slate-400">{r.version}</td>
+                                                        <td className="px-4 py-3"><span className={`text-xs px-2 py-1 rounded-full font-medium ${r.status === 'Aktif' ? 'bg-emerald-500/10 text-emerald-400' : r.status === 'Revize Edildi' ? 'bg-amber-500/10 text-amber-400' : 'bg-white/10 text-slate-500'}`}>{r.status}</span></td>
+                                                        <td className="px-4 py-3">
+                                                          <div className="flex items-center gap-1">
+                                                            <button onClick={() => openBRModal(r)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
+                                                            <button onClick={() => deleteBR(r.id)} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                                                          </div>
+                                                        </td>
+                                                      </tr>
+                                                    ))}
+                                                  </tbody>
+                                                </table>
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+
+                                      {/* CHANGE REQUESTS TAB */}
+                                      {activeTab === 'changes' && (
+                                        <div className="space-y-4">
+                                          <div className="flex items-center justify-between">
+                                            <div>
+                                              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><RefreshCw className="text-amber-400 w-5 h-5" />Degisiklik Yonetimi</h2>
+                                              <p className="text-sm text-slate-400">{(activeProject.changeRequests || []).length} talep kayıtlı</p>
+                                            </div>
+                                            <button onClick={() => openCRModal()} className="bg-amber-600/80 hover:bg-amber-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />CR Ekle</button>
+                                          </div>
+                                          {/* Summary counters */}
+                                          <div className="grid grid-cols-4 gap-2">
+                                            {[
+                                              { label: 'Bekliyor', color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
+                                              { label: 'Onaylandi', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
+                                              { label: 'Reddedildi', color: 'text-rose-400 bg-rose-500/10 border-rose-500/20' },
+                                              { label: 'Ertelendi', color: 'text-slate-400 bg-white/5 border-white/10' },
+                                            ].map(({ label, color }) => (
+                                              <div key={label} className={`rounded-lg border px-3 py-2 text-center ${color}`}>
+                                                <span className="text-xl font-bold block">{(activeProject.changeRequests || []).filter(cr => cr.status === label).length}</span>
+                                                <span className="text-xs">{label}</span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                          {(activeProject.changeRequests || []).length === 0 ? (
+                                            <div className="text-center py-20 glass-card p-8">
+                                              <RefreshCw className="w-14 h-14 mx-auto mb-4 text-amber-400/20 empty-state-icon" />
+                                              <p className="text-slate-300 font-medium">Henuz degisiklik talebi yok.</p>
+                                              <p className="text-xs text-slate-400 mt-2">Kapsam, gereksinim veya kisit degisikliklerini buradan yonet.</p>
+                                              <button onClick={() => openCRModal()} className="mt-4 text-xs text-amber-400 hover:text-amber-300 transition-colors">+ CR Ekle</button>
+                                            </div>
+                                          ) : (
+                                            <div className="space-y-3">
+                                              {(activeProject.changeRequests || []).map(cr => {
+                                                const statusColor = cr.status === 'Bekliyor' ? 'bg-amber-500/10 text-amber-400' : cr.status === 'Onaylandi' ? 'bg-emerald-500/10 text-emerald-400' : cr.status === 'Reddedildi' ? 'bg-rose-500/10 text-rose-400' : 'bg-white/10 text-slate-400';
+                                                const borderColor = cr.status === 'Bekliyor' ? 'border-l-amber-400' : cr.status === 'Onaylandi' ? 'border-l-emerald-400' : cr.status === 'Reddedildi' ? 'border-l-rose-400' : 'border-l-slate-500';
+                                                return (
+                                                  <div key={cr.id} className={`bg-white/5 rounded-xl border p-4 shadow-lg shadow-black/20 flex items-start gap-4 border-l-4 ${borderColor}`}>
+                                                    <div className="flex-1 min-w-0">
+                                                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                        <span className="text-xs font-mono text-slate-500 bg-white/5 px-2 py-0.5 rounded">{cr.crId}</span>
+                                                        <span className="text-xs bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full">{cr.changeType}</span>
+                                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor}`}>{cr.status}</span>
+                                                      </div>
+                                                      <p className="font-semibold text-slate-100">{cr.title}</p>
+                                                      <p className="text-xs text-slate-500 mt-0.5">{cr.affectedEntityType}{cr.affectedEntityId ? ` · ${cr.affectedEntityId}` : ''}{cr.createdAt ? ` · ${cr.createdAt}` : ''}</p>
+                                                      {cr.impactAnalysis && <p className="text-xs text-slate-400 italic mt-1">{cr.impactAnalysis}</p>}
+                                                    </div>
+                                                    <div className="flex items-center gap-1 shrink-0">
+                                                      <button onClick={() => openCRModal(cr)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
+                                                      <button onClick={() => deleteCR(cr.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+
                                       {/* RISK REGISTER TAB */}
                                       {activeTab === 'risks' && (
                                         <div className="space-y-4">
@@ -1455,6 +1794,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                       <p className="text-xs text-slate-400 mt-1">Sorumlu: {r.owner || '—'} · Olas.: {PROB_LABELS[r.probability]} · Etki: {IMPACT_LABELS[r.impact]} · Skor: {r.probability * r.impact}</p>
                                                     </div>
                                                     <div className="flex items-center gap-1 shrink-0">
+                                                      <button onClick={() => openLinkCard('risk', r.id)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-cyan-400 transition-colors" title="Baglantilar"><ArrowUpRight className="w-4 h-4" /></button>
                                                       <button onClick={() => openRiskModal(r)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
                                                       <button onClick={() => deleteRisk(r.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                                                     </div>
@@ -1498,7 +1838,10 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                           {od && <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full border border-rose-500/20 flex items-center gap-1"><Clock className="w-3 h-3" />Gecikmiş</span>}
                                                         </div>
                                                         <p className={`font-semibold ${a.status === 'Tamamlandı' ? 'line-through text-slate-400' : 'text-slate-100'}`}>{a.title}</p>
-                                                        <p className="text-xs text-slate-400 mt-1">Sorumlu: {a.owner || '—'} · Tarih: {a.dueDate || '—'}{a.source ? ` · Kaynak: ${a.source}` : ''}</p>
+                                                        <p className="text-xs text-slate-400 mt-1 flex items-center gap-2 flex-wrap">
+                                                          <span>Sorumlu: {a.owner || '—'} · Tarih: {a.dueDate || '—'}{a.source ? ` · Kaynak: ${a.source}` : ''}</span>
+                                                          {a.linkedRequirementId && <span className="text-xs font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded-full">{a.linkedRequirementId}</span>}
+                                                        </p>
                                                       </div>
                                                       <div className="flex items-center gap-1 shrink-0">
                                                         <button onClick={() => openActionModal(a)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
@@ -1637,6 +1980,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                     {s.notes && <p className="text-xs text-slate-400 mt-1 italic">{s.notes}</p>}
                                                   </div>
                                                   <div className="flex items-center gap-1 shrink-0">
+                                                    <button onClick={() => openLinkCard('stakeholder', s.id)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-cyan-400 transition-colors" title="Baglantilar"><ArrowUpRight className="w-4 h-4" /></button>
                                                     <button onClick={() => openStakeholderModal(s)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
                                                     <button onClick={() => deleteStakeholder(s.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                                                   </div>
@@ -1670,7 +2014,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                               <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 220px)' }}>
                                               <table className="w-full text-sm">
                                                 <thead className="bg-white/5 border-b border-white/10 sticky top-0 z-10" style={{ backdropFilter: 'blur(12px)' }}>
-                                                  <tr>{['ID', 'Gereksinim', 'Tür', 'Modül', 'MoSCoW', 'Durum', 'Not', ''].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase">{h}</th>)}</tr>
+                                                  <tr>{['ID', 'Gereksinim', 'Tür', 'Modül', 'MoSCoW', 'Durum', 'K.K.', 'Not', ''].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase">{h}</th>)}</tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-slate-100">
                                                   {activeProject.requirements.filter(r => reqFilter === 'all' || r.status === reqFilter).map(r => (
@@ -1681,9 +2025,11 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                       <td className="px-4 py-3 text-xs text-slate-400">{r.module || '—'}</td>
                                                       <td className="px-4 py-3">{r.moscow ? <span className={`text-xs px-2 py-1 rounded-full font-medium ${r.moscow === 'Must' ? 'moscow-must' : r.moscow === 'Should' ? 'moscow-should' : r.moscow === 'Could' ? 'moscow-could' : 'moscow-wont'}`}>{r.moscow}</span> : <span className="text-xs text-slate-500">—</span>}</td>
                                                       <td className="px-4 py-3"><span className={`text-xs px-2 py-1 rounded-full font-medium ${REQ_STATUS_COLORS[r.status] || 'bg-white/10 text-slate-300'}`}>{r.status}</span></td>
+                                                      <td className="px-4 py-3 text-center" title={r.acceptanceCriteria || 'Kabul kriteri girilmemis'}>{r.acceptanceCriteria ? <CheckCircle2 className="w-4 h-4 text-emerald-400 inline" /> : <X className="w-4 h-4 text-rose-400 inline" />}</td>
                                                       <td className="px-4 py-3 text-xs text-slate-400 max-w-[150px] truncate" title={r.notes || ''}>{r.notes || '—'}</td>
                                                       <td className="px-4 py-3">
                                                         <div className="flex items-center gap-1">
+                                                          <button onClick={() => openLinkCard('requirement', r.id)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-cyan-400 transition-colors" title="Baglantilar"><ArrowUpRight className="w-3.5 h-3.5" /></button>
                                                           <button onClick={() => openReqModal(r)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
                                                           <button onClick={() => deleteReq(r.id)} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
                                                         </div>
@@ -1697,6 +2043,87 @@ Yanıtın tamamı Türkçe olmalıdır.
                                           )}
                                         </div>
                                       )}
+
+                                      {/* TRACEABILITY TAB */}
+                                      {activeTab === 'traceability' && (() => {
+                                        const reqs = activeProject.requirements || [];
+                                        const brs = activeProject.businessRules || [];
+                                        const crs = activeProject.changeRequests || [];
+                                        const assumptions = activeProject.assumptions || [];
+                                        const noAC = reqs.filter(r => !r.acceptanceCriteria);
+                                        const noObjective = reqs.filter(r => !r.objective);
+                                        const unvalidated = assumptions.filter(a => a.validationStatus === 'Dogrulanmadi');
+                                        const pendingCRs = crs.filter(cr => cr.status === 'Bekliyor');
+                                        const warnings = [
+                                          { count: noAC.length, text: 'Kabul kriteri (Acceptance Criteria) bos gereksinim', tab: 'requirements' },
+                                          { count: noObjective.length, text: 'Bagli is hedefi bos gereksinim', tab: 'requirements' },
+                                          { count: unvalidated.length, text: 'Dogrulanmamis varsayim', tab: 'assumptions' },
+                                          { count: pendingCRs.length, text: 'Bekleyen degisiklik talebi', tab: 'changes' },
+                                        ];
+                                        return (
+                                          <div className="space-y-4">
+                                            <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><ArrowUpRight className="text-cyan-400 w-5 h-5" />Traceability & Kalite Kontrol</h2>
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                              {/* Panel A: Kalite Uyarıları */}
+                                              <div className="glass-card p-4 space-y-2">
+                                                <h3 className="font-bold text-sm text-slate-300 mb-3">Kalite Kontrol</h3>
+                                                {warnings.map(({ count, text, tab }) => (
+                                                  <div key={text} className={`flex items-center justify-between p-2.5 rounded-lg ${count === 0 ? 'bg-emerald-500/5 border border-emerald-500/10' : 'bg-amber-500/5 border border-amber-500/20'}`}>
+                                                    <div className="flex items-center gap-2">
+                                                      {count === 0
+                                                        ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                                        : <span className="text-xs font-bold bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full min-w-[24px] text-center">{count}</span>
+                                                      }
+                                                      <span className="text-xs text-slate-300">{text}</span>
+                                                    </div>
+                                                    {count > 0 && <button onClick={() => setActiveTab(tab)} className="text-xs text-cyan-400 hover:text-cyan-300 whitespace-nowrap transition-colors">Goruntule →</button>}
+                                                  </div>
+                                                ))}
+                                              </div>
+                                              {/* Panel B placeholder for small screens */}
+                                              <div className="glass-card p-4">
+                                                <h3 className="font-bold text-sm text-slate-300 mb-3">Ozet</h3>
+                                                <div className="space-y-1.5 text-xs text-slate-400">
+                                                  <p>Toplam gereksinim: <span className="text-slate-200 font-medium">{reqs.length}</span></p>
+                                                  <p>Is kurali: <span className="text-slate-200 font-medium">{brs.length}</span></p>
+                                                  <p>Degisiklik talebi: <span className="text-slate-200 font-medium">{crs.length}</span></p>
+                                                  <p>Varsayim / Kisit: <span className="text-slate-200 font-medium">{assumptions.length}</span></p>
+                                                </div>
+                                              </div>
+                                            </div>
+                                            {/* Panel B: İlişki Tablosu */}
+                                            {reqs.length > 0 && (
+                                              <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 overflow-hidden">
+                                                <div className="overflow-x-auto">
+                                                  <table className="w-full text-sm">
+                                                    <thead className="bg-white/5 border-b border-white/10 sticky top-0 z-10" style={{ backdropFilter: 'blur(12px)' }}>
+                                                      <tr>{['Req ID', 'Gereksinim', 'Is Hedefi', 'MoSCoW', 'Test ID', 'Durum', 'Bagli BR', 'CR Sayisi'].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase whitespace-nowrap">{h}</th>)}</tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-white/5">
+                                                      {reqs.map(r => {
+                                                        const linkedCRCount = crs.filter(cr => cr.affectedEntityId === r.reqId).length;
+                                                        const linkedBR = brs.find(br => br.linkedRequirements && br.linkedRequirements.includes(r.reqId));
+                                                        return (
+                                                          <tr key={r.id} className="hover:bg-white/5 transition-colors">
+                                                            <td className="px-4 py-3 text-xs font-mono text-slate-400 whitespace-nowrap">{r.reqId}</td>
+                                                            <td className="px-4 py-3 font-medium text-slate-100 max-w-[160px] truncate">{r.name}</td>
+                                                            <td className="px-4 py-3 text-xs text-slate-400 max-w-[120px] truncate">{r.objective || <span className="text-amber-400/60">—</span>}</td>
+                                                            <td className="px-4 py-3">{r.moscow ? <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${r.moscow === 'Must' ? 'moscow-must' : r.moscow === 'Should' ? 'moscow-should' : r.moscow === 'Could' ? 'moscow-could' : 'moscow-wont'}`}>{r.moscow}</span> : <span className="text-xs text-slate-500">—</span>}</td>
+                                                            <td className="px-4 py-3">{r.testId ? <span className="text-xs text-emerald-400 font-mono">{r.testId}</span> : <span className="text-xs text-amber-400/60">Eksik</span>}</td>
+                                                            <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${REQ_STATUS_COLORS[r.status] || 'bg-white/10 text-slate-300'}`}>{r.status}</span></td>
+                                                            <td className="px-4 py-3 text-xs text-slate-400">{linkedBR ? <span className="text-blue-400 font-mono">{linkedBR.brId}</span> : <span className="text-slate-600">—</span>}</td>
+                                                            <td className="px-4 py-3">{linkedCRCount > 0 ? <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold">{linkedCRCount}</span> : <span className="text-xs text-slate-600">—</span>}</td>
+                                                          </tr>
+                                                        );
+                                                      })}
+                                                    </tbody>
+                                                  </table>
+                                                </div>
+                                              </div>
+                                            )}
+                                          </div>
+                                        );
+                                      })()}
 
                                       {/* MEETINGS TAB */}
                                       {activeTab === 'meetings' && (
@@ -1735,11 +2162,25 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                   </div>
                                                   <div className="flex gap-2">
                                                     <select value={newNoteType} onChange={e => setNewNoteType(e.target.value)} className="text-sm border border-white/10 rounded-lg px-3 py-2.5 bg-white/5 focus:outline-none focus:ring-1 focus:ring-violet-400 w-36">
-                                                      <option>Karar</option><option>Açık Nokta</option><option>Aksiyon</option>
+                                                      <option>Karar</option><option>Açık Nokta</option><option>Aksiyon</option><option>Gereksinim</option><option>Varsayim</option>
                                                     </select>
                                                     <textarea value={newNoteText} onChange={e => setNewNoteText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addNote(); } }} placeholder="Not ekle ve Enter'a bas... (Shift+Enter: yeni satır)" rows="2" className="flex-1 text-sm border border-white/10 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-violet-400 resize-none" />
                                                     <button onClick={addNote} className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-lg text-sm transition-colors self-end"><Plus className="w-4 h-4" /></button>
                                                   </div>
+                                                  {(() => {
+                                                    const mReqs = (activeProject.requirements || []).filter(r => r.sourceMeetingId === selectedMeeting.id);
+                                                    const mActions = (activeProject.actions || []).filter(a => a.source === selectedMeeting.topic);
+                                                    const mAss = (activeProject.assumptions || []).filter(a => a.sourceMeetingId === selectedMeeting.id);
+                                                    if (mReqs.length + mActions.length + mAss.length === 0) return null;
+                                                    return (
+                                                      <div className="flex items-center gap-2 flex-wrap text-xs">
+                                                        <span className="text-slate-500">Bu toplantidan uretilenler:</span>
+                                                        {mReqs.length > 0 && <button onClick={() => setActiveTab('requirements')} className="bg-teal-500/10 text-teal-400 border border-teal-500/20 px-2 py-0.5 rounded-full hover:bg-teal-500/20 transition-colors">{mReqs.length} gereksinim</button>}
+                                                        {mActions.length > 0 && <button onClick={() => setActiveTab('actions')} className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full hover:bg-indigo-500/20 transition-colors">{mActions.length} aksiyon</button>}
+                                                        {mAss.length > 0 && <button onClick={() => setActiveTab('assumptions')} className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full hover:bg-amber-500/20 transition-colors">{mAss.length} varsayim</button>}
+                                                      </div>
+                                                    );
+                                                  })()}
                                                   <div className="space-y-2 max-h-[420px] overflow-y-auto">
                                                     {selectedMeeting.notes.length === 0 && <p className="text-xs text-slate-400 text-center py-4">Henüz not yok. Yukarıdan ekleyin.</p>}
                                                     {selectedMeeting.notes.map(n => (
@@ -2274,16 +2715,24 @@ Yanıtın tamamı Türkçe olmalıdır.
                                                     </h3>
                                                     <p className="text-sm text-slate-400 mt-1">{tpl.purpose}</p>
                                                   </div>
-                                                  <button
-                                                    onClick={() => {
-                                                      navigator.clipboard.writeText(tpl.format);
-                                                      alert(tpl.name + ' panoya kopyalandı!');
-                                                    }}
-                                                    className="bg-white/5 border border-white/15 hover:bg-white/10 text-slate-300 py-1.5 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-2 shadow-lg shadow-black/20 shrink-0 self-start md:self-auto"
-                                                  >
-                                                    <ClipboardCopy className="w-4 h-4" />
-                                                    Şablonu Kopyala
-                                                  </button>
+                                                  <div className="flex items-center gap-2 shrink-0 self-start md:self-auto flex-wrap">
+                                                    <button
+                                                      onClick={() => { navigator.clipboard.writeText(tpl.format); alert(tpl.name + ' panoya kopyalandı!'); }}
+                                                      className="bg-white/5 border border-white/15 hover:bg-white/10 text-slate-300 py-1.5 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-2 shadow-lg shadow-black/20"
+                                                    >
+                                                      <ClipboardCopy className="w-4 h-4" />
+                                                      Şablonu Kopyala
+                                                    </button>
+                                                    {['tpl_raci', 'tpl_mom', 'tpl_tm'].includes(tpl.id) && (
+                                                      <button
+                                                        onClick={() => generateLiveTemplate(tpl.id)}
+                                                        className="bg-teal-600/20 border border-teal-500/30 hover:bg-teal-600/30 text-teal-300 py-1.5 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-2 shadow-lg shadow-black/20"
+                                                      >
+                                                        <RefreshCw className="w-4 h-4" />
+                                                        Canli Veriden Doldur
+                                                      </button>
+                                                    )}
+                                                  </div>
                                                 </div>
                                                 <div className="p-4 bg-slate-900 text-green-400 font-mono text-sm overflow-x-auto whitespace-pre-wrap leading-relaxed">
                                                   {tpl.format}
@@ -2345,6 +2794,103 @@ Yanıtın tamamı Türkçe olmalıdır.
                                     </div>
                                   )}
 
+                                  {/* BUSINESS RULE MODAL */}
+                                  {showBRModal && (
+                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                                      <div className="glass-panel p-6 shadow-2xl max-w-lg w-full">
+                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><BookOpen className="text-blue-400 w-5 h-5" />{editingBR ? 'Is Kuralini Duzenle' : 'Yeni Is Kurali'}</h3>
+                                        <div className="space-y-3">
+                                          <input value={brForm.title} onChange={e => setBrForm({ ...brForm, title: e.target.value })} placeholder="Kural basligi*" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                                          <textarea value={brForm.ruleText} onChange={e => setBrForm({ ...brForm, ruleText: e.target.value })} placeholder="[Kosul] durumunda [eylem] yapilmalidir*" rows="3" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none" />
+                                          <div className="grid grid-cols-2 gap-3">
+                                            <div><label className="text-xs text-slate-400 block mb-1">Kategori</label>
+                                              <select value={brForm.category} onChange={e => setBrForm({ ...brForm, category: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                                {['Hesaplama', 'Surec', 'Veri', 'Erisim', 'Dogrulama', 'Bildirim'].map(c => <option key={c} value={c}>{c}</option>)}
+                                              </select>
+                                            </div>
+                                            <div><label className="text-xs text-slate-400 block mb-1">Kaynak</label>
+                                              <select value={brForm.source} onChange={e => setBrForm({ ...brForm, source: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                                {['Mevzuat', 'Sirket Politikasi', 'Paydas Karari', 'Sektor Standardi'].map(s => <option key={s} value={s}>{s}</option>)}
+                                              </select>
+                                            </div>
+                                          </div>
+                                          <div className="grid grid-cols-2 gap-3">
+                                            <input value={brForm.sourceRef} onChange={e => setBrForm({ ...brForm, sourceRef: e.target.value })} placeholder="Kaynak ref. (orn: Madde 5/3)" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                            <input value={brForm.version} onChange={e => setBrForm({ ...brForm, version: e.target.value })} placeholder="Versiyon (orn: v1.0)" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                          </div>
+                                          <div><label className="text-xs text-slate-400 block mb-1">Durum</label>
+                                            <select value={brForm.status} onChange={e => setBrForm({ ...brForm, status: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                              {['Aktif', 'Revize Edildi', 'Gecersiz'].map(s => <option key={s} value={s}>{s}</option>)}
+                                            </select>
+                                          </div>
+                                          <textarea value={brForm.notes} onChange={e => setBrForm({ ...brForm, notes: e.target.value })} placeholder="Not (opsiyonel)" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
+                                          {editingBR && brForm.version !== editingBR.version && (
+                                            <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 text-xs text-amber-300">
+                                              <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                                              <span>Versiyon degisti — eski kayit &quot;Revize Edildi&quot; durumuna cekilecek.</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                        <div className="flex justify-end gap-3 mt-5">
+                                          <button onClick={() => setShowBRModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Iptal</button>
+                                          <button onClick={saveBR} className="px-4 py-2 text-sm bg-blue-600/80 hover:bg-blue-500 text-white rounded-md font-medium">Kaydet</button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* CHANGE REQUEST MODAL */}
+                                  {showCRModal && (
+                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                                      <div className="glass-panel p-6 shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><RefreshCw className="text-amber-400 w-5 h-5" />{editingCR ? 'CR Duzenle' : 'Yeni Degisiklik Talebi'}</h3>
+                                        <div className="space-y-3">
+                                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Bolum 1 — Talep Bilgileri</p>
+                                          <input value={crForm.title} onChange={e => setCrForm({ ...crForm, title: e.target.value })} placeholder="Talep basligi*" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                                          <div className="grid grid-cols-2 gap-3">
+                                            <div><label className="text-xs text-slate-400 block mb-1">Degisiklik Turu</label>
+                                              <select value={crForm.changeType} onChange={e => setCrForm({ ...crForm, changeType: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                                {['Kapsam Genislemesi', 'Duzeltme', 'Iptal', 'Yeni Ekleme', 'Erteleme'].map(c => <option key={c} value={c}>{c}</option>)}
+                                              </select>
+                                            </div>
+                                            <div><label className="text-xs text-slate-400 block mb-1">Etkilenen Alan</label>
+                                              <select value={crForm.affectedEntityType} onChange={e => setCrForm({ ...crForm, affectedEntityType: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                                {['Gereksinim', 'Is Kurali', 'Varsayim', 'Risk'].map(c => <option key={c} value={c}>{c}</option>)}
+                                              </select>
+                                            </div>
+                                          </div>
+                                          <input value={crForm.affectedEntityId} onChange={e => setCrForm({ ...crForm, affectedEntityId: e.target.value })} placeholder="Etkilenen kayit ID (orn: REQ-003)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                          <textarea value={crForm.changeDescription} onChange={e => setCrForm({ ...crForm, changeDescription: e.target.value })} placeholder="Degisiklik aciklamasi*" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
+                                          <textarea value={crForm.businessDriver} onChange={e => setCrForm({ ...crForm, businessDriver: e.target.value })} placeholder="Is gerekce / tetikleyici*" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
+                                          <input value={crForm.requestingStakeholderId} onChange={e => setCrForm({ ...crForm, requestingStakeholderId: e.target.value })} placeholder="Talep eden paydas (opsiyonel)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                          {editingCR && (
+                                            <>
+                                              <div className="border-t border-white/10 pt-3">
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Bolum 2 — Karar</p>
+                                              </div>
+                                              <textarea value={crForm.impactAnalysis} onChange={e => setCrForm({ ...crForm, impactAnalysis: e.target.value })} placeholder="Etki analizi" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
+                                              <div><label className="text-xs text-slate-400 block mb-1">Durum</label>
+                                                <select value={crForm.status} onChange={e => setCrForm({ ...crForm, status: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                                  {['Bekliyor', 'Onaylandi', 'Reddedildi', 'Ertelendi'].map(s => <option key={s} value={s}>{s}</option>)}
+                                                </select>
+                                              </div>
+                                              {crForm.status !== 'Bekliyor' && (
+                                                <div><label className="text-xs text-slate-400 block mb-1">Karar Tarihi</label>
+                                                  <input type="date" value={crForm.decisionDate} onChange={e => setCrForm({ ...crForm, decisionDate: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                                </div>
+                                              )}
+                                              <textarea value={crForm.decisionNote} onChange={e => setCrForm({ ...crForm, decisionNote: e.target.value })} placeholder="Karar notu" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
+                                            </>
+                                          )}
+                                        </div>
+                                        <div className="flex justify-end gap-3 mt-5">
+                                          <button onClick={() => setShowCRModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Iptal</button>
+                                          <button onClick={saveCR} className="px-4 py-2 text-sm bg-amber-600/80 hover:bg-amber-500 text-white rounded-md font-medium">Kaydet</button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+
                                   {/* RISK MODAL */}
                                   {showRiskModal && (
                                     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -2355,7 +2901,8 @@ Yanıtın tamamı Türkçe olmalıdır.
                                           <div className="grid grid-cols-2 gap-3">
                                             <div><label className="text-xs text-slate-400 block mb-1">Kategori</label>
                                               <select value={riskForm.category} onChange={e => setRiskForm({ ...riskForm, category: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
-                                                {['Teknik', 'İş', 'Kaynak', 'Çevresel', 'Yasal'].map(c => <option key={c}>{c}</option>)}
+                                                <option value="">Kategori seçin</option>
+                                                {['Paydas', 'Kapsam', 'Veri', 'Degisim Yonetimi', 'Teknik', 'Zaman', 'Butce', 'Yasal'].map(c => <option key={c} value={c}>{c}</option>)}
                                               </select>
                                             </div>
                                             <div><label className="text-xs text-slate-400 block mb-1">Durum</label>
@@ -2377,10 +2924,59 @@ Yanıtın tamamı Türkçe olmalıdır.
                                           </div>
                                           <input value={riskForm.owner} onChange={e => setRiskForm({ ...riskForm, owner: e.target.value })} placeholder="Sorumlu kişi" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                                           <textarea value={riskForm.mitigation} onChange={e => setRiskForm({ ...riskForm, mitigation: e.target.value })} placeholder="Azaltma stratejisi..." rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
+                                          <div className="grid grid-cols-2 gap-3">
+                                            <input value={riskForm.linkedRequirementId} onChange={e => setRiskForm({ ...riskForm, linkedRequirementId: e.target.value })} placeholder="Bagli gereksinim ID (orn: REQ-003)" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                            <input value={riskForm.linkedAssumptionId} onChange={e => setRiskForm({ ...riskForm, linkedAssumptionId: e.target.value })} placeholder="Tetikleyen varsayim ID (orn: ASM-001)" className="border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                          </div>
+                                          <input value={riskForm.triggerDescription} onChange={e => setRiskForm({ ...riskForm, triggerDescription: e.target.value })} placeholder="Erken uyarı işareti (risk gerceklesirse ne olur?)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                                         </div>
                                         <div className="flex justify-end gap-3 mt-5">
                                           <button onClick={() => setShowRiskModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
                                           <button onClick={saveRisk} className="px-4 py-2 text-sm bg-rose-600/80 hover:bg-rose-500 text-white rounded-md font-medium">Kaydet</button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* ASSUMPTION MODAL */}
+                                  {showAssumptionModal && (
+                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                                      <div className="glass-panel p-6 shadow-2xl max-w-lg w-full">
+                                        <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><Lightbulb className="text-amber-400 w-5 h-5" />{editingAssumption ? 'Duzenle' : 'Yeni Varsayim / Kisit'}</h3>
+                                        <div className="space-y-3">
+                                          <input value={assumptionForm.title} onChange={e => setAssumptionForm({ ...assumptionForm, title: e.target.value })} placeholder="Baslik*" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                                          <textarea value={assumptionForm.content} onChange={e => setAssumptionForm({ ...assumptionForm, content: e.target.value })} placeholder="Aciklama / icerik*" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
+                                          <div className="grid grid-cols-2 gap-3">
+                                            <div><label className="text-xs text-slate-400 block mb-1">Tip</label>
+                                              <select value={assumptionForm.type} onChange={e => setAssumptionForm({ ...assumptionForm, type: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                                <option value="Varsayim">Varsayim</option>
+                                                <option value="Kisit">Kisit</option>
+                                              </select>
+                                            </div>
+                                            <div><label className="text-xs text-slate-400 block mb-1">Kategori</label>
+                                              <select value={assumptionForm.category} onChange={e => setAssumptionForm({ ...assumptionForm, category: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                                {['Teknik', 'Is', 'Paydas', 'Zaman', 'Butce', 'Yasal', 'Organizasyonel'].map(c => <option key={c} value={c}>{c}</option>)}
+                                              </select>
+                                            </div>
+                                          </div>
+                                          <input value={assumptionForm.ownerId} onChange={e => setAssumptionForm({ ...assumptionForm, ownerId: e.target.value })} placeholder="Sorumlu (opsiyonel)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                          <div><label className="text-xs text-slate-400 block mb-1">Dogrulama Durumu</label>
+                                            <select value={assumptionForm.validationStatus} onChange={e => setAssumptionForm({ ...assumptionForm, validationStatus: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                              <option value="Dogrulanmadi">Dogrulanmadi</option>
+                                              <option value="Dogrulandi">Dogrulandi</option>
+                                              <option value="Curutuldu">Curutuldu</option>
+                                            </select>
+                                          </div>
+                                          {assumptionForm.validationStatus !== 'Dogrulanmadi' && (
+                                            <div><label className="text-xs text-slate-400 block mb-1">Dogrulama Tarihi</label>
+                                              <input type="date" value={assumptionForm.validationDate} onChange={e => setAssumptionForm({ ...assumptionForm, validationDate: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                            </div>
+                                          )}
+                                          <textarea value={assumptionForm.notes} onChange={e => setAssumptionForm({ ...assumptionForm, notes: e.target.value })} placeholder="Not (opsiyonel)" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
+                                        </div>
+                                        <div className="flex justify-end gap-3 mt-5">
+                                          <button onClick={() => setShowAssumptionModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Iptal</button>
+                                          <button onClick={saveAssumption} className="px-4 py-2 text-sm bg-amber-600/80 hover:bg-amber-500 text-white rounded-md font-medium">Kaydet</button>
                                         </div>
                                       </div>
                                     </div>
@@ -2401,6 +2997,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                             {['Bekliyor', 'Devam Ediyor', 'Tamamlandı'].map(s => <option key={s}>{s}</option>)}
                                           </select>
                                           <input value={actionForm.source} onChange={e => setActionForm({ ...actionForm, source: e.target.value })} placeholder="Kaynak (ör. Toplantı adı)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                                          <input value={actionForm.linkedRequirementId || ''} onChange={e => setActionForm({ ...actionForm, linkedRequirementId: e.target.value })} placeholder="Bagli gereksinim ID (orn: REQ-003)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
                                           <textarea value={actionForm.notes || ''} onChange={e => setActionForm({ ...actionForm, notes: e.target.value })} placeholder="Not / Açıklama (opsiyonel)" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none" />
                                         </div>
                                         <div className="flex justify-end gap-3 mt-5">
@@ -2451,7 +3048,7 @@ Yanıtın tamamı Türkçe olmalıdır.
                                   {/* REQUIREMENT MODAL */}
                                   {showReqModal && (
                                     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                                      <div className="glass-panel p-6 shadow-2xl max-w-md w-full">
+                                      <div className="glass-panel p-6 shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
                                         <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><BookMarked className="text-teal-500 w-5 h-5" />{editingReq ? 'Gereksinimi Düzenle' : 'Yeni Gereksinim'}</h3>
                                         <div className="space-y-3">
                                           <input value={reqForm.name} onChange={e => setReqForm({ ...reqForm, name: e.target.value })} placeholder="Gereksinim adı*" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300" />
@@ -2472,6 +3069,23 @@ Yanıtın tamamı Türkçe olmalıdır.
                                               <option value="Wont">Won't Have</option>
                                             </select>
                                           </div>
+                                          <div className="grid grid-cols-2 gap-3">
+                                            <select value={reqForm.requirementType} onChange={e => setReqForm({ ...reqForm, requirementType: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                              <option value="">Gereksinim Türü</option>
+                                              {['Is Gereksinimi', 'Paydas Gereksinimi', 'Cozum Gereksinimi', 'Gecis Gereksinimi'].map(t => <option key={t} value={t}>{t}</option>)}
+                                            </select>
+                                            <select value={reqForm.approvalStatus} onChange={e => setReqForm({ ...reqForm, approvalStatus: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                              {['Taslak', 'Incelemede', 'Onaylandi', 'Reddedildi', 'Revize Gerekiyor'].map(s => <option key={s} value={s}>{s}</option>)}
+                                            </select>
+                                          </div>
+                                          <div className="border-l-4 border-amber-400 pl-3 space-y-1">
+                                            <label className="text-xs font-bold text-amber-400 block">Kabul Kriteri (Acceptance Criteria)</label>
+                                            <textarea value={reqForm.acceptanceCriteria} onChange={e => setReqForm({ ...reqForm, acceptanceCriteria: e.target.value })} placeholder="Bu gereksinim ne zaman karsilanmis sayilir?" rows="3" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
+                                          </div>
+                                          <select value={reqForm.babokKnowledgeArea} onChange={e => setReqForm({ ...reqForm, babokKnowledgeArea: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                            <option value="">BABOK Bilgi Alani (istege bagli)</option>
+                                            {babokData.map(ka => <option key={ka.id} value={ka.id}>{ka.title}</option>)}
+                                          </select>
                                           <textarea value={reqForm.notes} onChange={e => setReqForm({ ...reqForm, notes: e.target.value })} placeholder="Not / Açıklama (opsiyonel)" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
                                         </div>
                                         <div className="flex justify-end gap-3 mt-5">
@@ -2481,6 +3095,115 @@ Yanıtın tamamı Türkçe olmalıdır.
                                       </div>
                                     </div>
                                   )}
+
+                                  {/* LINK CARD MODAL */}
+                                  {showLinkCard && linkCardEntity && (() => {
+                                    const { type, id } = linkCardEntity;
+                                    const crs = activeProject.changeRequests || [];
+                                    const meetings = activeProject.meetings || [];
+                                    const actions = activeProject.actions || [];
+
+                                    if (type === 'requirement') {
+                                      const req = (activeProject.requirements || []).find(r => r.id === id);
+                                      if (!req) return null;
+                                      const linkedCRs = crs.filter(cr => cr.affectedEntityId === req.reqId);
+                                      return (
+                                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                                          <div className="glass-panel p-6 shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+                                            <div className="flex items-center justify-between mb-4">
+                                              <h3 className="font-bold text-lg text-slate-100 flex items-center gap-2"><ArrowUpRight className="text-cyan-400 w-5 h-5" /><span className="font-mono text-cyan-400">{req.reqId}</span>{req.name}</h3>
+                                              <button onClick={closeLinkCard} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400"><X className="w-4 h-4" /></button>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+                                              {[['Is Hedefi', req.objective], ['Modul', req.module], ['MoSCoW', req.moscow], ['Durum', req.status], ['Test ID', req.testId], ['Not', req.notes]].map(([k, v]) => (
+                                                <div key={k} className="bg-white/5 rounded-lg p-2.5"><span className="text-xs text-slate-500 block">{k}</span><span className="text-slate-200">{v || '—'}</span></div>
+                                              ))}
+                                            </div>
+                                            <div className="space-y-2">
+                                              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Bagli Degisiklik Talepleri ({linkedCRs.length})</p>
+                                              {linkedCRs.length === 0 ? <p className="text-xs text-slate-500 py-2">Bagli CR bulunamadi.</p> : linkedCRs.map(cr => (
+                                                <div key={cr.id} className="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-2">
+                                                  <span className="text-xs font-mono text-slate-400">{cr.crId}</span>
+                                                  <span className="text-xs text-slate-300 flex-1">{cr.title}</span>
+                                                  <span className={`text-xs px-2 py-0.5 rounded-full ${cr.status === 'Bekliyor' ? 'bg-amber-500/10 text-amber-400' : cr.status === 'Onaylandi' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>{cr.status}</span>
+                                                </div>
+                                              ))}
+                                              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-3">Bagli Is Kurallari</p>
+                                              <p className="text-xs text-slate-500 py-1">Otomatik esleme icin BR olusturma sirasinda req ID girin.</p>
+                                            </div>
+                                            <div className="flex justify-end mt-4"><button onClick={closeLinkCard} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Kapat</button></div>
+                                          </div>
+                                        </div>
+                                      );
+                                    }
+
+                                    if (type === 'stakeholder') {
+                                      const s = (activeProject.stakeholders || []).find(st => st.id === id);
+                                      if (!s) return null;
+                                      const relMeetings = meetings.filter(m => m.attendees && m.attendees.toLowerCase().includes(s.name.toLowerCase()));
+                                      const openActions = actions.filter(a => a.owner && a.owner.toLowerCase() === s.name.toLowerCase() && a.status !== 'Tamamlandi');
+                                      return (
+                                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                                          <div className="glass-panel p-6 shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+                                            <div className="flex items-center justify-between mb-4">
+                                              <h3 className="font-bold text-lg text-slate-100 flex items-center gap-2"><ArrowUpRight className="text-cyan-400 w-5 h-5" />{s.name}</h3>
+                                              <button onClick={closeLinkCard} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400"><X className="w-4 h-4" /></button>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+                                              {[['Rol', s.role], ['Departman', s.department], ['RACI', `${s.raci} — ${RACI_LABELS[s.raci]}`], ['Ilgi / Etki', `${PROB_LABELS[s.interest]} / ${PROB_LABELS[s.influence]}`]].map(([k, v]) => (
+                                                <div key={k} className="bg-white/5 rounded-lg p-2.5"><span className="text-xs text-slate-500 block">{k}</span><span className="text-slate-200">{v || '—'}</span></div>
+                                              ))}
+                                            </div>
+                                            <div className="space-y-3">
+                                              <div>
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Katildigi Toplantilar ({relMeetings.length})</p>
+                                                {relMeetings.length === 0 ? <p className="text-xs text-slate-500">Toplanti bulunamadi.</p> : relMeetings.map(m => <div key={m.id} className="text-xs bg-white/5 rounded px-3 py-1.5 text-slate-300">{m.date} — {m.topic}</div>)}
+                                              </div>
+                                              <div>
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Acik Aksiyonlar ({openActions.length})</p>
+                                                {openActions.length === 0 ? <p className="text-xs text-slate-500">Acik aksiyon yok.</p> : openActions.map(a => <div key={a.id} className="text-xs bg-white/5 rounded px-3 py-1.5 text-slate-300">{a.title} <span className="text-slate-500">· {a.dueDate || 'Tarih yok'}</span></div>)}
+                                              </div>
+                                            </div>
+                                            <div className="flex justify-end mt-4"><button onClick={closeLinkCard} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Kapat</button></div>
+                                          </div>
+                                        </div>
+                                      );
+                                    }
+
+                                    if (type === 'risk') {
+                                      const risk = (activeProject.risks || []).find(r => r.id === id);
+                                      if (!risk) return null;
+                                      const lvl = getRiskLevel(risk.probability, risk.impact);
+                                      const linkedCRs = crs.filter(cr => cr.affectedEntityType === 'Risk');
+                                      return (
+                                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                                          <div className="glass-panel p-6 shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+                                            <div className="flex items-center justify-between mb-4">
+                                              <h3 className="font-bold text-lg text-slate-100 flex items-center gap-2"><ArrowUpRight className="text-cyan-400 w-5 h-5" />{risk.title}</h3>
+                                              <button onClick={closeLinkCard} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400"><X className="w-4 h-4" /></button>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+                                              {[['Kategori', risk.category], ['Risk Skoru', `${risk.probability * risk.impact} — ${lvl.label}`], ['Durum', risk.status], ['Sorumlu', risk.owner], ['Azaltma', risk.mitigation]].map(([k, v]) => (
+                                                <div key={k} className="bg-white/5 rounded-lg p-2.5"><span className="text-xs text-slate-500 block">{k}</span><span className="text-slate-200">{v || '—'}</span></div>
+                                              ))}
+                                            </div>
+                                            <div>
+                                              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Bagli Degisiklik Talepleri ({linkedCRs.length})</p>
+                                              {linkedCRs.length === 0 ? <p className="text-xs text-slate-500 py-1">Bagli CR bulunamadi.</p> : linkedCRs.map(cr => (
+                                                <div key={cr.id} className="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-2 mb-1">
+                                                  <span className="text-xs font-mono text-slate-400">{cr.crId}</span>
+                                                  <span className="text-xs text-slate-300 flex-1">{cr.title}</span>
+                                                  <span className={`text-xs px-2 py-0.5 rounded-full ${cr.status === 'Bekliyor' ? 'bg-amber-500/10 text-amber-400' : cr.status === 'Onaylandi' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>{cr.status}</span>
+                                                </div>
+                                              ))}
+                                            </div>
+                                            <div className="flex justify-end mt-4"><button onClick={closeLinkCard} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Kapat</button></div>
+                                          </div>
+                                        </div>
+                                      );
+                                    }
+                                    return null;
+                                  })()}
 
                                   {/* MEETING MODAL */}
                                   {showMeetingModal && (
