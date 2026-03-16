@@ -283,8 +283,8 @@ const babokData = [
   },
   {
     id: 'ka5',
-    title: 'Strateji Analizi',
-    description: 'Gereksinimlerin ve tasarımların, iş hedeflerine ve iş analizi standartlarına uygunluğunu değerlendirme.',
+    title: 'Gereksinim Yaşam Döngüsü Yönetimi',
+    description: 'Gereksinimlerin ve tasarımların doğrulanması, onaylanması ve iş hedeflerine uygunluğunun değerlendirilmesi.',
     icon: <Activity className="w-6 h-6 text-red-500" />,
     color: 'border-red-500/20 bg-red-500/10',
     headerColor: 'text-red-700',
