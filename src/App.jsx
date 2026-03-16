@@ -1125,6 +1125,7 @@ Yanıtın tamamı Türkçe olmalıdır.
               openActionModal={openActionModal}
               deleteAction={deleteAction}
               quickUpdateActionStatus={quickUpdateActionStatus}
+              updateActive={updateActive}
             />
           )}
 
