@@ -1078,6 +1078,7 @@ Yanıtın tamamı Türkçe olmalıdır.
               setActiveTab={setActiveTab}
               setExpandedKA={setExpandedKA}
               RingChart={RingChart}
+              openExportModal={() => setShowExportModal(true)}
             />
           )}
 

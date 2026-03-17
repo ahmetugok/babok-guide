@@ -4,7 +4,7 @@ import { generateBABOKReport, generateBABOKSections } from '../utils/exportEngin
 
 const SECTION_LABELS = [
   'Özet', 'Paydaş', 'Varsayım', 'İş Kuralı',
-  'Gereksinim', 'Risk', 'Değişiklik', 'Aksiyon',
+  'Gereksinim', 'Risk', 'Değişiklik', 'Aksiyon', 'Zaman',
 ];
 
 export function ExportModal({ isOpen, onClose, activeProject }) {

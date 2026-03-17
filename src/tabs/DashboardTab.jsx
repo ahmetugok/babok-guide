@@ -1,10 +1,20 @@
 import React from 'react';
 import {
   AlertTriangle, ListChecks, BookMarked, CalendarDays, Shield, CheckCircle2,
-  LayoutGrid, Lightbulb, RefreshCw, Clock, Sparkles, X
+  LayoutGrid, Lightbulb, RefreshCw, Clock, Sparkles, X, Download
 } from 'lucide-react';
 import { getRiskLevel, isOverdue } from '../utils.js';
 import { REQ_STATUS_COLORS } from '../constants/index.js';
+import { formatDuration } from '../utils/timeTracker.js';
+
+const KA_COLORS = {
+  ka1: { bar: '#a855f7', bg: 'bg-purple-500/10',  text: 'text-purple-400'  },
+  ka2: { bar: '#3b82f6', bg: 'bg-blue-500/10',    text: 'text-blue-400'    },
+  ka3: { bar: '#f97316', bg: 'bg-orange-500/10',  text: 'text-orange-400'  },
+  ka4: { bar: '#14b8a6', bg: 'bg-teal-500/10',    text: 'text-teal-400'    },
+  ka5: { bar: '#6366f1', bg: 'bg-indigo-500/10',  text: 'text-indigo-400'  },
+  ka6: { bar: '#10b981', bg: 'bg-emerald-500/10', text: 'text-emerald-400' },
+};
 
 export function DashboardTab({
   activeProject,
@@ -17,7 +27,21 @@ export function DashboardTab({
   setActiveTab,
   setExpandedKA,
   RingChart,
+  openExportModal,
 }) {
+  // ── Zaman analizi hesaplamaları ──────────────────────────────────────────
+  const totalMeetingMinutes  = (activeProject.meetings  || []).reduce((s, m) => s + (m.duration  || 0), 0);
+  const totalActionMinutes   = (activeProject.actions   || []).reduce((s, a) => s + (a.duration  || 0), 0);
+  const totalChecklistMinutes = Object.values(activeProject.completedTaskDurations || {}).reduce((s, d) => s + d, 0);
+  const totalMinutes = totalMeetingMinutes + totalActionMinutes + totalChecklistMinutes;
+
+  const babokEforData = babokData.map(ka => {
+    const taskIds = ka.tasks.map(t => t.id);
+    const minutes = taskIds.reduce((s, id) => s + (activeProject.completedTaskDurations?.[id] || 0), 0);
+    return { id: ka.id, title: ka.title, minutes };
+  }).filter(ka => ka.minutes > 0);
+  const totalBabokMinutes = babokEforData.reduce((s, ka) => s + ka.minutes, 0);
+
   const openRisks = activeProject.risks.filter(r => r.status === 'Açık');
   const highRisks = openRisks.filter(r => getRiskLevel(r.probability, r.impact).label === 'Yüksek' || getRiskLevel(r.probability, r.impact).label === 'Kritik');
   const pendingActions = activeProject.actions.filter(a => a.status !== 'Tamamlandı');
@@ -145,6 +169,75 @@ export function DashboardTab({
           </div>
         );
       })()}
+
+      {/* ── ZAMAN ANALİZİ BLOGU ── */}
+      {totalMinutes > 0 && (
+        <div className="glass-card p-4">
+          <h3 className="font-bold text-sm text-slate-200 flex items-center gap-2 mb-3">
+            <Clock className="w-4 h-4 text-cyan-400" />Zaman Analizi
+          </h3>
+
+          {/* 3 özet kart */}
+          <div className="grid grid-cols-3 gap-2.5 mb-4">
+            <div className="bg-white/5 rounded-lg p-3 border border-white/5 text-center">
+              <span className="text-xs text-slate-500 uppercase tracking-wider block mb-1">Toplam Süre</span>
+              <span className="font-stat text-lg font-bold text-cyan-400">{formatDuration(totalMinutes)}</span>
+            </div>
+            <div className="bg-white/5 rounded-lg p-3 border border-white/5 text-center">
+              <span className="text-xs text-slate-500 uppercase tracking-wider block mb-1">Toplantılar</span>
+              <span className="font-stat text-lg font-bold text-violet-400">{formatDuration(totalMeetingMinutes)}</span>
+              <span className="text-[10px] text-slate-500 block">{totalMinutes > 0 ? Math.round((totalMeetingMinutes / totalMinutes) * 100) : 0}%</span>
+            </div>
+            <div className="bg-white/5 rounded-lg p-3 border border-white/5 text-center">
+              <span className="text-xs text-slate-500 uppercase tracking-wider block mb-1">Aksiyonlar</span>
+              <span className="font-stat text-lg font-bold text-indigo-400">{formatDuration(totalActionMinutes)}</span>
+              <span className="text-[10px] text-slate-500 block">{totalMinutes > 0 ? Math.round((totalActionMinutes / totalMinutes) * 100) : 0}%</span>
+            </div>
+          </div>
+
+          {/* BABOK efor dağılımı */}
+          {babokEforData.length > 0 && (
+            <div className="mb-3">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">BABOK Bilgi Alanları Efor Dağılımı</p>
+              <div className="space-y-2">
+                {babokEforData.map(ka => {
+                  const pct = totalBabokMinutes > 0 ? Math.round((ka.minutes / totalBabokMinutes) * 100) : 0;
+                  const color = KA_COLORS[ka.id] || { bar: '#6366f1', bg: 'bg-indigo-500/10', text: 'text-indigo-400' };
+                  return (
+                    <div key={ka.id} className="flex items-center gap-2">
+                      <span className="text-xs text-slate-400 w-40 truncate flex-shrink-0" title={ka.title}>{ka.title}</span>
+                      <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color.bar, opacity: 0.8 }} />
+                      </div>
+                      <span className={`text-xs font-medium w-20 text-right flex-shrink-0 ${color.text}`}>{formatDuration(ka.minutes)}</span>
+                      <span className="text-[10px] text-slate-500 w-8 text-right flex-shrink-0">{pct}%</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Toplantı özeti */}
+          {totalMeetingMinutes > 0 && (() => {
+            const meetingPct = totalMinutes > 0 ? Math.round((totalMeetingMinutes / totalMinutes) * 100) : 0;
+            return (
+              <div className={`text-xs px-3 py-2 rounded-lg border mb-3 ${meetingPct > 50 ? 'bg-amber-500/10 border-amber-500/20 text-amber-300' : 'bg-white/5 border-white/5 text-slate-400'}`}>
+                {meetingPct > 50 && <span className="font-bold block mb-0.5">⚠ Toplantı süresi analiz süresini aşıyor</span>}
+                Toplantı süresi: <span className="font-medium">{formatDuration(totalMeetingMinutes)}</span>
+                <span className="ml-1 text-slate-500">(analiz süresinin {meetingPct}%'i toplantılarda geçti)</span>
+              </div>
+            );
+          })()}
+
+          {/* Export linki */}
+          {openExportModal && (
+            <button onClick={openExportModal} className="flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 transition-colors">
+              <Download className="w-3.5 h-3.5" />Tüm zaman verilerini export'a dahil et
+            </button>
+          )}
+        </div>
+      )}
 
       {/* ── ROW 2: 5 Stat Cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5">

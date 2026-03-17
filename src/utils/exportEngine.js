@@ -2,6 +2,12 @@
 // generateBABOKReport(project) → Markdown string
 
 const PROB_LABELS  = ['', 'Düşük', 'Orta', 'Yüksek'];
+
+function fmtDuration(minutes) {
+  if (!minutes || minutes <= 0) return '0 dk';
+  if (minutes < 60) return `${minutes} dk`;
+  return `${Math.floor(minutes / 60)} sa ${minutes % 60} dk`;
+}
 const RACI_LABELS  = { R: 'Sorumlu', A: 'Onaylayan', C: 'Danışılan', I: 'Bilgilendirilen' };
 
 function riskLevel(probability, impact) {
@@ -301,6 +307,47 @@ function section8(p) {
   return lines.join('\n');
 }
 
+// ── Section 9: Zaman Analizi ─────────────────────────────────────────────────
+function section9(p) {
+  const totalMeetingMinutes   = (p.meetings  || []).reduce((s, m) => s + (m.duration  || 0), 0);
+  const totalActionMinutes    = (p.actions   || []).reduce((s, a) => s + (a.duration  || 0), 0);
+  const totalChecklistMinutes = Object.values(p.completedTaskDurations || {}).reduce((s, d) => s + d, 0);
+  const totalMinutes = totalMeetingMinutes + totalActionMinutes + totalChecklistMinutes;
+
+  const lines = [`## Zaman Analizi`, ``];
+
+  if (totalMinutes === 0) {
+    lines.push('_Henüz zaman verisi girilmemiş._');
+    return lines.join('\n');
+  }
+
+  lines.push(`Toplam kayıtlı süre: **${fmtDuration(totalMinutes)}**`, ``);
+  lines.push(`- Toplantılar: ${fmtDuration(totalMeetingMinutes)}`);
+  lines.push(`- Aksiyonlar: ${fmtDuration(totalActionMinutes)}`);
+  lines.push(`- Analiz çalışmaları (checklist): ${fmtDuration(totalChecklistMinutes)}`);
+  lines.push(``);
+
+  // BABOK efor dağılımı — babokData yoksa atla
+  const taskDurations = p.completedTaskDurations || {};
+  if (Object.keys(taskDurations).length > 0) {
+    lines.push(`### BABOK Efor Dağılımı`, ``);
+    // Bilgi alanı başlıkları babokData'dan gelmiyor (exportEngine'de babokData yok),
+    // task ID'lerinin hangi knowledge area'ya ait olduğunu prefix ile tahmin edemeyiz.
+    // Bu yüzden ham task süre toplamını listele.
+    const taskEntries = Object.entries(taskDurations).filter(([, d]) => d > 0);
+    const taskTotal = taskEntries.reduce((s, [, d]) => s + d, 0);
+    lines.push(`Toplam checklist süresi: **${fmtDuration(taskTotal)}**`);
+    lines.push(`Kayıtlı görev sayısı: ${taskEntries.length}`);
+    lines.push(``);
+  }
+
+  const meetingPct = totalMinutes > 0 ? Math.round((totalMeetingMinutes / totalMinutes) * 100) : 0;
+  lines.push(`> Toplantı süresi analiz süresinin %${meetingPct}'ini oluşturuyor.`);
+  if (meetingPct > 50) lines.push(`> ⚠ Toplantı süresi analiz süresini aşıyor.`);
+
+  return lines.join('\n');
+}
+
 // ── Section array (for modal preview tabs) ────────────────────────────────────
 export function generateBABOKSections(project) {
   const p = project || {};
@@ -313,6 +360,7 @@ export function generateBABOKSections(project) {
     section6(p),
     section7(p),
     section8(p),
+    section9(p),
   ];
 }
 
@@ -336,6 +384,8 @@ export function generateBABOKReport(project) {
       section7(p),
       hr(),
       section8(p),
+      hr(),
+      section9(p),
     ];
 
     const report = sections.join('\n\n');
