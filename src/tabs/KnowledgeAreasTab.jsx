@@ -132,7 +132,7 @@ export function KnowledgeAreasTab({
                     Tümünü İşaretle
                   </button>
                 )}
-                {/* Alan bazlı timer */}
+                {/* Alan bazlı timer + manuel giriş */}
                 {runningKaId === ka.id ? (
                   <button
                     onClick={e => { e.stopPropagation(); stopKaTimer(); }}
@@ -149,6 +149,14 @@ export function KnowledgeAreasTab({
                     <Play className="w-3 h-3" />Başlat
                   </button>
                 )}
+                <input
+                  type="number" min="0"
+                  value={(activeProject?.completedTaskDurations || {})['area_' + ka.id] || 0}
+                  onClick={e => e.stopPropagation()}
+                  onChange={e => { e.stopPropagation(); const v = Math.max(0, parseInt(e.target.value) || 0); updateActive && updateActive(p => ({ ...p, completedTaskDurations: { ...(p.completedTaskDurations || {}), ['area_' + ka.id]: v } })); }}
+                  className="w-14 text-center text-xs bg-white/5 border border-white/10 rounded-lg px-1 py-1.5 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 shrink-0"
+                />
+                <span className="text-[10px] text-slate-500 shrink-0">dk</span>
                 <span className="text-sm font-medium text-slate-400 bg-white/10 px-2 py-1 rounded-md">
                   {kaCompletedTasks}/{ka.tasks.length}
                 </span>

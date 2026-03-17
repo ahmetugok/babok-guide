@@ -110,6 +110,14 @@ export function ActionsTab({ activeProject, openActionModal, deleteAction, quick
             >
               {runningId === a.id ? <>■ {Math.floor(elapsed / 60)} dk</> : <>▶</>}
             </button>
+            <input
+              type="number" min="0"
+              value={a.duration || 0}
+              onClick={e => e.stopPropagation()}
+              onChange={e => { e.stopPropagation(); const v = Math.max(0, parseInt(e.target.value) || 0); const updated = actions.map(ax => ax.id === a.id ? { ...ax, duration: v } : ax); updateActive({ actions: updated }); }}
+              className="w-10 text-center text-[10px] bg-white/5 border border-white/10 rounded px-0.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-cyan-400/50"
+            />
+            <span className="text-[9px] text-slate-600">dk</span>
             <button onClick={() => openActionModal(a)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-400 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
             <button onClick={() => deleteAction(a.id)} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-400 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
           </div>
@@ -210,8 +218,15 @@ export function ActionsTab({ activeProject, openActionModal, deleteAction, quick
                       onClick={e => toggleActionTimer(e, a.id)}
                       className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition-colors ${runningId === a.id ? 'bg-rose-500/15 text-rose-600 border border-rose-200/30 animate-pulse' : 'bg-emerald-500/15 text-emerald-700 border border-emerald-200/30 hover:bg-emerald-500/25'}`}
                     >
-                      {runningId === a.id ? <><StopSq className="w-3 h-3" />■ {Math.floor(elapsed / 60)} dk</> : <><Play className="w-3 h-3" />▶ Süre Başlat</>}
+                      {runningId === a.id ? <><StopSq className="w-3 h-3" />■ {Math.floor(elapsed / 60)} dk</> : <><Play className="w-3 h-3" />▶</>}
                     </button>
+                    <input
+                      type="number" min="0"
+                      value={a.duration || 0}
+                      onChange={e => { const v = Math.max(0, parseInt(e.target.value) || 0); const updated = actions.map(ax => ax.id === a.id ? { ...ax, duration: v } : ax); updateActive({ actions: updated }); }}
+                      className="w-12 text-center text-xs bg-white/5 border border-white/10 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-cyan-400/50"
+                    />
+                    <span className="text-[10px] text-slate-500">dk</span>
                     <button onClick={() => openActionModal(a)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
                     <button onClick={() => deleteAction(a.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                   </div>

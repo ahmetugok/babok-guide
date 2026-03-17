@@ -75,8 +75,16 @@ export function MeetingsTab({
                     onClick={e => toggleTimer(e, m.id)}
                     className={`flex items-center gap-1 text-xs rounded-lg px-2 py-1 transition-colors ${runningId === m.id ? 'bg-rose-500/15 text-rose-600 border border-rose-200/30 animate-pulse' : 'bg-emerald-500/15 text-emerald-700 border border-emerald-200/30 hover:bg-emerald-500/25'}`}
                   >
-                    {runningId === m.id ? <><Square className="w-2.5 h-2.5" />■ {Math.floor(elapsed / 60)} dk</> : <><Play className="w-2.5 h-2.5" />▶ Süre Başlat</>}
+                    {runningId === m.id ? <><Square className="w-2.5 h-2.5" />■ {Math.floor(elapsed / 60)} dk</> : <><Play className="w-2.5 h-2.5" />▶</>}
                   </button>
+                  <input
+                    type="number" min="0"
+                    value={m.duration || 0}
+                    onClick={e => e.stopPropagation()}
+                    onChange={e => { e.stopPropagation(); const v = Math.max(0, parseInt(e.target.value) || 0); updateActive && updateActive(p => ({ ...p, meetings: p.meetings.map(mx => mx.id === m.id ? { ...mx, duration: v } : mx) })); }}
+                    className="w-12 text-center text-xs bg-white/5 border border-white/10 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-cyan-400/50"
+                  />
+                  <span className="text-[10px] text-slate-500">dk</span>
                   <span className="text-xs text-slate-400">{m.notes.length} not</span>
                   <button onClick={e => { e.stopPropagation(); deleteMeeting(m.id); }} className="p-0.5 hover:text-rose-500 text-slate-300 transition-colors"><Trash2 className="w-3 h-3" /></button>
                 </div>
