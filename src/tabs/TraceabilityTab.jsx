@@ -9,11 +9,13 @@ export function TraceabilityTab({ activeProject, setActiveTab }) {
   const assumptions = activeProject.assumptions || [];
   const noAC = reqs.filter(r => !r.acceptanceCriteria);
   const noObjective = reqs.filter(r => !r.objective);
+  const noFunctionalType = reqs.filter(r => !r.functionalType);
   const unvalidated = assumptions.filter(a => a.validationStatus === 'Dogrulanmadi');
   const pendingCRs = crs.filter(cr => cr.status === 'Bekliyor');
   const warnings = [
     { count: noAC.length, text: 'Kabul kriteri (Acceptance Criteria) bos gereksinim', tab: 'requirements' },
     { count: noObjective.length, text: 'Bagli is hedefi bos gereksinim', tab: 'requirements' },
+    { count: noFunctionalType.length, text: 'Fonksiyonel tipi tanimlanmamis gereksinim', tab: 'requirements' },
     { count: unvalidated.length, text: 'Dogrulanmamis varsayim', tab: 'assumptions' },
     { count: pendingCRs.length, text: 'Bekleyen degisiklik talebi', tab: 'changes' },
   ];

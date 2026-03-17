@@ -25,7 +25,7 @@ export function RequirementsTab({ activeProject, openReqModal, deleteReq, openLi
           <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 220px)' }}>
           <table className="w-full text-sm">
             <thead className="bg-white/5 border-b border-white/10 sticky top-0 z-10" style={{ backdropFilter: 'blur(12px)' }}>
-              <tr>{['ID', 'Tip', 'Gereksinim', 'Tür', 'Modül', 'MoSCoW', 'Durum', 'K.K.', 'Bagl.', 'Not', ''].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase">{h}</th>)}</tr>
+              <tr>{['ID', 'Tip', 'F/NF', 'Gereksinim', 'Tür', 'Modül', 'MoSCoW', 'Durum', 'K.K.', 'Bagl.', 'Not', ''].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase">{h}</th>)}</tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {activeProject.requirements.filter(r => reqFilter === 'all' || r.status === reqFilter).map(r => {
@@ -48,6 +48,11 @@ export function RequirementsTab({ activeProject, openReqModal, deleteReq, openLi
                     return cls
                       ? <span className={`text-xs px-2 py-0.5 rounded-full border font-medium whitespace-nowrap ${cls}`}>{r.requirementType}</span>
                       : <span className="text-xs text-slate-600">—</span>;
+                  })()}</td>
+                  <td className="px-4 py-3">{(() => {
+                    if (!r.functionalType) return <span className="text-xs text-slate-600">—</span>;
+                    if (r.functionalType === 'Fonksiyonel') return <span className="text-xs px-2 py-0.5 rounded-full border font-medium bg-emerald-500/10 text-emerald-400 border-emerald-500/20 whitespace-nowrap">F</span>;
+                    return <span className="text-xs px-2 py-0.5 rounded-full border font-medium bg-amber-500/10 text-amber-400 border-amber-500/20 whitespace-nowrap">{r.nfCategory ? `NF · ${r.nfCategory}` : 'NF'}</span>;
                   })()}</td>
                   <td className="px-4 py-3 font-medium text-slate-100">{r.name}</td>
                   <td className="px-4 py-3 text-xs text-slate-400 max-w-[150px] truncate">{r.objective || '—'}</td>

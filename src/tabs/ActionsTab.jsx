@@ -9,7 +9,7 @@ const COLUMNS = [
 ];
 
 export function ActionsTab({ activeProject, openActionModal, deleteAction, quickUpdateActionStatus, updateActive }) {
-  const [actionView, setActionView]       = useState('list');
+  const [actionView, setActionView]       = useState('kanban');
   const [draggedId, setDraggedId]         = useState(null);
   const [dragOverCol, setDragOverCol]     = useState(null);
 

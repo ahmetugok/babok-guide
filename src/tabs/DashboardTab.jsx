@@ -234,8 +234,8 @@ export function DashboardTab({
           {openRisks.length === 0 ? (
             <div className="text-center py-4 text-slate-500"><Shield className="w-7 h-7 mx-auto mb-1.5 opacity-30" /><p className="text-xs">Açık risk bulunmuyor 🎉</p></div>
           ) : (
-            <div className="space-y-1.5 max-h-[130px] overflow-y-auto pr-1">
-              {openRisks.slice(0, 5).map(r => {
+            <div className="space-y-1.5 max-h-[260px] overflow-y-auto pr-1">
+              {openRisks.slice(0, 10).map(r => {
                 const lvl = getRiskLevel(r.probability, r.impact);
                 return (
                   <div key={r.id} className="flex items-center gap-2.5 p-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group/item">
@@ -245,7 +245,7 @@ export function DashboardTab({
                   </div>
                 );
               })}
-              {openRisks.length > 5 && <button onClick={() => setActiveTab('risks')} className="text-[10px] text-cyan-400 hover:text-cyan-300 text-center pt-1 w-full cursor-pointer hover:underline transition-colors">+{openRisks.length - 5} daha →</button>}
+              {openRisks.length > 10 && <button onClick={() => setActiveTab('risks')} className="text-[10px] text-cyan-400 hover:text-cyan-300 text-center pt-1 w-full cursor-pointer hover:underline transition-colors">+{openRisks.length - 10} daha →</button>}
             </div>
           )}
         </div>
@@ -294,8 +294,8 @@ export function DashboardTab({
           {pendingActions.length === 0 ? (
             <div className="text-center py-4 text-slate-500"><CheckCircle2 className="w-7 h-7 mx-auto mb-1.5 opacity-30" /><p className="text-xs">Tüm aksiyonlar tamamlandı 🎉</p></div>
           ) : (
-            <div className="space-y-1.5 max-h-[130px] overflow-y-auto pr-1">
-              {pendingActions.slice(0, 5).map(a => (
+            <div className="space-y-1.5 max-h-[260px] overflow-y-auto pr-1">
+              {pendingActions.slice(0, 10).map(a => (
                 <div key={a.id} className={`flex items-center gap-2.5 p-2.5 rounded-lg transition-colors ${isOverdue(a) ? 'bg-rose-500/10 hover:bg-rose-500/15' : 'bg-white/5 hover:bg-white/10'}`}>
                   {isOverdue(a) && <span className="text-[10px] bg-rose-500/25 text-rose-300 px-1.5 py-0.5 rounded-full font-bold whitespace-nowrap">GECİKMİŞ</span>}
                   <span className="text-sm text-slate-300 flex-1 truncate">{a.title}</span>
@@ -303,7 +303,7 @@ export function DashboardTab({
                   {a.dueDate && <span className={`text-xs ${isOverdue(a) ? 'text-rose-400' : 'text-slate-500'}`}>{a.dueDate}</span>}
                 </div>
               ))}
-              {pendingActions.length > 5 && <button onClick={() => setActiveTab('actions')} className="text-[10px] text-cyan-400 hover:text-cyan-300 text-center pt-1 w-full cursor-pointer hover:underline transition-colors">+{pendingActions.length - 5} daha →</button>}
+              {pendingActions.length > 10 && <button onClick={() => setActiveTab('actions')} className="text-[10px] text-cyan-400 hover:text-cyan-300 text-center pt-1 w-full cursor-pointer hover:underline transition-colors">+{pendingActions.length - 10} daha →</button>}
             </div>
           )}
         </div>

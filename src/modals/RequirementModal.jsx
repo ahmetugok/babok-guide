@@ -35,6 +35,19 @@ export function RequirementModal({ form, setForm, onSave, onClose, editingReq, b
               {['Taslak', 'Incelemede', 'Onaylandi', 'Reddedildi', 'Revize Gerekiyor'].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <select value={form.functionalType} onChange={e => setForm({ ...form, functionalType: e.target.value, nfCategory: e.target.value === 'Fonksiyonel' ? '' : form.nfCategory })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
+              <option value="">Fonksiyonel/Non-Fonksiyonel Seçin</option>
+              <option value="Fonksiyonel">Fonksiyonel</option>
+              <option value="Non-Fonksiyonel">Non-Fonksiyonel</option>
+            </select>
+            {form.functionalType === 'Non-Fonksiyonel' && (
+              <select value={form.nfCategory} onChange={e => setForm({ ...form, nfCategory: e.target.value })} className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                <option value="">NF Kategori Seçin</option>
+                {['Performans', 'Güvenlik', 'Kullanılabilirlik', 'Güvenilirlik', 'Ölçeklenebilirlik', 'Sürdürülebilirlik', 'Uyumluluk'].map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            )}
+          </div>
           <div className="border-l-4 border-amber-400 pl-3 space-y-1">
             <label className="text-xs font-bold text-amber-400 block">Kabul Kriteri (Acceptance Criteria)</label>
             <textarea value={form.acceptanceCriteria} onChange={e => setForm({ ...form, acceptanceCriteria: e.target.value })} placeholder="Bu gereksinim ne zaman karsilanmis sayilir?" rows="3" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
