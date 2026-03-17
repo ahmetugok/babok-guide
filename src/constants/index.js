@@ -3,7 +3,15 @@
 export const DEFAULT_PROJECT = {
   id: 'proj_1', name: 'Ana Proje', projectContext: '',
   completedTasks: [], completedSubTasks: [],
+  completedTaskDurations: {},
   risks: [], assumptions: [], businessRules: [], changeRequests: [], actions: [], stakeholders: [], requirements: [], meetings: [], ganttTasks: [], reqCounter: 1, brCounter: 1, crCounter: 1,
+};
+
+// Timer alanları — yeni meeting/action objeleri oluşturulurken spread edilir
+export const DEFAULT_TIMER_FIELDS = {
+  timerStartTime: null,
+  duration: 0,
+  babokKnowledgeArea: '',
 };
 
 export const PROB_LABELS = ['', 'Düşük', 'Orta', 'Yüksek'];
