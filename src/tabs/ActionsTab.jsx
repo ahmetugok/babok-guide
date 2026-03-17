@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ListChecks, Plus, Pencil, Trash2, Clock, AlignJustify, LayoutGrid, Play, Square as StopSq } from 'lucide-react';
 import { isOverdue } from '../utils.js';
+import { startTimer, stopTimer, getActiveTimer, getAllActiveTimers } from '../utils/timeTracker.js';
 
 const COLUMNS = [
   { status: 'Bekliyor',     label: 'Bekliyor',      bg: 'bg-white/3',          badge: 'bg-slate-500/20 text-slate-400' },
@@ -13,18 +14,26 @@ export function ActionsTab({ activeProject, openActionModal, deleteAction, quick
   const [draggedId, setDraggedId]         = useState(null);
   const [dragOverCol, setDragOverCol]     = useState(null);
   const [runningId, setRunningId]         = useState(null);
-  const [elapsed, setElapsed]             = useState(0);
+  const [tick, setTick]                   = useState(0); // yeniden render için
+
+  // Mount: localStorage'da aktif aksiyon timer'ı var mı?
+  useEffect(() => {
+    const active = getAllActiveTimers();
+    const actionIds = (activeProject.actions || []).map(a => a.id);
+    const found = active.find(id => actionIds.includes(id));
+    if (found) setRunningId(found);
+  }, []);
 
   useEffect(() => {
     if (!runningId) return;
-    const iv = setInterval(() => setElapsed(s => s + 1), 1000);
+    const iv = setInterval(() => setTick(t => t + 1), 1000);
     return () => clearInterval(iv);
   }, [runningId]);
 
   function toggleActionTimer(e, actionId) {
     e.stopPropagation();
     if (runningId === actionId) {
-      const minutes = Math.round(elapsed / 60);
+      const minutes = stopTimer(actionId);
       if (minutes > 0) {
         const updated = actions.map(a =>
           a.id === actionId ? { ...a, duration: (a.duration || 0) + minutes } : a
@@ -32,15 +41,16 @@ export function ActionsTab({ activeProject, openActionModal, deleteAction, quick
         updateActive({ actions: updated });
       }
       setRunningId(null);
-      setElapsed(0);
     } else {
+      if (runningId) stopTimer(runningId);
+      startTimer(actionId);
       setRunningId(actionId);
-      setElapsed(0);
     }
   }
 
   const pad = n => String(n).padStart(2, '0');
-  const liveDisplay = `⏱ ${pad(Math.floor(elapsed / 3600))}:${pad(Math.floor((elapsed % 3600) / 60))}:${pad(elapsed % 60)}`;
+  const elapsedSec = runningId ? (getActiveTimer(runningId).elapsedSeconds || 0) : 0;
+  const liveDisplay = `⏱ ${pad(Math.floor(elapsedSec / 3600))}:${pad(Math.floor((elapsedSec % 3600) / 60))}:${pad(elapsedSec % 60)}`;
 
   const actions = activeProject.actions || [];
   const reqs    = activeProject.requirements || [];
@@ -108,7 +118,7 @@ export function ActionsTab({ activeProject, openActionModal, deleteAction, quick
               onClick={e => toggleActionTimer(e, a.id)}
               className={`flex items-center gap-0.5 text-[10px] rounded px-1.5 py-0.5 transition-colors ${runningId === a.id ? 'bg-rose-500/15 text-rose-500 animate-pulse' : 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20'}`}
             >
-              {runningId === a.id ? <>■ {Math.floor(elapsed / 60)} dk</> : <>▶</>}
+              {runningId === a.id ? <>■ {Math.floor(elapsedSec / 60)} dk</> : <>▶</>}
             </button>
             <input
               type="number" min="0"
@@ -218,7 +228,7 @@ export function ActionsTab({ activeProject, openActionModal, deleteAction, quick
                       onClick={e => toggleActionTimer(e, a.id)}
                       className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition-colors ${runningId === a.id ? 'bg-rose-500/15 text-rose-600 border border-rose-200/30 animate-pulse' : 'bg-emerald-500/15 text-emerald-700 border border-emerald-200/30 hover:bg-emerald-500/25'}`}
                     >
-                      {runningId === a.id ? <><StopSq className="w-3 h-3" />■ {Math.floor(elapsed / 60)} dk</> : <><Play className="w-3 h-3" />▶</>}
+                      {runningId === a.id ? <><StopSq className="w-3 h-3" />■ {Math.floor(elapsedSec / 60)} dk</> : <><Play className="w-3 h-3" />▶</>}
                     </button>
                     <input
                       type="number" min="0"

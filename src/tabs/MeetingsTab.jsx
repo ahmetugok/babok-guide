@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, Plus, Trash2, StickyNote, ClipboardCopy, X, Play, Square } from 'lucide-react';
 import { NOTE_TYPE_COLORS } from '../constants/index.js';
+import { startTimer, stopTimer, getActiveTimer, getAllActiveTimers } from '../utils/timeTracker.js';
 
 export function MeetingsTab({
   activeProject,
@@ -19,18 +20,27 @@ export function MeetingsTab({
   updateActive,
 }) {
   const [runningId, setRunningId] = useState(null);
-  const [elapsed, setElapsed]     = useState(0);
+  const [tick, setTick]           = useState(0); // sadece yeniden render için
 
+  // Mount: localStorage'da aktif toplantı timer'ı var mı?
+  useEffect(() => {
+    const active = getAllActiveTimers();
+    const meetingIds = (activeProject.meetings || []).map(m => m.id);
+    const found = active.find(id => meetingIds.includes(id));
+    if (found) setRunningId(found);
+  }, []);
+
+  // Tick: her saniye yeniden render
   useEffect(() => {
     if (!runningId) return;
-    const iv = setInterval(() => setElapsed(s => s + 1), 1000);
+    const iv = setInterval(() => setTick(t => t + 1), 1000);
     return () => clearInterval(iv);
   }, [runningId]);
 
   function toggleTimer(e, meetingId) {
     e.stopPropagation();
     if (runningId === meetingId) {
-      const minutes = Math.round(elapsed / 60);
+      const minutes = stopTimer(meetingId);
       if (minutes > 0 && updateActive) {
         updateActive(p => ({
           ...p,
@@ -40,15 +50,16 @@ export function MeetingsTab({
         }));
       }
       setRunningId(null);
-      setElapsed(0);
     } else {
+      if (runningId) stopTimer(runningId); // varsa öncekini durdur
+      startTimer(meetingId);
       setRunningId(meetingId);
-      setElapsed(0);
     }
   }
 
   const pad = n => String(n).padStart(2, '0');
-  const liveDisplay = `⏱ ${pad(Math.floor(elapsed / 3600))}:${pad(Math.floor((elapsed % 3600) / 60))}:${pad(elapsed % 60)}`;
+  const elapsedSec = runningId ? (getActiveTimer(runningId).elapsedSeconds || 0) : 0;
+  const liveDisplay = `⏱ ${pad(Math.floor(elapsedSec / 3600))}:${pad(Math.floor((elapsedSec % 3600) / 60))}:${pad(elapsedSec % 60)}`;
 
   return (
     <div className="space-y-4">
@@ -75,7 +86,7 @@ export function MeetingsTab({
                     onClick={e => toggleTimer(e, m.id)}
                     className={`flex items-center gap-1 text-xs rounded-lg px-2 py-1 transition-colors ${runningId === m.id ? 'bg-rose-500/15 text-rose-600 border border-rose-200/30 animate-pulse' : 'bg-emerald-500/15 text-emerald-700 border border-emerald-200/30 hover:bg-emerald-500/25'}`}
                   >
-                    {runningId === m.id ? <><Square className="w-2.5 h-2.5" />■ {Math.floor(elapsed / 60)} dk</> : <><Play className="w-2.5 h-2.5" />▶</>}
+                    {runningId === m.id ? <><Square className="w-2.5 h-2.5" />■ {Math.floor(elapsedSec / 60)} dk</> : <><Play className="w-2.5 h-2.5" />▶</>}
                   </button>
                   <input
                     type="number" min="0"

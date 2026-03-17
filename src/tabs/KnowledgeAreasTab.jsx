@@ -3,7 +3,7 @@ import {
   CheckCircle2, Circle, ChevronDown, ChevronRight, FileText,
   CheckSquare, Square, Sparkles, Bot, Lightbulb, Play, Square as StopIcon, Clock
 } from 'lucide-react';
-import { formatDuration } from '../utils/timeTracker.js';
+import { formatDuration, startTimer, stopTimer, getActiveTimer, getAllActiveTimers } from '../utils/timeTracker.js';
 
 export function KnowledgeAreasTab({
   babokData,
@@ -25,21 +25,30 @@ export function KnowledgeAreasTab({
   updateActive,
 }) {
   const [runningKaId, setRunningKaId] = useState(null);
-  const [elapsed, setElapsed]         = useState(0);
+  const [tick, setTick]               = useState(0); // yeniden render için
+
+  // Mount: localStorage'da aktif BABOK alan timer'ı var mı?
+  useEffect(() => {
+    const active = getAllActiveTimers();
+    const kaKeys = babokData.map(ka => 'babok_area_' + ka.id);
+    const found = active.find(id => kaKeys.includes(id));
+    if (found) setRunningKaId(found.replace('babok_area_', ''));
+  }, []);
 
   useEffect(() => {
     if (!runningKaId) return;
-    const iv = setInterval(() => setElapsed(s => s + 1), 1000);
+    const iv = setInterval(() => setTick(t => t + 1), 1000);
     return () => clearInterval(iv);
   }, [runningKaId]);
 
   function startKaTimer(kaId) {
+    if (runningKaId) stopKaTimer();
+    startTimer('babok_area_' + kaId);
     setRunningKaId(kaId);
-    setElapsed(0);
   }
 
   function stopKaTimer() {
-    const minutes = Math.round(elapsed / 60);
+    const minutes = stopTimer('babok_area_' + runningKaId);
     const key = 'area_' + runningKaId;
     if (minutes > 0 && updateActive) {
       updateActive(p => ({
@@ -51,11 +60,11 @@ export function KnowledgeAreasTab({
       }));
     }
     setRunningKaId(null);
-    setElapsed(0);
   }
 
   const pad = n => String(n).padStart(2, '0');
-  const elapsedDisplay = `⏱ ${pad(Math.floor(elapsed / 3600))}:${pad(Math.floor((elapsed % 3600) / 60))}:${pad(elapsed % 60)}`;
+  const elapsedSec = runningKaId ? (getActiveTimer('babok_area_' + runningKaId).elapsedSeconds || 0) : 0;
+  const elapsedDisplay = `⏱ ${pad(Math.floor(elapsedSec / 3600))}:${pad(Math.floor((elapsedSec % 3600) / 60))}:${pad(elapsedSec % 60)}`;
 
   return (
     <>
@@ -139,7 +148,7 @@ export function KnowledgeAreasTab({
                     className="flex items-center gap-1 text-xs bg-rose-500/15 text-rose-600 border border-rose-200/30 rounded-lg px-2.5 py-1.5 animate-pulse shrink-0"
                   >
                     <StopIcon className="w-3 h-3" />
-                    {`■ ${Math.floor(elapsed / 60)} dk`}
+                    {`■ ${Math.floor(elapsedSec / 60)} dk`}
                   </button>
                 ) : (
                   <button
