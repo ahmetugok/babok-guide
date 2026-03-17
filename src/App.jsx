@@ -178,7 +178,7 @@ const babokData = [
   {
     id: 'ka3',
     title: 'Ortaya Çıkarma ve İşbirliği',
-    description: 'Paydaşlardan ihtiyaçlar, beklentiler ve kısıtlamalar hakkında bilgi toplamak için teknikler kullanma.',
+    description: 'Paydaşlardan, dokümanlardan veya sistemlerden bilgi toplama ve sürekli iletişimi sağlama süreci.',
     icon: <Users className="w-6 h-6 text-green-500" />,
     color: 'border-green-500/20 bg-green-500/10',
     headerColor: 'text-green-700',
@@ -225,8 +225,8 @@ const babokData = [
   },
   {
     id: 'ka4',
-    title: 'Gereksinimlerin Yaşam Döngüsü Yönetimi',
-    description: 'Gereksinimlerin ve tasarımların belgelenmesi, izlenmesi, önceliklendirilmesi ve onaylanması süreçleri.',
+    title: 'Gereksinim Analizi ve Tasarım Tanımlama',
+    description: 'Ortaya çıkarılan karmaşık bilgileri yapılandırma, modelleme ve geliştiriciler için net gereksinimlere dönüştürme.',
     icon: <RefreshCw className="w-6 h-6 text-orange-500" />,
     color: 'border-orange-500/20 bg-orange-500/10',
     headerColor: 'text-orange-700',
@@ -284,7 +284,7 @@ const babokData = [
   {
     id: 'ka5',
     title: 'Gereksinim Yaşam Döngüsü Yönetimi',
-    description: 'Gereksinimlerin ve tasarımların doğrulanması, onaylanması ve iş hedeflerine uygunluğunun değerlendirilmesi.',
+    description: 'Projenin başlangıcından bitişine kadar gereksinimlerdeki değişimleri, onayları ve izlenebilirliği yönetme.',
     icon: <Activity className="w-6 h-6 text-red-500" />,
     color: 'border-red-500/20 bg-red-500/10',
     headerColor: 'text-red-700',
@@ -318,7 +318,7 @@ const babokData = [
   {
     id: 'ka6',
     title: 'Çözüm Değerlendirmesi',
-    description: 'Uygulanan çözümün iş değerini ve kurumun değişim kapasitesini değerlendirme.',
+    description: 'Geliştirilen çözümün gerçekten hedeflenen değeri yaratıp yaratmadığını ölçme.',
     icon: <Info className="w-6 h-6 text-teal-500" />,
     color: 'border-teal-500/20 bg-teal-500/10',
     headerColor: 'text-teal-700',
