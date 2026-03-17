@@ -488,7 +488,7 @@ export default function App() {
   // Meeting states
   const [showMeetingModal, setShowMeetingModal] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
-  const [meetingForm, setMeetingForm] = useState({ topic: '', attendees: '', date: new Date().toISOString().split('T')[0] });
+  const [meetingForm, setMeetingForm] = useState({ topic: '', attendees: '', date: new Date().toISOString().split('T')[0], duration: 0 });
   const [newNoteType, setNewNoteType] = useState('Karar');
   const [newNoteText, setNewNoteText] = useState('');
 
@@ -580,7 +580,7 @@ export default function App() {
   const deleteAssumption = (id) => { if (window.confirm('Varsayimi silmek istiyor musunuz?')) updateActive(p => ({ ...p, assumptions: p.assumptions.filter(a => a.id !== id) })); };
 
   // --- ACTION ---
-  const openActionModal = (action = null) => { setEditingAction(action); setActionForm(action ? { linkedRequirementId: '', sourceMeetingId: '', ...action, notes: action.notes || '' } : { title: '', owner: '', dueDate: '', status: 'Bekliyor', source: '', notes: '', linkedRequirementId: '', sourceMeetingId: '' }); setShowActionModal(true); };
+  const openActionModal = (action = null) => { setEditingAction(action); setActionForm(action ? { linkedRequirementId: '', sourceMeetingId: '', duration: 0, ...action, notes: action.notes || '' } : { title: '', owner: '', dueDate: '', status: 'Bekliyor', source: '', notes: '', linkedRequirementId: '', sourceMeetingId: '', duration: 0 }); setShowActionModal(true); };
   const quickUpdateActionStatus = (actionId, newStatus) => { updateActive(p => ({ ...p, actions: p.actions.map(a => a.id === actionId ? { ...a, status: newStatus } : a) })); };
   const saveAction = () => {
     if (!actionForm.title.trim()) return;
