@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ListChecks, Plus, Pencil, Trash2, Clock, AlignJustify, LayoutGrid } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ListChecks, Plus, Pencil, Trash2, Clock, AlignJustify, LayoutGrid, Play, Square as StopSq } from 'lucide-react';
 import { isOverdue } from '../utils.js';
 
 const COLUMNS = [
@@ -12,6 +12,35 @@ export function ActionsTab({ activeProject, openActionModal, deleteAction, quick
   const [actionView, setActionView]       = useState('kanban');
   const [draggedId, setDraggedId]         = useState(null);
   const [dragOverCol, setDragOverCol]     = useState(null);
+  const [runningId, setRunningId]         = useState(null);
+  const [elapsed, setElapsed]             = useState(0);
+
+  useEffect(() => {
+    if (!runningId) return;
+    const iv = setInterval(() => setElapsed(s => s + 1), 1000);
+    return () => clearInterval(iv);
+  }, [runningId]);
+
+  function toggleActionTimer(e, actionId) {
+    e.stopPropagation();
+    if (runningId === actionId) {
+      const minutes = Math.round(elapsed / 60);
+      if (minutes > 0) {
+        const updated = actions.map(a =>
+          a.id === actionId ? { ...a, duration: (a.duration || 0) + minutes } : a
+        );
+        updateActive({ actions: updated });
+      }
+      setRunningId(null);
+      setElapsed(0);
+    } else {
+      setRunningId(actionId);
+      setElapsed(0);
+    }
+  }
+
+  const pad = n => String(n).padStart(2, '0');
+  const liveDisplay = `⏱ ${pad(Math.floor(elapsed / 3600))}:${pad(Math.floor((elapsed % 3600) / 60))}:${pad(elapsed % 60)}`;
 
   const actions = activeProject.actions || [];
   const reqs    = activeProject.requirements || [];
@@ -66,7 +95,7 @@ export function ActionsTab({ activeProject, openActionModal, deleteAction, quick
         onDragStart={e => onDragStart(e, a.id)}
         onDragEnd={onDragEnd}
         className={`glass-card p-3 rounded-xl shadow-md cursor-grab active:cursor-grabbing transition-opacity select-none
-          ${od ? 'border-l-4 border-l-rose-400' : ''}
+          ${runningId === a.id ? 'border-l-4 border-l-rose-400 bg-rose-500/5' : od ? 'border-l-4 border-l-rose-400' : ''}
           ${isDragging ? 'opacity-50' : 'opacity-100'}`}
       >
         <div className="flex items-start justify-between gap-2 mb-1">
@@ -74,6 +103,13 @@ export function ActionsTab({ activeProject, openActionModal, deleteAction, quick
             {a.title}
           </p>
           <div className="flex items-center gap-0.5 shrink-0">
+            {runningId === a.id && <span className="text-[10px] font-mono text-rose-300 animate-pulse mr-1">{liveDisplay}</span>}
+            <button
+              onClick={e => toggleActionTimer(e, a.id)}
+              className={`flex items-center gap-0.5 text-[10px] rounded px-1.5 py-0.5 transition-colors ${runningId === a.id ? 'bg-rose-500/15 text-rose-500 animate-pulse' : 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20'}`}
+            >
+              {runningId === a.id ? <>■ {Math.floor(elapsed / 60)} dk</> : <>▶</>}
+            </button>
             <button onClick={() => openActionModal(a)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-400 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
             <button onClick={() => deleteAction(a.id)} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-400 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
           </div>
@@ -153,7 +189,7 @@ export function ActionsTab({ activeProject, openActionModal, deleteAction, quick
             const od = isOverdue(a);
             const reqId = getReqId(a.linkedRequirementId);
             return (
-              <div key={a.id} className={`bg-white/5 rounded-xl border p-4 shadow-lg shadow-black/20 ${od ? 'border-l-4 border-l-rose-400 bg-rose-500/10' : ''}`}>
+              <div key={a.id} className={`bg-white/5 rounded-xl border p-4 shadow-lg shadow-black/20 ${runningId === a.id ? 'border-l-4 border-l-rose-400 bg-rose-500/5' : od ? 'border-l-4 border-l-rose-400 bg-rose-500/10' : ''}`}>
                 <div className="flex items-start gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -161,14 +197,21 @@ export function ActionsTab({ activeProject, openActionModal, deleteAction, quick
                         {['Bekliyor', 'Devam Ediyor', 'Tamamlandı'].map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                       {od && <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full border border-rose-500/20 flex items-center gap-1"><Clock className="w-3 h-3" />Gecikmiş</span>}
+                      {runningId === a.id && <span className="text-xs font-mono text-rose-300 animate-pulse">{liveDisplay}</span>}
                     </div>
                     <p className={`font-semibold ${a.status === 'Tamamlandı' ? 'line-through text-slate-400' : 'text-slate-100'}`}>{a.title}</p>
                     <p className="text-xs text-slate-400 mt-1 flex items-center gap-2 flex-wrap">
-                      <span>Sorumlu: {a.owner || '—'} · Tarih: {a.dueDate || '—'}{a.source ? ` · Kaynak: ${a.source}` : ''}</span>
+                      <span>Sorumlu: {a.owner || '—'} · Tarih: {a.dueDate || '—'}{a.source ? ` · Kaynak: ${a.source}` : ''}{(a.duration || 0) > 0 ? ` · ${a.duration} dk` : ''}</span>
                       {reqId && <span className="text-xs font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded-full">{reqId}</span>}
                     </p>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={e => toggleActionTimer(e, a.id)}
+                      className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition-colors ${runningId === a.id ? 'bg-rose-500/15 text-rose-600 border border-rose-200/30 animate-pulse' : 'bg-emerald-500/15 text-emerald-700 border border-emerald-200/30 hover:bg-emerald-500/25'}`}
+                    >
+                      {runningId === a.id ? <><StopSq className="w-3 h-3" />■ {Math.floor(elapsed / 60)} dk</> : <><Play className="w-3 h-3" />▶ Süre Başlat</>}
+                    </button>
                     <button onClick={() => openActionModal(a)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
                     <button onClick={() => deleteAction(a.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                   </div>

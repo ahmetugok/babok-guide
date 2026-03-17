@@ -1178,6 +1178,7 @@ Yanıtın tamamı Türkçe olmalıdır.
               deleteNote={deleteNote}
               generateMoM={generateMoM}
               setActiveTab={setActiveTab}
+              updateActive={updateActive}
             />
           )}
 
@@ -1210,6 +1211,8 @@ Yanıtın tamamı Türkçe olmalıdır.
               isContextSaved={isContextSaved}
               setIsContextSaved={setIsContextSaved}
               handleOpenAIModal={handleOpenAIModal}
+              activeProject={activeProject}
+              updateActive={updateActive}
             />
           )}
 

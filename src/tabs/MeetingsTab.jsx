@@ -1,5 +1,5 @@
-import React from 'react';
-import { MessageSquare, Plus, Trash2, StickyNote, ClipboardCopy, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MessageSquare, Plus, Trash2, StickyNote, ClipboardCopy, X, Play, Square } from 'lucide-react';
 import { NOTE_TYPE_COLORS } from '../constants/index.js';
 
 export function MeetingsTab({
@@ -16,7 +16,40 @@ export function MeetingsTab({
   deleteNote,
   generateMoM,
   setActiveTab,
+  updateActive,
 }) {
+  const [runningId, setRunningId] = useState(null);
+  const [elapsed, setElapsed]     = useState(0);
+
+  useEffect(() => {
+    if (!runningId) return;
+    const iv = setInterval(() => setElapsed(s => s + 1), 1000);
+    return () => clearInterval(iv);
+  }, [runningId]);
+
+  function toggleTimer(e, meetingId) {
+    e.stopPropagation();
+    if (runningId === meetingId) {
+      const minutes = Math.round(elapsed / 60);
+      if (minutes > 0 && updateActive) {
+        updateActive(p => ({
+          ...p,
+          meetings: p.meetings.map(m =>
+            m.id === meetingId ? { ...m, duration: (m.duration || 0) + minutes } : m
+          ),
+        }));
+      }
+      setRunningId(null);
+      setElapsed(0);
+    } else {
+      setRunningId(meetingId);
+      setElapsed(0);
+    }
+  }
+
+  const pad = n => String(n).padStart(2, '0');
+  const liveDisplay = `⏱ ${pad(Math.floor(elapsed / 3600))}:${pad(Math.floor((elapsed % 3600) / 60))}:${pad(elapsed % 60)}`;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -30,11 +63,20 @@ export function MeetingsTab({
         <div className="space-y-2">
           {activeProject.meetings.length === 0 && <div className="text-center py-12 text-slate-400"><MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-30" /><p className="text-sm">Henüz toplantı yok.</p></div>}
           {activeProject.meetings.map(m => (
-            <div key={m.id} onClick={() => setSelectedMeeting(m)} className={`p-3 rounded-xl border cursor-pointer transition-all ${selectedMeeting?.id === m.id ? 'border-violet-400 bg-violet-500/10 shadow-lg shadow-black/20' : 'border-white/10 bg-white/5 hover:border-violet-500/20 hover:shadow-lg shadow-black/20'}`}>
-              <p className="font-semibold text-sm text-slate-100 truncate">{m.topic}</p>
-              <div className="flex items-center justify-between mt-1">
-                <p className="text-xs text-slate-400">{m.date}</p>
+            <div key={m.id} onClick={() => setSelectedMeeting(m)} className={`p-3 rounded-xl border cursor-pointer transition-all ${runningId === m.id ? 'border-l-4 border-l-rose-400 bg-rose-500/5' : selectedMeeting?.id === m.id ? 'border-violet-400 bg-violet-500/10 shadow-lg shadow-black/20' : 'border-white/10 bg-white/5 hover:border-violet-500/20 hover:shadow-lg shadow-black/20'}`}>
+              <div className="flex items-start justify-between gap-1">
+                <p className="font-semibold text-sm text-slate-100 truncate flex-1">{m.topic}</p>
+                {runningId === m.id && <span className="text-[10px] font-mono text-rose-300 animate-pulse shrink-0">{liveDisplay}</span>}
+              </div>
+              <div className="flex items-center justify-between mt-1.5 gap-1">
+                <p className="text-xs text-slate-400">{m.date}{(m.duration || 0) > 0 ? ` · ${m.duration} dk` : ''}</p>
                 <div className="flex items-center gap-1">
+                  <button
+                    onClick={e => toggleTimer(e, m.id)}
+                    className={`flex items-center gap-1 text-xs rounded-lg px-2 py-1 transition-colors ${runningId === m.id ? 'bg-rose-500/15 text-rose-600 border border-rose-200/30 animate-pulse' : 'bg-emerald-500/15 text-emerald-700 border border-emerald-200/30 hover:bg-emerald-500/25'}`}
+                  >
+                    {runningId === m.id ? <><Square className="w-2.5 h-2.5" />■ {Math.floor(elapsed / 60)} dk</> : <><Play className="w-2.5 h-2.5" />▶ Süre Başlat</>}
+                  </button>
                   <span className="text-xs text-slate-400">{m.notes.length} not</span>
                   <button onClick={e => { e.stopPropagation(); deleteMeeting(m.id); }} className="p-0.5 hover:text-rose-500 text-slate-300 transition-colors"><Trash2 className="w-3 h-3" /></button>
                 </div>

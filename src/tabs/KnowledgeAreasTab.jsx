@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CheckCircle2, Circle, ChevronDown, ChevronRight, FileText,
-  CheckSquare, Square, Sparkles, Bot, Lightbulb
+  CheckSquare, Square, Sparkles, Bot, Lightbulb, Play, Square as StopIcon, Clock
 } from 'lucide-react';
+import { formatDuration } from '../utils/timeTracker.js';
 
 export function KnowledgeAreasTab({
   babokData,
@@ -20,7 +21,42 @@ export function KnowledgeAreasTab({
   isContextSaved,
   setIsContextSaved,
   handleOpenAIModal,
+  activeProject,
+  updateActive,
 }) {
+  const [runningKaId, setRunningKaId] = useState(null);
+  const [elapsed, setElapsed]         = useState(0);
+
+  useEffect(() => {
+    if (!runningKaId) return;
+    const iv = setInterval(() => setElapsed(s => s + 1), 1000);
+    return () => clearInterval(iv);
+  }, [runningKaId]);
+
+  function startKaTimer(kaId) {
+    setRunningKaId(kaId);
+    setElapsed(0);
+  }
+
+  function stopKaTimer() {
+    const minutes = Math.round(elapsed / 60);
+    const key = 'area_' + runningKaId;
+    if (minutes > 0 && updateActive) {
+      updateActive(p => ({
+        ...p,
+        completedTaskDurations: {
+          ...(p.completedTaskDurations || {}),
+          [key]: ((p.completedTaskDurations || {})[key] || 0) + minutes,
+        },
+      }));
+    }
+    setRunningKaId(null);
+    setElapsed(0);
+  }
+
+  const pad = n => String(n).padStart(2, '0');
+  const elapsedDisplay = `⏱ ${pad(Math.floor(elapsed / 3600))}:${pad(Math.floor((elapsed % 3600) / 60))}:${pad(elapsed % 60)}`;
+
   return (
     <>
       {/* AI CONTEXT INPUT SECTION */}
@@ -72,7 +108,7 @@ export function KnowledgeAreasTab({
         const isExpanded = expandedKA === ka.id;
 
         return (
-          <div key={ka.id} className={`bg-white/5 rounded-xl shadow-lg shadow-black/20 border ${isAllComplete ? 'border-green-500/20' : 'border-white/10'} overflow-hidden transition-all mb-4`}>
+          <div key={ka.id} className={`bg-white/5 rounded-xl shadow-lg shadow-black/20 border overflow-hidden transition-all mb-4 ${isAllComplete ? 'border-green-500/20' : runningKaId === ka.id ? 'ring-2 ring-cyan-400 border-cyan-400/40' : 'border-white/10'}`}>
             {/* KA Header */}
             <div
               className={`p-4 cursor-pointer flex items-center justify-between hover:bg-white/5 transition-colors ${isExpanded ? 'bg-white/5 border-b border-white/10' : ''}`}
@@ -96,12 +132,36 @@ export function KnowledgeAreasTab({
                     Tümünü İşaretle
                   </button>
                 )}
+                {/* Alan bazlı timer */}
+                {runningKaId === ka.id ? (
+                  <button
+                    onClick={e => { e.stopPropagation(); stopKaTimer(); }}
+                    className="flex items-center gap-1 text-xs bg-rose-500/15 text-rose-600 border border-rose-200/30 rounded-lg px-2.5 py-1.5 animate-pulse shrink-0"
+                  >
+                    <StopIcon className="w-3 h-3" />
+                    {`■ ${Math.floor(elapsed / 60)} dk`}
+                  </button>
+                ) : (
+                  <button
+                    onClick={e => { e.stopPropagation(); startKaTimer(ka.id); }}
+                    className="flex items-center gap-1 text-xs bg-emerald-500/15 text-emerald-700 border border-emerald-200/30 rounded-lg px-2.5 py-1.5 hover:bg-emerald-500/25 transition-colors shrink-0"
+                  >
+                    <Play className="w-3 h-3" />Başlat
+                  </button>
+                )}
                 <span className="text-sm font-medium text-slate-400 bg-white/10 px-2 py-1 rounded-md">
                   {kaCompletedTasks}/{ka.tasks.length}
                 </span>
                 {isExpanded ? <ChevronDown className="text-slate-400" /> : <ChevronRight className="text-slate-400" />}
               </div>
             </div>
+
+            {runningKaId === ka.id && (
+              <div className="px-4 py-1.5 bg-cyan-500/5 border-b border-cyan-500/10 flex items-center gap-2">
+                <span className="text-xs font-mono text-cyan-300 animate-pulse">{elapsedDisplay}</span>
+                <span className="text-xs text-slate-500">— kayıt devam ediyor</span>
+              </div>
+            )}
 
             {/* KA Tasks */}
             {isExpanded && (
@@ -220,6 +280,17 @@ export function KnowledgeAreasTab({
                 })}
               </div>
             )}
+            {/* Toplam alan süresi */}
+            {(() => {
+              const areaTotal = (activeProject?.completedTaskDurations || {})['area_' + ka.id] || 0;
+              if (areaTotal === 0) return null;
+              return (
+                <div className="px-4 py-2 border-t border-white/5 flex items-center gap-2">
+                  <Clock className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span className="text-xs text-slate-400">Bu alanda toplam: <span className="text-cyan-400 font-medium">{formatDuration(areaTotal)}</span></span>
+                </div>
+              );
+            })()}
           </div>
         );
       })}

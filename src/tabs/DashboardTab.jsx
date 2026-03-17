@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   AlertTriangle, ListChecks, BookMarked, CalendarDays, Shield, CheckCircle2,
-  LayoutGrid, Lightbulb, RefreshCw, Clock, Sparkles, X, Download
+  LayoutGrid, Lightbulb, RefreshCw, Clock, Sparkles, X, Download, ChevronDown
 } from 'lucide-react';
 import { getRiskLevel, isOverdue } from '../utils.js';
 import { REQ_STATUS_COLORS } from '../constants/index.js';
@@ -41,6 +41,8 @@ export function DashboardTab({
     return { id: ka.id, title: ka.title, minutes };
   }).filter(ka => ka.minutes > 0);
   const totalBabokMinutes = babokEforData.reduce((s, ka) => s + ka.minutes, 0);
+
+  const [zamanExpanded, setZamanExpanded] = useState(false);
 
   const openRisks = activeProject.risks.filter(r => r.status === 'Açık');
   const highRisks = openRisks.filter(r => getRiskLevel(r.probability, r.impact).label === 'Yüksek' || getRiskLevel(r.probability, r.impact).label === 'Kritik');
@@ -170,71 +172,68 @@ export function DashboardTab({
         );
       })()}
 
-      {/* ── ZAMAN ANALİZİ BLOGU ── */}
+      {/* ── ZAMAN ANALİZİ BLOGU (compact accordion) ── */}
       {totalMinutes > 0 && (
-        <div className="glass-card p-4">
-          <h3 className="font-bold text-sm text-slate-200 flex items-center gap-2 mb-3">
-            <Clock className="w-4 h-4 text-cyan-400" />Zaman Analizi
-          </h3>
-
-          {/* 3 özet kart */}
-          <div className="grid grid-cols-3 gap-2.5 mb-4">
-            <div className="bg-white/5 rounded-lg p-3 border border-white/5 text-center">
-              <span className="text-xs text-slate-500 uppercase tracking-wider block mb-1">Toplam Süre</span>
-              <span className="font-stat text-lg font-bold text-cyan-400">{formatDuration(totalMinutes)}</span>
+        <div className="glass-card p-3">
+          <div
+            className="flex items-center justify-between cursor-pointer select-none"
+            onClick={() => setZamanExpanded(z => !z)}
+          >
+            <div className="flex items-center gap-2 flex-wrap">
+              <Clock className="w-4 h-4 text-cyan-400 shrink-0" />
+              <span className="text-sm font-bold text-slate-200">Zaman Analizi</span>
+              <span className="text-sm text-slate-400">Toplam: {formatDuration(totalMinutes)}</span>
             </div>
-            <div className="bg-white/5 rounded-lg p-3 border border-white/5 text-center">
-              <span className="text-xs text-slate-500 uppercase tracking-wider block mb-1">Toplantılar</span>
-              <span className="font-stat text-lg font-bold text-violet-400">{formatDuration(totalMeetingMinutes)}</span>
-              <span className="text-[10px] text-slate-500 block">{totalMinutes > 0 ? Math.round((totalMeetingMinutes / totalMinutes) * 100) : 0}%</span>
-            </div>
-            <div className="bg-white/5 rounded-lg p-3 border border-white/5 text-center">
-              <span className="text-xs text-slate-500 uppercase tracking-wider block mb-1">Aksiyonlar</span>
-              <span className="font-stat text-lg font-bold text-indigo-400">{formatDuration(totalActionMinutes)}</span>
-              <span className="text-[10px] text-slate-500 block">{totalMinutes > 0 ? Math.round((totalActionMinutes / totalMinutes) * 100) : 0}%</span>
-            </div>
+            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform shrink-0 ${zamanExpanded ? 'rotate-180' : ''}`} />
           </div>
+          <p className="text-xs text-slate-500 mt-1">
+            Toplantı: {formatDuration(totalMeetingMinutes)} · Aksiyon: {formatDuration(totalActionMinutes)} · Analiz: {formatDuration(totalChecklistMinutes)}
+          </p>
 
-          {/* BABOK efor dağılımı */}
-          {babokEforData.length > 0 && (
-            <div className="mb-3">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">BABOK Bilgi Alanları Efor Dağılımı</p>
-              <div className="space-y-2">
-                {babokEforData.map(ka => {
-                  const pct = totalBabokMinutes > 0 ? Math.round((ka.minutes / totalBabokMinutes) * 100) : 0;
-                  const color = KA_COLORS[ka.id] || { bar: '#6366f1', bg: 'bg-indigo-500/10', text: 'text-indigo-400' };
-                  return (
-                    <div key={ka.id} className="flex items-center gap-2">
-                      <span className="text-xs text-slate-400 w-40 truncate flex-shrink-0" title={ka.title}>{ka.title}</span>
-                      <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color.bar, opacity: 0.8 }} />
-                      </div>
-                      <span className={`text-xs font-medium w-20 text-right flex-shrink-0 ${color.text}`}>{formatDuration(ka.minutes)}</span>
-                      <span className="text-[10px] text-slate-500 w-8 text-right flex-shrink-0">{pct}%</span>
-                    </div>
-                  );
-                })}
-              </div>
+          {zamanExpanded && (
+            <div className="mt-3 pt-3 border-t border-white/10 space-y-3">
+              {/* BABOK efor dağılımı */}
+              {babokEforData.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">BABOK Bilgi Alanları Efor Dağılımı</p>
+                  <div className="space-y-2">
+                    {babokEforData.map(ka => {
+                      const pct = totalBabokMinutes > 0 ? Math.round((ka.minutes / totalBabokMinutes) * 100) : 0;
+                      const color = KA_COLORS[ka.id] || { bar: '#6366f1', text: 'text-indigo-400' };
+                      return (
+                        <div key={ka.id} className="flex items-center gap-2">
+                          <span className="text-xs text-slate-400 w-40 truncate flex-shrink-0" title={ka.title}>{ka.title}</span>
+                          <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color.bar, opacity: 0.8 }} />
+                          </div>
+                          <span className={`text-xs font-medium w-20 text-right flex-shrink-0 ${color.text}`}>{formatDuration(ka.minutes)}</span>
+                          <span className="text-[10px] text-slate-500 w-8 text-right flex-shrink-0">{pct}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Toplantı uyarısı */}
+              {totalMeetingMinutes > 0 && (() => {
+                const meetingPct = totalMinutes > 0 ? Math.round((totalMeetingMinutes / totalMinutes) * 100) : 0;
+                return (
+                  <div className={`text-xs px-3 py-2 rounded-lg border ${meetingPct > 50 ? 'bg-amber-500/10 border-amber-500/20 text-amber-300' : 'bg-white/5 border-white/5 text-slate-400'}`}>
+                    {meetingPct > 50 && <span className="font-bold block mb-0.5">⚠ Toplantı süresi analiz süresini aşıyor</span>}
+                    Toplantı süresi: <span className="font-medium">{formatDuration(totalMeetingMinutes)}</span>
+                    <span className="ml-1 text-slate-500">(analiz süresinin {meetingPct}%'i toplantılarda geçti)</span>
+                  </div>
+                );
+              })()}
+
+              {/* Export linki */}
+              {openExportModal && (
+                <button onClick={openExportModal} className="flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 transition-colors">
+                  <Download className="w-3.5 h-3.5" />Tüm zaman verilerini export'a dahil et
+                </button>
+              )}
             </div>
-          )}
-
-          {/* Toplantı özeti */}
-          {totalMeetingMinutes > 0 && (() => {
-            const meetingPct = totalMinutes > 0 ? Math.round((totalMeetingMinutes / totalMinutes) * 100) : 0;
-            return (
-              <div className={`text-xs px-3 py-2 rounded-lg border mb-3 ${meetingPct > 50 ? 'bg-amber-500/10 border-amber-500/20 text-amber-300' : 'bg-white/5 border-white/5 text-slate-400'}`}>
-                {meetingPct > 50 && <span className="font-bold block mb-0.5">⚠ Toplantı süresi analiz süresini aşıyor</span>}
-                Toplantı süresi: <span className="font-medium">{formatDuration(totalMeetingMinutes)}</span>
-                <span className="ml-1 text-slate-500">(analiz süresinin {meetingPct}%'i toplantılarda geçti)</span>
-              </div>
-            );
-          })()}
-
-          {/* Export linki */}
-          {openExportModal && (
-            <button onClick={openExportModal} className="flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 transition-colors">
-              <Download className="w-3.5 h-3.5" />Tüm zaman verilerini export'a dahil et
-            </button>
           )}
         </div>
       )}
