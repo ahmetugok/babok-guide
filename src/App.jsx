@@ -37,6 +37,7 @@ import { LinkCardModal } from './modals/LinkCardModal.jsx';
 import { MeetingModal } from './modals/MeetingModal.jsx';
 import { GanttModal } from './modals/GanttModal.jsx';
 import { ExportModal } from './modals/ExportModal.jsx';
+import { DocumentAnalysisModal } from './modals/DocumentAnalysisModal.jsx';
 
 // --- BABOK KNOWLEDGE AREAS AND DETAILED TASKS DATA ---
 const babokData = [
@@ -937,6 +938,8 @@ Yanıtın tamamı Türkçe olmalıdır.
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   // Export modal
   const [showExportModal, setShowExportModal] = useState(false);
+  // Document Analysis modal
+  const [showDocAnalysisModal, setShowDocAnalysisModal] = useState(false);
 
   return (
     <div className={`aura-void min-h-screen font-sans ${darkMode ? 'theme-dark text-slate-200' : 'theme-light text-slate-800'}`}>
@@ -957,6 +960,10 @@ Yanıtın tamamı Türkçe olmalıdır.
             <span className="dock-label">{label}</span>
           </button>
         ))}
+        <button onClick={() => setShowDocAnalysisModal(true)} className="aura-dock-item" title="Döküman Analiz Et">
+          <FileText className="w-[18px] h-[18px]" />
+          <span className="dock-label">Dok. Analiz</span>
+        </button>
         <div className="w-6 h-px bg-slate-700/50 my-1" />
         <div className="relative">
           <button onClick={() => setShowBackupMenu(!showBackupMenu)} className="aura-dock-item" title="Yedekle">
@@ -1444,6 +1451,117 @@ Yanıtın tamamı Türkçe olmalıdır.
           isOpen={showExportModal}
           onClose={() => setShowExportModal(false)}
           activeProject={activeProject}
+        />
+
+        {/* DOCUMENT ANALYSIS MODAL */}
+        <DocumentAnalysisModal
+          isOpen={showDocAnalysisModal}
+          onClose={() => setShowDocAnalysisModal(false)}
+          onApprove={(selected) => {
+            updateActive((p) => {
+              let reqCounter = p.reqCounter || 1;
+              let brCounter = p.brCounter || 1;
+
+              const newReqs = (selected.requirements || []).map((r) => ({
+                id: generateId(),
+                reqId: `REQ-${String(reqCounter++).padStart(3, '0')}`,
+                name: r.title,
+                objective: r.description,
+                module: '',
+                status: 'Taslak',
+                testId: '',
+                notes: '',
+                moscow: r.priority === 'Yüksek' ? 'M' : r.priority === 'Orta' ? 'S' : 'C',
+                requirementType: r.type || '',
+                sourceMeetingId: '',
+                acceptanceCriteria: '',
+                approvalStatus: 'Taslak',
+                approvedById: '',
+                babokKnowledgeArea: '',
+              }));
+
+              const newRisks = (selected.risks || []).map((r) => ({
+                id: generateId(),
+                title: r.title,
+                category: '',
+                probability: r.probability || 2,
+                impact: r.impact || 2,
+                owner: '',
+                mitigation: r.description,
+                status: 'Açık',
+                linkedRequirementId: '',
+                linkedAssumptionId: '',
+                affectedStakeholderId: '',
+                triggerDescription: '',
+              }));
+
+              const newAssumptions = (selected.assumptions || []).map((a) => ({
+                id: generateId(),
+                title: a.title,
+                content: a.description,
+                type: 'Varsayim',
+                category: 'Is',
+                ownerId: '',
+                validationStatus: 'Dogrulanmadi',
+                validationDate: '',
+                linkedRequirements: '',
+                linkedRisks: '',
+                notes: '',
+              }));
+
+              const newConstraints = (selected.constraints || []).map((c) => ({
+                id: generateId(),
+                title: c.title,
+                content: c.description,
+                type: 'Kisit',
+                category: 'Is',
+                ownerId: '',
+                validationStatus: 'Dogrulanmadi',
+                validationDate: '',
+                linkedRequirements: '',
+                linkedRisks: '',
+                notes: '',
+              }));
+
+              const newBRs = (selected.business_rules || []).map((br) => ({
+                id: generateId(),
+                brId: `BR-${String(brCounter++).padStart(3, '0')}`,
+                title: br.title,
+                ruleText: br.description,
+                category: 'Surec',
+                source: 'Döküman Analizi',
+                sourceRef: '',
+                version: 'v1.0',
+                status: 'Aktif',
+                linkedRequirements: '',
+                linkedStakeholderId: '',
+                notes: '',
+              }));
+
+              const newStakeholders = (selected.stakeholders || []).map((s) => ({
+                id: generateId(),
+                name: s.name,
+                role: s.role,
+                department: s.department,
+                interest: 2,
+                influence: 2,
+                raci: 'I',
+                notes: '',
+              }));
+
+              return {
+                ...p,
+                requirements: [...p.requirements, ...newReqs],
+                risks: [...p.risks, ...newRisks],
+                assumptions: [...(p.assumptions || []), ...newAssumptions, ...newConstraints],
+                businessRules: [...(p.businessRules || []), ...newBRs],
+                stakeholders: [...p.stakeholders, ...newStakeholders],
+                reqCounter,
+                brCounter,
+              };
+            });
+            setShowDocAnalysisModal(false);
+          }}
         />
 
       </div>{/* end lg:ml-[78px] */}
