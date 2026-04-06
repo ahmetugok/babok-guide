@@ -3,11 +3,7 @@
 
 const PROB_LABELS  = ['', 'Düşük', 'Orta', 'Yüksek'];
 
-function fmtDuration(minutes) {
-  if (!minutes || minutes <= 0) return '0 dk';
-  if (minutes < 60) return `${minutes} dk`;
-  return `${Math.floor(minutes / 60)} sa ${minutes % 60} dk`;
-}
+
 const RACI_LABELS  = { R: 'Sorumlu', A: 'Onaylayan', C: 'Danışılan', I: 'Bilgilendirilen' };
 
 function riskLevel(probability, impact) {
@@ -50,6 +46,7 @@ function section1(p) {
 // ── Section 2: Paydaş RACI ───────────────────────────────────────────────────
 function section2(p) {
   const stakeholders = p.stakeholders || [];
+  if (stakeholders.length === 0) return null;
   const lines = [
     `## Paydaş Kayıt ve RACI Matrisi`,
     ``,
@@ -61,7 +58,6 @@ function section2(p) {
       `| ${s.name || '—'} | ${s.role || '—'} | ${s.department || '—'} | ${PROB_LABELS[s.interest] || '—'} | ${PROB_LABELS[s.influence] || '—'} | ${s.raci || '—'} |`
     );
   }
-  if (stakeholders.length === 0) lines.push(`| — | — | — | — | — | — |`);
   lines.push(``, `**RACI Açıklamaları:** R = ${RACI_LABELS.R} · A = ${RACI_LABELS.A} · C = ${RACI_LABELS.C} · I = ${RACI_LABELS.I}`);
   return lines.join('\n');
 }
@@ -71,6 +67,8 @@ function section3(p) {
   const assumptions = (p.assumptions || []).filter(a => a.type !== 'Kisit');
   const constraints = (p.assumptions || []).filter(a => a.type === 'Kisit');
   const reqs        = p.requirements || [];
+
+  if (assumptions.length === 0 && constraints.length === 0) return null;
 
   function renderItem(a) {
     const linkedReq = reqs.find(r => r.id === a.linkedRequirements);
@@ -84,21 +82,21 @@ function section3(p) {
     ].filter(Boolean).join('\n');
   }
 
-  const lines = [`## Varsayımlar`, ``];
-  if (assumptions.length === 0) {
-    lines.push('_Varsayım girilmemiş._');
-  } else {
+  const parts = [];
+
+  if (assumptions.length > 0) {
+    const lines = [`## Varsayımlar`, ``];
     assumptions.forEach(a => { lines.push(renderItem(a)); lines.push(''); });
+    parts.push(lines.join('\n'));
   }
 
-  lines.push(`## Kısıtlar`, ``);
-  if (constraints.length === 0) {
-    lines.push('_Kısıt girilmemiş._');
-  } else {
+  if (constraints.length > 0) {
+    const lines = [`## Kısıtlar`, ``];
     constraints.forEach(a => { lines.push(renderItem(a)); lines.push(''); });
+    parts.push(lines.join('\n'));
   }
 
-  return lines.join('\n');
+  return parts.join('\n\n');
 }
 
 // ── Section 4: İş Kuralları ───────────────────────────────────────────────────
@@ -106,11 +104,9 @@ function section4(p) {
   const brs  = p.businessRules  || [];
   const reqs = p.requirements   || [];
 
+  if (brs.length === 0) return null;
+
   const lines = [`## İş Kuralları`, ``];
-  if (brs.length === 0) {
-    lines.push('_İş kuralı girilmemiş._');
-    return lines.join('\n');
-  }
 
   for (const br of brs) {
     const linkedReq = reqs.find(r => r.id === br.linkedRequirements);
@@ -140,11 +136,9 @@ function section5(p) {
     return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
   });
 
+  if (sorted.length === 0) return null;
+
   const lines = [`## Gereksinim Kataloğu`, ``];
-  if (sorted.length === 0) {
-    lines.push('_Gereksinim girilmemiş._');
-    return lines.join('\n');
-  }
 
   for (const r of sorted) {
     const linkedBRs    = brs.filter(br  => br.linkedRequirements === r.id);
@@ -198,11 +192,9 @@ function section6(p) {
     groups[lvl].push(r);
   }
 
+  if (risks.length === 0) return null;
+
   const lines = [`## Risk Kayıt Defteri`, ``];
-  if (risks.length === 0) {
-    lines.push('_Risk girilmemiş._');
-    return lines.join('\n');
-  }
 
   for (const [lvl, list] of Object.entries(groups)) {
     if (list.length === 0) continue;
@@ -259,11 +251,9 @@ function section7(p) {
     return cr.affectedEntityId;
   }
 
+  if (sorted.length === 0) return null;
+
   const lines = [`## Değişiklik Talepleri`, ``];
-  if (sorted.length === 0) {
-    lines.push('_Değişiklik talebi girilmemiş._');
-    return lines.join('\n');
-  }
 
   for (const cr of sorted) {
     lines.push(`### ${cr.crId}: ${cr.title}`);
@@ -287,6 +277,8 @@ function section8(p) {
   const done    = actions.filter(a => a.status === 'Tamamlandı');
   const sorted  = [...pending, ...done];
 
+  if (sorted.length === 0) return null;
+
   const lines = [
     `## Aksiyon Takip Listesi`,
     ``,
@@ -294,59 +286,16 @@ function section8(p) {
     `|---|---|---|---|---|`,
   ];
 
-  if (sorted.length === 0) {
-    lines.push(`| — | — | — | — | — |`);
-  } else {
-    for (const a of sorted) {
-      lines.push(
-        `| ${a.title || '—'} | ${a.owner || '—'} | ${a.dueDate || '—'} | ${a.status || '—'} | ${a.source || '—'} |`
-      );
-    }
+  for (const a of sorted) {
+    lines.push(
+      `| ${a.title || '—'} | ${a.owner || '—'} | ${a.dueDate || '—'} | ${a.status || '—'} | ${a.source || '—'} |`
+    );
   }
 
   return lines.join('\n');
 }
 
-// ── Section 9: Zaman Analizi ─────────────────────────────────────────────────
-function section9(p) {
-  const totalMeetingMinutes   = (p.meetings  || []).reduce((s, m) => s + (m.duration  || 0), 0);
-  const totalActionMinutes    = (p.actions   || []).reduce((s, a) => s + (a.duration  || 0), 0);
-  const totalChecklistMinutes = Object.values(p.completedTaskDurations || {}).reduce((s, d) => s + d, 0);
-  const totalMinutes = totalMeetingMinutes + totalActionMinutes + totalChecklistMinutes;
 
-  const lines = [`## Zaman Analizi`, ``];
-
-  if (totalMinutes === 0) {
-    lines.push('_Henüz zaman verisi girilmemiş._');
-    return lines.join('\n');
-  }
-
-  lines.push(`Toplam kayıtlı süre: **${fmtDuration(totalMinutes)}**`, ``);
-  lines.push(`- Toplantılar: ${fmtDuration(totalMeetingMinutes)}`);
-  lines.push(`- Aksiyonlar: ${fmtDuration(totalActionMinutes)}`);
-  lines.push(`- Analiz çalışmaları (checklist): ${fmtDuration(totalChecklistMinutes)}`);
-  lines.push(``);
-
-  // BABOK efor dağılımı — babokData yoksa atla
-  const taskDurations = p.completedTaskDurations || {};
-  if (Object.keys(taskDurations).length > 0) {
-    lines.push(`### BABOK Efor Dağılımı`, ``);
-    // Bilgi alanı başlıkları babokData'dan gelmiyor (exportEngine'de babokData yok),
-    // task ID'lerinin hangi knowledge area'ya ait olduğunu prefix ile tahmin edemeyiz.
-    // Bu yüzden ham task süre toplamını listele.
-    const taskEntries = Object.entries(taskDurations).filter(([, d]) => d > 0);
-    const taskTotal = taskEntries.reduce((s, [, d]) => s + d, 0);
-    lines.push(`Toplam checklist süresi: **${fmtDuration(taskTotal)}**`);
-    lines.push(`Kayıtlı görev sayısı: ${taskEntries.length}`);
-    lines.push(``);
-  }
-
-  const meetingPct = totalMinutes > 0 ? Math.round((totalMeetingMinutes / totalMinutes) * 100) : 0;
-  lines.push(`> Toplantı süresi analiz süresinin %${meetingPct}'ini oluşturuyor.`);
-  if (meetingPct > 50) lines.push(`> ⚠ Toplantı süresi analiz süresini aşıyor.`);
-
-  return lines.join('\n');
-}
 
 // ── Section array (for modal preview tabs) ────────────────────────────────────
 export function generateBABOKSections(project) {
@@ -360,35 +309,25 @@ export function generateBABOKSections(project) {
     section6(p),
     section7(p),
     section8(p),
-    section9(p),
-  ];
+  ].filter(Boolean);
 }
 
 // ── Main export ───────────────────────────────────────────────────────────────
 export function generateBABOKReport(project) {
   try {
     const p = project || {};
-    const sections = [
+    const rawSections = [
       section1(p),
-      hr(),
       section2(p),
-      hr(),
       section3(p),
-      hr(),
       section4(p),
-      hr(),
       section5(p),
-      hr(),
       section6(p),
-      hr(),
       section7(p),
-      hr(),
       section8(p),
-      hr(),
-      section9(p),
-    ];
+    ].filter(Boolean);
 
-    const report = sections.join('\n\n');
+    const report = rawSections.join('\n\n' + hr() + '\n\n');
     console.log(`[exportEngine] Rapor üretildi: ${report.length} karakter, ${project?.name || '—'}`);
     return report;
   } catch (err) {

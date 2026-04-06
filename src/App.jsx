@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   BookOpen, Target, Users, Layers,
-  RefreshCw, Activity, Info, Lightbulb, Wrench, BrainCircuit, LayoutGrid, FileText,
+  RefreshCw, Activity, Info, Lightbulb, LayoutGrid, FileText,
   Sparkles, X, Copy, Loader2, FileStack,
   AlertTriangle, Trash2, Plus, Download, LayoutDashboard, ListChecks,
   FolderPlus, RotateCcw, MessageSquare,
@@ -24,9 +24,7 @@ import { RequirementsTab } from './tabs/RequirementsTab.jsx';
 import { TraceabilityTab } from './tabs/TraceabilityTab.jsx';
 import { MeetingsTab } from './tabs/MeetingsTab.jsx';
 import { GanttTab } from './tabs/GanttTab.jsx';
-import { TechniquesTab } from './tabs/TechniquesTab.jsx';
 import { TemplatesTab } from './tabs/TemplatesTab.jsx';
-import { CompetenciesTab } from './tabs/CompetenciesTab.jsx';
 
 import { BusinessRuleModal } from './modals/BusinessRuleModal.jsx';
 import { ChangeRequestModal } from './modals/ChangeRequestModal.jsx';
@@ -505,8 +503,7 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('babok_darkMode') === 'true');
   useEffect(() => { localStorage.setItem('babok_darkMode', String(darkMode)); }, [darkMode]);
 
-  // Techniques filter
-  const [techFilter, setTechFilter] = useState('all');
+
 
   const toggleTask = (taskId, e) => {
     e.stopPropagation();
@@ -908,9 +905,7 @@ Yanıtın tamamı Türkçe olmalıdır.
     { id: 'traceability', label: 'Traceability', Icon: ArrowUpRight },
     { id: 'meetings', label: 'Toplantılar', Icon: MessageSquare },
     { id: 'gantt', label: 'Timeline', Icon: CalendarDays },
-    { id: 'techniques', label: 'Teknikler', Icon: Wrench },
     { id: 'templates', label: 'Dokümanlar', Icon: FileStack },
-    { id: 'competencies', label: 'Yetkinlikler', Icon: BrainCircuit },
     { id: 'export', label: 'Export', Icon: Download },
   ];
 
@@ -1216,25 +1211,11 @@ Yanıtın tamamı Türkçe olmalıdır.
             />
           )}
 
-          {/* TECHNIQUES TAB */}
-          {activeTab === 'techniques' && (
-            <TechniquesTab
-              babokData={babokData}
-              techFilter={techFilter}
-              setTechFilter={setTechFilter}
-            />
-          )}
-
           {/* TEMPLATES TAB */}
           {activeTab === 'templates' && (
             <TemplatesTab
               generateLiveTemplate={generateLiveTemplate}
             />
-          )}
-
-          {/* COMPETENCIES TAB */}
-          {activeTab === 'competencies' && (
-            <CompetenciesTab />
           )}
 
         </div>
