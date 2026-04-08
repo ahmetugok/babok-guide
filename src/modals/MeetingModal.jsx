@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, Play, Square, Clock } from 'lucide-react';
+import { useProjectStore } from '../store/projectStore.js';
+import { useUIStore, DEFAULT_MEETING_FORM } from '../store/uiStore.js';
 
-export function MeetingModal({ form, setForm, onSave, onClose }) {
+export function MeetingModal() {
+  const saveMeeting     = useProjectStore((s) => s.saveMeeting);
+  const closeMeetingModal = useUIStore((s) => s.closeMeetingModal);
+
+  const [form, setForm] = useState({ ...DEFAULT_MEETING_FORM });
   const [timerRunning, setTimerRunning] = useState(false);
   const [elapsed, setElapsed]           = useState(0);
 
@@ -14,7 +20,7 @@ export function MeetingModal({ form, setForm, onSave, onClose }) {
   function toggleTimer() {
     if (timerRunning) {
       const added = Math.round(elapsed / 60);
-      setForm({ ...form, duration: (form.duration || 0) + added });
+      setForm(f => ({ ...f, duration: (f.duration || 0) + added }));
       setElapsed(0);
       setTimerRunning(false);
     } else {
@@ -22,6 +28,12 @@ export function MeetingModal({ form, setForm, onSave, onClose }) {
       setTimerRunning(true);
     }
   }
+
+  const onSave = () => {
+    if (!form.topic.trim()) return;
+    saveMeeting(form);
+    closeMeetingModal();
+  };
 
   const pad = n => String(n).padStart(2, '0');
   const elapsedDisplay = `${pad(Math.floor(elapsed / 60))}:${pad(elapsed % 60)}`;
@@ -63,7 +75,7 @@ export function MeetingModal({ form, setForm, onSave, onClose }) {
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-5">
-          <button onClick={onClose} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+          <button onClick={closeMeetingModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
           <button onClick={onSave} className="px-4 py-2 text-sm bg-violet-600 hover:bg-violet-700 text-white rounded-md font-medium">Oluştur</button>
         </div>
       </div>

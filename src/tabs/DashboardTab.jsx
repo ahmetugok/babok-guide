@@ -6,6 +6,9 @@ import {
 import { getRiskLevel, isOverdue } from '../utils.js';
 import { REQ_STATUS_COLORS } from '../constants/index.js';
 import { formatDuration } from '../utils/timeTracker.js';
+import { babokData } from '../data/babokData.jsx';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useUIStore } from '../store/uiStore.js';
 
 const KA_COLORS = {
   ka1: { bar: '#a855f7', bg: 'bg-purple-500/10',  text: 'text-purple-400'  },
@@ -16,19 +19,17 @@ const KA_COLORS = {
   ka6: { bar: '#10b981', bg: 'bg-emerald-500/10', text: 'text-emerald-400' },
 };
 
-export function DashboardTab({
-  activeProject,
-  babokData,
-  completedTasks,
-  completedSubTasks,
-  totalTasks,
-  totalSubTasks,
-  overallProgress,
-  setActiveTab,
-  setExpandedKA,
-  RingChart,
-  openExportModal,
-}) {
+export function DashboardTab({ RingChart }) {
+  const activeProject   = useProjectStore(selectActiveProject);
+  const setActiveTab    = useUIStore((s) => s.setActiveTab);
+  const setExpandedKA   = useUIStore((s) => s.setExpandedKA);
+  const openExportModal = useUIStore((s) => s.setShowExportModal);
+
+  const completedTasks    = activeProject?.completedTasks || [];
+  const completedSubTasks = activeProject?.completedSubTasks || [];
+  const totalTasks        = babokData.reduce((acc, ka) => acc + ka.tasks.length, 0);
+  const totalSubTasks     = babokData.reduce((acc, ka) => acc + ka.tasks.reduce((a, t) => a + t.checklist.length, 0), 0);
+  const overallProgress   = Math.round(((completedTasks.length + completedSubTasks.length) / (totalTasks + totalSubTasks)) * 100) || 0;
   // ── Zaman analizi hesaplamaları ──────────────────────────────────────────
   const totalMeetingMinutes  = (activeProject.meetings  || []).reduce((s, m) => s + (m.duration  || 0), 0);
   const totalActionMinutes   = (activeProject.actions   || []).reduce((s, a) => s + (a.duration  || 0), 0);
@@ -61,15 +62,13 @@ export function DashboardTab({
       <div className="glass-card p-4 relative overflow-hidden">
         <div className="absolute -top-16 -right-16 w-48 h-48 bg-cyan-500/5 rounded-full blur-3xl" />
         {/* Export icon — top right */}
-        {openExportModal && (
-          <button
-            onClick={openExportModal}
-            title="Raporu Dışa Aktar"
-            className="absolute top-3 right-3 p-1.5 rounded-lg text-slate-500 hover:text-cyan-400 hover:bg-white/10 transition-colors z-10"
-          >
-            <Download className="w-4 h-4" />
-          </button>
-        )}
+        <button
+          onClick={() => openExportModal(true)}
+          title="Raporu Dışa Aktar"
+          className="absolute top-3 right-3 p-1.5 rounded-lg text-slate-500 hover:text-cyan-400 hover:bg-white/10 transition-colors z-10"
+        >
+          <Download className="w-4 h-4" />
+        </button>
         <div className="flex items-center gap-5">
           {/* Ring Chart */}
           <div className="relative flex-shrink-0">

@@ -1,8 +1,16 @@
 import React from 'react';
 import { Users, UserPlus, Plus, Pencil, Trash2, ArrowUpRight } from 'lucide-react';
 import { PROB_LABELS, RACI_LABELS, RACI_COLORS } from '../constants/index.js';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useUIStore } from '../store/uiStore.js';
 
-export function StakeholdersTab({ activeProject, openStakeholderModal, deleteStakeholder, openLinkCard, focusedStakeholderId, setFocusedStakeholderId }) {
+export function StakeholdersTab() {
+  const activeProject         = useProjectStore(selectActiveProject);
+  const openStakeholderModal  = useUIStore((s) => s.openStakeholderModal);
+  const deleteStakeholder     = useProjectStore((s) => s.deleteStakeholder);
+  const openLinkCard          = useUIStore((s) => s.openLinkCard);
+  const focusedStakeholderId  = useUIStore((s) => s.focusedStakeholderId);
+  const setFocusedStakeholderId = useUIStore((s) => s.setFocusedStakeholderId);
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -10,7 +18,7 @@ export function StakeholdersTab({ activeProject, openStakeholderModal, deleteSta
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><UserPlus className="text-orange-500 w-5 h-5" />Paydaş Yönetimi</h2>
           <p className="text-sm text-slate-400">{activeProject.stakeholders.length} paydaş kayıtlı</p>
         </div>
-        <button onClick={() => openStakeholderModal()} className="bg-orange-500/100 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Paydaş Ekle</button>
+        <button onClick={() => openStakeholderModal(null)} className="bg-orange-500/100 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Paydaş Ekle</button>
       </div>
       {activeProject.stakeholders.length > 0 && (
         <div className="bg-white/5 rounded-xl border border-white/10 p-5 shadow-lg shadow-black/20">
@@ -122,7 +130,7 @@ export function StakeholdersTab({ activeProject, openStakeholderModal, deleteSta
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <button onClick={() => openLinkCard('stakeholder', s.id)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-cyan-400 transition-colors" title="Baglantilar"><ArrowUpRight className="w-4 h-4" /></button>
-                <button onClick={() => openStakeholderModal(s)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
+                <button onClick={() => openStakeholderModal(s.id)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
                 <button onClick={() => deleteStakeholder(s.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>

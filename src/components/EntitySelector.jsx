@@ -1,4 +1,5 @@
 import React from 'react';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
 
 function getRiskLabel(r) {
   const score = (r.probability || 1) * (r.impact || 1);
@@ -19,12 +20,12 @@ const SOURCES = {
 
 export function EntitySelector({
   entityType,
-  activeProject,
   value,
   onChange,
   placeholder,
   allowClear = true,
 }) {
+  const activeProject = useProjectStore(selectActiveProject);
   const source = SOURCES[entityType];
   if (!source) return null;
 

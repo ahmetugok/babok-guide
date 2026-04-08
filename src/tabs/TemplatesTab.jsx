@@ -1,8 +1,46 @@
 import React from 'react';
 import { FileStack, FileText, ClipboardCopy, RefreshCw } from 'lucide-react';
-import { templatesData } from '../constants/index.js';
+import { templatesData, PROB_LABELS, RACI_LABELS } from '../constants/index.js';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
 
-export function TemplatesTab({ generateLiveTemplate }) {
+export function TemplatesTab() {
+  const activeProject = useProjectStore(selectActiveProject);
+
+  const generateLiveTemplate = (templateId) => {
+    const reqs         = activeProject.requirements || [];
+    const stakeholders = activeProject.stakeholders || [];
+    const meetings     = activeProject.meetings || [];
+    let text = '';
+
+    if (templateId === 'tpl_raci') {
+      const header = `| Paydas Adi / Departman | Projedeki Rolu | Ilgi | Etki | RACI Rolu |\n| :--- | :--- | :--- | :--- | :--- |`;
+      const rows = stakeholders.length > 0
+        ? stakeholders.map(s => `| ${s.name}${s.department ? ` (${s.department})` : ''} | ${s.role || '—'} | ${PROB_LABELS[s.interest] || '—'} | ${PROB_LABELS[s.influence] || '—'} | ${s.raci} — ${RACI_LABELS[s.raci]} |`).join('\n')
+        : '| (Henüz paydas eklenmemis) | — | — | — | — |';
+      text = `${header}\n${rows}`;
+    } else if (templateId === 'tpl_mom') {
+      const mtg = meetings[meetings.length - 1];
+      if (!mtg) { alert('Henuz toplanti kaydedilmemis.'); return; }
+      const lines = [`# Toplanti Tutanagi`, `**Konu:** ${mtg.topic}`, `**Tarih:** ${mtg.date}`, `**Katilimcilar:** ${mtg.attendees || '—'}`, ''];
+      ['Karar', 'Açık Nokta', 'Aksiyon', 'Gereksinim', 'Varsayim'].forEach(type => {
+        const it = mtg.notes.filter(n => n.type === type);
+        if (it.length) { lines.push(`## ${type}lar`); it.forEach((n, i) => lines.push(`${i + 1}. ${n.text}`)); lines.push(''); }
+      });
+      text = lines.join('\n');
+    } else if (templateId === 'tpl_tm') {
+      const header = `| Req ID | Is Hedefi / Kapsam | Gereksinim Adi | Ilgili Modul | Test Senaryosu ID | Durum |\n| :--- | :--- | :--- | :--- | :--- | :--- |`;
+      const rows = reqs.length > 0
+        ? reqs.map(r => `| ${r.reqId} | ${r.objective || '—'} | ${r.name} | ${r.module || '—'} | ${r.testId || '—'} | ${r.status} |`).join('\n')
+        : '| (Henüz gereksinim eklenmemis) | — | — | — | — | — |';
+      text = `${header}\n${rows}`;
+    } else {
+      const tpl = templatesData.find(t => t.id === templateId);
+      if (tpl) text = tpl.format;
+    }
+    navigator.clipboard.writeText(text);
+    alert('Canli veri ile doldurulmus sablon panoya kopyalandi!');
+  };
+
   return (
     <div className="space-y-4">
       <div className="bg-amber-500/10 text-amber-800 p-4 rounded-lg flex gap-3 items-start border border-amber-100 mb-6">

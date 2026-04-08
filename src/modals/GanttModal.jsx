@@ -1,8 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CalendarDays } from 'lucide-react';
 import { GANTT_COLORS } from '../constants/index.js';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useUIStore, DEFAULT_GANTT_FORM } from '../store/uiStore.js';
 
-export function GanttModal({ form, setForm, onSave, onClose, editingGanttTask }) {
+export function GanttModal() {
+  const activeProject  = useProjectStore(selectActiveProject);
+  const saveGanttTask  = useProjectStore((s) => s.saveGanttTask);
+  const ganttModal     = useUIStore((s) => s.ganttModal);
+  const closeGanttModal = useUIStore((s) => s.closeGanttModal);
+
+  const editingGanttTask = ganttModal.editingId
+    ? (activeProject?.ganttTasks || []).find((t) => t.id === ganttModal.editingId)
+    : null;
+
+  const [form, setForm] = useState(
+    editingGanttTask
+      ? { ...DEFAULT_GANTT_FORM, ...editingGanttTask }
+      : { ...DEFAULT_GANTT_FORM }
+  );
+
+  const onSave = () => {
+    if (!form.name.trim() || !form.startDate || !form.endDate) return;
+    saveGanttTask(form, ganttModal.editingId);
+    closeGanttModal();
+  };
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="glass-panel p-6 shadow-2xl max-w-md w-full">
@@ -49,7 +72,7 @@ export function GanttModal({ form, setForm, onSave, onClose, editingGanttTask })
           )}
         </div>
         <div className="flex justify-end gap-3 mt-5">
-          <button onClick={onClose} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+          <button onClick={closeGanttModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
           <button onClick={onSave} className="px-4 py-2 text-sm bg-cyan-600 hover:bg-cyan-700 text-white rounded-md font-medium">Kaydet</button>
         </div>
       </div>

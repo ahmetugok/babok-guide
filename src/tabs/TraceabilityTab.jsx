@@ -1,8 +1,12 @@
 import React from 'react';
 import { ArrowUpRight, CheckCircle2 } from 'lucide-react';
 import { REQ_STATUS_COLORS } from '../constants/index.js';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useUIStore } from '../store/uiStore.js';
 
-export function TraceabilityTab({ activeProject, setActiveTab }) {
+export function TraceabilityTab() {
+  const activeProject = useProjectStore(selectActiveProject);
+  const setActiveTab  = useUIStore((s) => s.setActiveTab);
   const reqs = activeProject.requirements || [];
   const brs = activeProject.businessRules || [];
   const crs = activeProject.changeRequests || [];

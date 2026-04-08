@@ -4,26 +4,41 @@ import {
   CheckSquare, Square, Sparkles, Bot, Lightbulb, Play, Square as StopIcon, Clock
 } from 'lucide-react';
 import { formatDuration, startTimer, stopTimer, getActiveTimer, getAllActiveTimers } from '../utils/timeTracker.js';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useUIStore } from '../store/uiStore.js';
 
-export function KnowledgeAreasTab({
-  babokData,
-  completedTasks,
-  completedSubTasks,
-  expandedKA,
-  setExpandedKA,
-  selectedTask,
-  handleTaskClick,
-  toggleTask,
-  toggleSubTask,
-  markAllKA,
-  projectContext,
-  setProjectContext,
-  isContextSaved,
-  setIsContextSaved,
-  handleOpenAIModal,
-  activeProject,
-  updateActive,
-}) {
+export function KnowledgeAreasTab({ babokData }) {
+  const activeProject     = useProjectStore(selectActiveProject);
+  const updateActive      = useProjectStore((s) => s.updateActive);
+  const toggleTask        = useProjectStore((s) => s.toggleTask);
+  const toggleSubTask     = useProjectStore((s) => s.toggleSubTask);
+  const markAllKA         = useProjectStore((s) => s.markAllKA);
+  const expandedKA        = useUIStore((s) => s.expandedKA);
+  const setExpandedKA     = useUIStore((s) => s.setExpandedKA);
+  const selectedTask      = useUIStore((s) => s.selectedTask);
+  const setSelectedTask   = useUIStore((s) => s.setSelectedTask);
+  const setIsContextSaved = useUIStore((s) => s.setIsContextSaved);
+  const isContextSaved    = useUIStore((s) => s.aiModal.isContextSaved);
+  const handleOpenAIModal = useUIStore((s) => s.handleOpenAIModal);
+
+  const completedTasks    = activeProject?.completedTasks || [];
+  const completedSubTasks = activeProject?.completedSubTasks || [];
+  const projectContext    = activeProject?.projectContext || '';
+  const setProjectContext = (v) => updateActive((p) => ({ ...p, projectContext: typeof v === 'function' ? v(p.projectContext) : v }));
+
+  const handleTaskClick = (task) => {
+    setSelectedTask(selectedTask?.id === task.id ? null : task);
+  };
+
+  const handleToggleTask = (taskId, e) => {
+    e.stopPropagation();
+    toggleTask(taskId);
+  };
+
+  const handleMarkAllKA = (ka, e) => {
+    e.stopPropagation();
+    markAllKA(ka);
+  };
   const [runningKaId, setRunningKaId] = useState(null);
   const [tick, setTick]               = useState(0); // yeniden render için
 
@@ -135,7 +150,7 @@ export function KnowledgeAreasTab({
               <div className="flex items-center gap-2">
                 {!isAllComplete && (
                   <button
-                    onClick={(e) => markAllKA(ka, e)}
+                    onClick={(e) => handleMarkAllKA(ka, e)}
                     className="text-xs text-emerald-700 bg-emerald-500/10 hover:bg-emerald-100 border border-emerald-500/20 px-2 py-1 rounded-md transition-colors shrink-0"
                   >
                     Tümünü İşaretle
@@ -198,7 +213,7 @@ export function KnowledgeAreasTab({
                         onClick={() => handleTaskClick(task)}
                       >
                         <button
-                          onClick={(e) => toggleTask(task.id, e)}
+                          onClick={(e) => handleToggleTask(task.id, e)}
                           className="focus:outline-none shrink-0"
                           title="Ana Görevi Tamamla"
                         >

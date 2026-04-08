@@ -1,8 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { ListChecks, Play, Square, Clock } from 'lucide-react';
 import { EntitySelector } from '../components/EntitySelector.jsx';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useUIStore, DEFAULT_ACTION_FORM } from '../store/uiStore.js';
 
-export function ActionModal({ form, setForm, onSave, onClose, editingAction, activeProject }) {
+export function ActionModal() {
+  const activeProject  = useProjectStore(selectActiveProject);
+  const saveAction     = useProjectStore((s) => s.saveAction);
+  const actionModal    = useUIStore((s) => s.actionModal);
+  const closeActionModal = useUIStore((s) => s.closeActionModal);
+
+  const editingAction = actionModal.editingId
+    ? (activeProject?.actions || []).find((a) => a.id === actionModal.editingId)
+    : null;
+
+  const [form, setForm] = useState(
+    editingAction
+      ? { ...DEFAULT_ACTION_FORM, ...editingAction }
+      : { ...DEFAULT_ACTION_FORM }
+  );
   const [timerRunning, setTimerRunning] = useState(false);
   const [elapsed, setElapsed]           = useState(0);
 
@@ -15,7 +31,7 @@ export function ActionModal({ form, setForm, onSave, onClose, editingAction, act
   function toggleTimer() {
     if (timerRunning) {
       const added = Math.round(elapsed / 60);
-      setForm({ ...form, duration: (form.duration || 0) + added });
+      setForm(f => ({ ...f, duration: (f.duration || 0) + added }));
       setElapsed(0);
       setTimerRunning(false);
     } else {
@@ -23,6 +39,12 @@ export function ActionModal({ form, setForm, onSave, onClose, editingAction, act
       setTimerRunning(true);
     }
   }
+
+  const onSave = () => {
+    if (!form.title.trim()) return;
+    saveAction(form, actionModal.editingId);
+    closeActionModal();
+  };
 
   const pad = n => String(n).padStart(2, '0');
   const elapsedDisplay = `${pad(Math.floor(elapsed / 60))}:${pad(elapsed % 60)}`;
@@ -42,10 +64,10 @@ export function ActionModal({ form, setForm, onSave, onClose, editingAction, act
           </select>
           <input value={form.source} onChange={e => setForm({ ...form, source: e.target.value })} placeholder="Kaynak (ör. Toplantı adı)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
           <div><label className="text-xs text-slate-400 block mb-1">Bağlı Toplantı</label>
-            <EntitySelector entityType="meeting" activeProject={activeProject} value={form.sourceMeetingId || ''} onChange={id => setForm({ ...form, sourceMeetingId: id })} placeholder="Toplantı seçin…" />
+            <EntitySelector entityType="meeting" value={form.sourceMeetingId || ''} onChange={id => setForm({ ...form, sourceMeetingId: id })} placeholder="Toplantı seçin…" />
           </div>
           <div><label className="text-xs text-slate-400 block mb-1">Bağlı Gereksinim</label>
-            <EntitySelector entityType="requirement" activeProject={activeProject} value={form.linkedRequirementId || ''} onChange={id => setForm({ ...form, linkedRequirementId: id })} placeholder="Gereksinim seçin…" />
+            <EntitySelector entityType="requirement" value={form.linkedRequirementId || ''} onChange={id => setForm({ ...form, linkedRequirementId: id })} placeholder="Gereksinim seçin…" />
           </div>
           <textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Not / Açıklama (opsiyonel)" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none" />
 
@@ -77,7 +99,7 @@ export function ActionModal({ form, setForm, onSave, onClose, editingAction, act
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-5">
-          <button onClick={onClose} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+          <button onClick={closeActionModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
           <button onClick={onSave} className="px-4 py-2 text-sm bg-indigo-600/80 hover:bg-indigo-500 text-white rounded-md font-medium">Kaydet</button>
         </div>
       </div>

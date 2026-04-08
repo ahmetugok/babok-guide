@@ -1,8 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { UserPlus } from 'lucide-react';
 import { PROB_LABELS, RACI_LABELS, RACI_COLORS } from '../constants/index.js';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useUIStore, DEFAULT_STAKEHOLDER_FORM } from '../store/uiStore.js';
 
-export function StakeholderModal({ form, setForm, onSave, onClose, editingStakeholder }) {
+export function StakeholderModal() {
+  const activeProject       = useProjectStore(selectActiveProject);
+  const saveStakeholder     = useProjectStore((s) => s.saveStakeholder);
+  const stakeholderModal    = useUIStore((s) => s.stakeholderModal);
+  const closeStakeholderModal = useUIStore((s) => s.closeStakeholderModal);
+
+  const editingStakeholder = stakeholderModal.editingId
+    ? (activeProject?.stakeholders || []).find((s) => s.id === stakeholderModal.editingId)
+    : null;
+
+  const [form, setForm] = useState(
+    editingStakeholder
+      ? { ...DEFAULT_STAKEHOLDER_FORM, ...editingStakeholder }
+      : { ...DEFAULT_STAKEHOLDER_FORM }
+  );
+
+  const onSave = () => {
+    if (!form.name.trim()) return;
+    saveStakeholder(form, stakeholderModal.editingId);
+    closeStakeholderModal();
+  };
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="glass-panel p-6 shadow-2xl max-w-md w-full">
@@ -32,7 +55,7 @@ export function StakeholderModal({ form, setForm, onSave, onClose, editingStakeh
           <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Notlar..." rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
         </div>
         <div className="flex justify-end gap-3 mt-5">
-          <button onClick={onClose} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+          <button onClick={closeStakeholderModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
           <button onClick={onSave} className="px-4 py-2 text-sm bg-orange-500/100 hover:bg-orange-600 text-white rounded-md font-medium">Kaydet</button>
         </div>
       </div>

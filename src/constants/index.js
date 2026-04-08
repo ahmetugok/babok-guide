@@ -1,3 +1,9 @@
+import {
+  LayoutDashboard, LayoutGrid, Lightbulb, BookOpen, RefreshCw,
+  AlertTriangle, ListChecks, Users, BookMarked, ArrowUpRight,
+  MessageSquare, CalendarDays, FileStack, Download,
+} from 'lucide-react';
+
 // --- PURE JS CONSTANTS (no JSX) ---
 
 export const DEFAULT_PROJECT = {
@@ -40,6 +46,24 @@ export const competenciesData = [
   { id: 'comp4', name: 'İletişim Becerileri', desc: 'Sözlü, yazılı iletişim ve aktif dinleme. Yanlış anlaşılan gereksinimlerin çoğu kötü dinlemeden kaynaklanır.' },
   { id: 'comp5', name: 'Etkileşim Becerileri', desc: 'Fasilitasyon, liderlik, müzakere ve takım çalışması. Çatışan paydaşları ortak bir noktada buluşturma sanatıdır.' },
   { id: 'comp6', name: 'Araçlar ve Teknoloji', desc: 'Gereksinim yönetim araçları (Jira vb.), modelleme araçları (Visio, Miro) ve ofis yazılımlarını etkin kullanabilme.' },
+];
+
+// --- TAB NAVIGATION ITEMS ---
+export const TAB_ITEMS = [
+  { id: 'dashboard', label: 'Dashboard', Icon: LayoutDashboard },
+  { id: 'knowledge_areas', label: 'Checklistler', Icon: LayoutGrid },
+  { id: 'assumptions', label: 'Varsayimlar', Icon: Lightbulb },
+  { id: 'businessrules', label: 'Is Kurallari', Icon: BookOpen },
+  { id: 'changes', label: 'Degisiklikler', Icon: RefreshCw },
+  { id: 'risks', label: 'Riskler', Icon: AlertTriangle },
+  { id: 'actions', label: 'Aksiyonlar', Icon: ListChecks },
+  { id: 'stakeholders', label: 'Paydaşlar', Icon: Users },
+  { id: 'requirements', label: 'Gereksinimler', Icon: BookMarked },
+  { id: 'traceability', label: 'Traceability', Icon: ArrowUpRight },
+  { id: 'meetings', label: 'Toplantılar', Icon: MessageSquare },
+  { id: 'gantt', label: 'Timeline', Icon: CalendarDays },
+  { id: 'templates', label: 'Dokümanlar', Icon: FileStack },
+  { id: 'export', label: 'Export', Icon: Download },
 ];
 
 // --- BABOK DOCUMENT TEMPLATES DATA ---

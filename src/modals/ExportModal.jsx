@@ -1,28 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Download, Copy, X } from 'lucide-react';
 import { generateBABOKReport, generateBABOKSections } from '../utils/exportEngine.js';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useUIStore } from '../store/uiStore.js';
 
 const SECTION_LABELS = [
   'Özet', 'Paydaş', 'Varsayım', 'İş Kuralı',
   'Gereksinim', 'Risk', 'Değişiklik', 'Aksiyon',
 ];
 
-export function ExportModal({ isOpen, onClose, activeProject }) {
+export function ExportModal() {
+  const activeProject      = useProjectStore(selectActiveProject);
+  const showExportModal    = useUIStore((s) => s.showExportModal);
+  const setShowExportModal = useUIStore((s) => s.setShowExportModal);
+
   const [activeSection, setActiveSection] = useState(0);
   const [sections, setSections]           = useState([]);
   const [fullReport, setFullReport]       = useState('');
   const [copied, setCopied]               = useState(false);
 
   useEffect(() => {
-    if (!isOpen || !activeProject) return;
+    if (!showExportModal || !activeProject) return;
     const s = generateBABOKSections(activeProject);
     const r = generateBABOKReport(activeProject);
     setSections(s);
     setFullReport(r);
     setActiveSection(0);
-  }, [isOpen, activeProject]);
+  }, [showExportModal, activeProject]);
 
-  if (!isOpen) return null;
+  if (!showExportModal) return null;
 
   const p    = activeProject || {};
   const reqs = p.requirements   || [];
@@ -43,6 +49,8 @@ export function ExportModal({ isOpen, onClose, activeProject }) {
     a.href = url; a.download = `${p.name || 'proje'}_BABOK.md`; a.click();
     URL.revokeObjectURL(url);
   };
+
+  const onClose = () => setShowExportModal(false);
 
   const badges = [
     { label: 'Gereksinim', value: reqs.length, color: 'bg-teal-500/10 text-teal-400 border-teal-500/20' },

@@ -1,8 +1,16 @@
 import React from 'react';
 import { BookMarked, Plus, Pencil, Trash2, ArrowUpRight, CheckCircle2, X } from 'lucide-react';
 import { REQ_STATUS_COLORS } from '../constants/index.js';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useUIStore } from '../store/uiStore.js';
 
-export function RequirementsTab({ activeProject, openReqModal, deleteReq, openLinkCard, reqFilter, setReqFilter }) {
+export function RequirementsTab() {
+  const activeProject = useProjectStore(selectActiveProject);
+  const openReqModal  = useUIStore((s) => s.openReqModal);
+  const deleteReq     = useProjectStore((s) => s.deleteReq);
+  const openLinkCard  = useUIStore((s) => s.openLinkCard);
+  const reqFilter     = useUIStore((s) => s.reqFilter);
+  const setReqFilter  = useUIStore((s) => s.setReqFilter);
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
@@ -15,7 +23,7 @@ export function RequirementsTab({ activeProject, openReqModal, deleteReq, openLi
             <option value="all">Tüm Durumlar</option>
             {Object.keys(REQ_STATUS_COLORS).map(s => <option key={s} value={s}>{s}</option>)}
           </select>
-          <button onClick={() => openReqModal()} className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Gereksinim Ekle</button>
+          <button onClick={() => openReqModal(null)} className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Gereksinim Ekle</button>
         </div>
       </div>
       {activeProject.requirements.length === 0 ? (
@@ -65,7 +73,7 @@ export function RequirementsTab({ activeProject, openReqModal, deleteReq, openLi
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
                       <button onClick={() => openLinkCard('requirement', r.id)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-cyan-400 transition-colors" title="Baglantilar"><ArrowUpRight className="w-3.5 h-3.5" /></button>
-                      <button onClick={() => openReqModal(r)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => openReqModal(r.id)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
                       <button onClick={() => deleteReq(r.id)} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
                     </div>
                   </td>

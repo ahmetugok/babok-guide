@@ -2,8 +2,14 @@ import React from 'react';
 import { AlertTriangle, Plus, Pencil, Trash2, ArrowUpRight } from 'lucide-react';
 import { getRiskLevel } from '../utils.js';
 import { PROB_LABELS, IMPACT_LABELS } from '../constants/index.js';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useUIStore } from '../store/uiStore.js';
 
-export function RisksTab({ activeProject, openRiskModal, deleteRisk, openLinkCard }) {
+export function RisksTab() {
+  const activeProject = useProjectStore(selectActiveProject);
+  const openRiskModal = useUIStore((s) => s.openRiskModal);
+  const deleteRisk    = useProjectStore((s) => s.deleteRisk);
+  const openLinkCard  = useUIStore((s) => s.openLinkCard);
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -11,14 +17,14 @@ export function RisksTab({ activeProject, openRiskModal, deleteRisk, openLinkCar
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><AlertTriangle className="text-rose-500 w-5 h-5" />Risk Kayıt Defteri</h2>
           <p className="text-sm text-slate-400">{activeProject.risks.length} risk kayıtlı · {activeProject.risks.filter(r => getRiskLevel(r.probability, r.impact).label === 'Kritik').length} kritik</p>
         </div>
-        <button onClick={() => openRiskModal()} className="bg-rose-600/80 hover:bg-rose-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Risk Ekle</button>
+        <button onClick={() => openRiskModal(null)} className="bg-rose-600/80 hover:bg-rose-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Risk Ekle</button>
       </div>
       {activeProject.risks.length === 0 ? (
         <div className="text-center py-20 glass-card p-8">
           <AlertTriangle className="w-14 h-14 mx-auto mb-4 text-rose-500/20 empty-state-icon" />
           <p className="text-slate-300 font-medium">Risk radarı temiz görünüyor.</p>
           <p className="text-xs text-slate-400 mt-2">Sahada her şey yolunda mı? İlk riski tespit et.</p>
-          <button onClick={() => openRiskModal()} className="mt-4 text-xs text-rose-400 hover:text-rose-300 transition-colors">+ Risk Ekle</button>
+          <button onClick={() => openRiskModal(null)} className="mt-4 text-xs text-rose-400 hover:text-rose-300 transition-colors">+ Risk Ekle</button>
         </div>
       ) : (
         <div className="space-y-3">
@@ -44,7 +50,7 @@ export function RisksTab({ activeProject, openRiskModal, deleteRisk, openLinkCar
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <button onClick={() => openLinkCard('risk', r.id)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-cyan-400 transition-colors" title="Baglantilar"><ArrowUpRight className="w-4 h-4" /></button>
-                  <button onClick={() => openRiskModal(r)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
+                  <button onClick={() => openRiskModal(r.id)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
                   <button onClick={() => deleteRisk(r.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>

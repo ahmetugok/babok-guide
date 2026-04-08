@@ -1,10 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { PROB_LABELS, IMPACT_LABELS } from '../constants/index.js';
 import { getRiskLevel } from '../utils.js';
 import { EntitySelector } from '../components/EntitySelector.jsx';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useUIStore, DEFAULT_RISK_FORM } from '../store/uiStore.js';
 
-export function RiskModal({ form, setForm, onSave, onClose, editingRisk, activeProject }) {
+export function RiskModal() {
+  const activeProject = useProjectStore(selectActiveProject);
+  const saveRisk      = useProjectStore((s) => s.saveRisk);
+  const riskModal     = useUIStore((s) => s.riskModal);
+  const closeRiskModal = useUIStore((s) => s.closeRiskModal);
+
+  const editingRisk = riskModal.editingId
+    ? (activeProject?.risks || []).find((r) => r.id === riskModal.editingId)
+    : null;
+
+  const [form, setForm] = useState(
+    editingRisk
+      ? { ...DEFAULT_RISK_FORM, ...editingRisk }
+      : { ...DEFAULT_RISK_FORM }
+  );
+
+  const onSave = () => {
+    if (!form.title.trim()) return;
+    saveRisk(form, riskModal.editingId);
+    closeRiskModal();
+  };
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="glass-panel p-6 shadow-2xl max-w-lg w-full">
@@ -39,19 +62,19 @@ export function RiskModal({ form, setForm, onSave, onClose, editingRisk, activeP
           <textarea value={form.mitigation} onChange={e => setForm({ ...form, mitigation: e.target.value })} placeholder="Azaltma stratejisi..." rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
           <div className="grid grid-cols-2 gap-3">
             <div><label className="text-xs text-slate-400 block mb-1">Bağlı Gereksinim</label>
-              <EntitySelector entityType="requirement" activeProject={activeProject} value={form.linkedRequirementId} onChange={id => setForm({ ...form, linkedRequirementId: id })} placeholder="Gereksinim seçin…" />
+              <EntitySelector entityType="requirement" value={form.linkedRequirementId} onChange={id => setForm({ ...form, linkedRequirementId: id })} placeholder="Gereksinim seçin…" />
             </div>
             <div><label className="text-xs text-slate-400 block mb-1">Tetikleyen Varsayım</label>
-              <EntitySelector entityType="assumption" activeProject={activeProject} value={form.linkedAssumptionId} onChange={id => setForm({ ...form, linkedAssumptionId: id })} placeholder="Varsayım seçin…" />
+              <EntitySelector entityType="assumption" value={form.linkedAssumptionId} onChange={id => setForm({ ...form, linkedAssumptionId: id })} placeholder="Varsayım seçin…" />
             </div>
           </div>
           <div><label className="text-xs text-slate-400 block mb-1">Etkilenen Paydaş</label>
-            <EntitySelector entityType="stakeholder" activeProject={activeProject} value={form.affectedStakeholderId} onChange={id => setForm({ ...form, affectedStakeholderId: id })} placeholder="Paydaş seçin…" />
+            <EntitySelector entityType="stakeholder" value={form.affectedStakeholderId} onChange={id => setForm({ ...form, affectedStakeholderId: id })} placeholder="Paydaş seçin…" />
           </div>
           <input value={form.triggerDescription} onChange={e => setForm({ ...form, triggerDescription: e.target.value })} placeholder="Erken uyarı işareti (risk gerceklesirse ne olur?)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
         </div>
         <div className="flex justify-end gap-3 mt-5">
-          <button onClick={onClose} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+          <button onClick={closeRiskModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
           <button onClick={onSave} className="px-4 py-2 text-sm bg-rose-600/80 hover:bg-rose-500 text-white rounded-md font-medium">Kaydet</button>
         </div>
       </div>

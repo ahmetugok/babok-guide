@@ -1,7 +1,12 @@
 import React from 'react';
 import { RefreshCw, Plus, Pencil, Trash2 } from 'lucide-react';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useUIStore } from '../store/uiStore.js';
 
-export function ChangesTab({ activeProject, openCRModal, deleteCR }) {
+export function ChangesTab() {
+  const activeProject = useProjectStore(selectActiveProject);
+  const openCRModal   = useUIStore((s) => s.openCRModal);
+  const deleteCR      = useProjectStore((s) => s.deleteCR);
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -9,7 +14,7 @@ export function ChangesTab({ activeProject, openCRModal, deleteCR }) {
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><RefreshCw className="text-amber-400 w-5 h-5" />Degisiklik Yonetimi</h2>
           <p className="text-sm text-slate-400">{(activeProject.changeRequests || []).length} talep kayıtlı</p>
         </div>
-        <button onClick={() => openCRModal()} className="bg-amber-600/80 hover:bg-amber-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />CR Ekle</button>
+        <button onClick={() => openCRModal(null)} className="bg-amber-600/80 hover:bg-amber-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />CR Ekle</button>
       </div>
       {/* Summary counters */}
       <div className="grid grid-cols-4 gap-2">
@@ -55,7 +60,7 @@ export function ChangesTab({ activeProject, openCRModal, deleteCR }) {
                   {cr.decisionDate && <p className="text-xs text-slate-500 mt-0.5">Karar Tarihi: {cr.decisionDate}</p>}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => openCRModal(cr)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
+                  <button onClick={() => openCRModal(cr.id)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
                   <button onClick={() => deleteCR(cr.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>

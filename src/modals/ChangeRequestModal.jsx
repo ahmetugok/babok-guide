@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { EntitySelector } from '../components/EntitySelector.jsx';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useUIStore, DEFAULT_CR_FORM } from '../store/uiStore.js';
 
 const ENTITY_TYPE_MAP = {
   'Gereksinim': 'requirement',
@@ -9,7 +11,28 @@ const ENTITY_TYPE_MAP = {
   'Risk':       'risk',
 };
 
-export function ChangeRequestModal({ form, setForm, onSave, onClose, editingCR, activeProject }) {
+export function ChangeRequestModal() {
+  const activeProject = useProjectStore(selectActiveProject);
+  const saveCR        = useProjectStore((s) => s.saveCR);
+  const crModal       = useUIStore((s) => s.crModal);
+  const closeCRModal  = useUIStore((s) => s.closeCRModal);
+
+  const editingCR = crModal.editingId
+    ? (activeProject?.changeRequests || []).find((cr) => cr.id === crModal.editingId)
+    : null;
+
+  const [form, setForm] = useState(
+    editingCR
+      ? { ...DEFAULT_CR_FORM, ...editingCR }
+      : { ...DEFAULT_CR_FORM }
+  );
+
+  const onSave = () => {
+    if (!form.title.trim()) return;
+    saveCR(form, crModal.editingId);
+    closeCRModal();
+  };
+
   const entityType = ENTITY_TYPE_MAP[form.affectedEntityType] || null;
 
   return (
@@ -33,16 +56,16 @@ export function ChangeRequestModal({ form, setForm, onSave, onClose, editingCR, 
           </div>
           {entityType && (
             <div><label className="text-xs text-slate-400 block mb-1">Etkilenen Kayıt</label>
-              <EntitySelector entityType={entityType} activeProject={activeProject} value={form.affectedEntityId} onChange={id => setForm({ ...form, affectedEntityId: id })} placeholder="Kayıt seçin…" />
+              <EntitySelector entityType={entityType} value={form.affectedEntityId} onChange={id => setForm({ ...form, affectedEntityId: id })} placeholder="Kayıt seçin…" />
             </div>
           )}
           <textarea value={form.changeDescription} onChange={e => setForm({ ...form, changeDescription: e.target.value })} placeholder="Degisiklik aciklamasi*" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
           <textarea value={form.businessDriver} onChange={e => setForm({ ...form, businessDriver: e.target.value })} placeholder="Is gerekce / tetikleyici*" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
           <div><label className="text-xs text-slate-400 block mb-1">Talep Eden Paydaş</label>
-            <EntitySelector entityType="stakeholder" activeProject={activeProject} value={form.requestingStakeholderId} onChange={id => setForm({ ...form, requestingStakeholderId: id })} placeholder="Paydaş seçin…" />
+            <EntitySelector entityType="stakeholder" value={form.requestingStakeholderId} onChange={id => setForm({ ...form, requestingStakeholderId: id })} placeholder="Paydaş seçin…" />
           </div>
           <div><label className="text-xs text-slate-400 block mb-1">Bağlı Toplantı</label>
-            <EntitySelector entityType="meeting" activeProject={activeProject} value={form.linkedMeetingId} onChange={id => setForm({ ...form, linkedMeetingId: id })} placeholder="Toplantı seçin…" />
+            <EntitySelector entityType="meeting" value={form.linkedMeetingId} onChange={id => setForm({ ...form, linkedMeetingId: id })} placeholder="Toplantı seçin…" />
           </div>
           {editingCR && (
             <>
@@ -65,7 +88,7 @@ export function ChangeRequestModal({ form, setForm, onSave, onClose, editingCR, 
           )}
         </div>
         <div className="flex justify-end gap-3 mt-5">
-          <button onClick={onClose} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Iptal</button>
+          <button onClick={closeCRModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Iptal</button>
           <button onClick={onSave} className="px-4 py-2 text-sm bg-amber-600/80 hover:bg-amber-500 text-white rounded-md font-medium">Kaydet</button>
         </div>
       </div>

@@ -3,6 +3,8 @@ import { X, Upload, Key, FileText, Loader2, AlertTriangle } from 'lucide-react';
 import { readFileAsText } from '../utils/documentParser.js';
 import { analyzeDocument } from '../utils/groqClient.js';
 import { AnalysisResultsModal } from './AnalysisResultsModal.jsx';
+import { useProjectStore } from '../store/projectStore.js';
+import { useUIStore } from '../store/uiStore.js';
 
 const LOADING_STEPS = [
   'Döküman okunuyor...',
@@ -12,14 +14,20 @@ const LOADING_STEPS = [
 
 const ACCEPTED = '.pdf,.txt,.md';
 
-export function DocumentAnalysisModal({ isOpen, onClose, onApprove }) {
+export function DocumentAnalysisModal() {
+  const applyDocAnalysisResults  = useProjectStore((s) => s.applyDocAnalysisResults);
+  const showDocAnalysisModal     = useUIStore((s) => s.showDocAnalysisModal);
+  const setShowDocAnalysisModal  = useUIStore((s) => s.setShowDocAnalysisModal);
+
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('groq_api_key') || '');
-  const [loadingStep, setLoadingStep] = useState(null); // null = idle, 0|1|2 = step index
+  const [loadingStep, setLoadingStep] = useState(null);
   const [error, setError] = useState('');
   const [results, setResults] = useState(null);
   const fileInputRef = useRef(null);
+
+  const onClose = () => setShowDocAnalysisModal(false);
 
   const saveKey = (val) => {
     setApiKey(val);
@@ -59,7 +67,6 @@ export function DocumentAnalysisModal({ isOpen, onClose, onApprove }) {
       const data = await analyzeDocument(text, apiKey.trim());
 
       setLoadingStep(2);
-      // Küçük gecikme — kullanıcı "Sonuçlar hazırlanıyor..." görsün
       await new Promise((r) => setTimeout(r, 400));
 
       setResults(data);
@@ -71,13 +78,13 @@ export function DocumentAnalysisModal({ isOpen, onClose, onApprove }) {
   };
 
   const handleApprove = (selected) => {
-    onApprove(selected);
+    applyDocAnalysisResults(selected);
     setResults(null);
     setFile(null);
     onClose();
   };
 
-  if (!isOpen) return null;
+  if (!showDocAnalysisModal) return null;
 
   if (results) {
     return (

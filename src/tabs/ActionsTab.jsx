@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ListChecks, Plus, Pencil, Trash2, Clock, AlignJustify, LayoutGrid, Play, Square as StopSq } from 'lucide-react';
 import { isOverdue } from '../utils.js';
 import { startTimer, stopTimer, getActiveTimer, getAllActiveTimers } from '../utils/timeTracker.js';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useUIStore } from '../store/uiStore.js';
 
 const COLUMNS = [
   { status: 'Bekliyor',     label: 'Bekliyor',      bg: 'bg-white/3',          badge: 'bg-slate-500/20 text-slate-400' },
@@ -9,7 +11,12 @@ const COLUMNS = [
   { status: 'Tamamlandı',   label: 'Tamamlandı',    bg: 'bg-emerald-500/5',    badge: 'bg-emerald-500/20 text-emerald-400' },
 ];
 
-export function ActionsTab({ activeProject, openActionModal, deleteAction, quickUpdateActionStatus, updateActive }) {
+export function ActionsTab() {
+  const activeProject           = useProjectStore(selectActiveProject);
+  const openActionModal         = useUIStore((s) => s.openActionModal);
+  const deleteAction            = useProjectStore((s) => s.deleteAction);
+  const quickUpdateActionStatus = useProjectStore((s) => s.quickUpdateActionStatus);
+  const updateActive            = useProjectStore((s) => s.updateActive);
   const [actionView, setActionView]       = useState('kanban');
   const [draggedId, setDraggedId]         = useState(null);
   const [dragOverCol, setDragOverCol]     = useState(null);
@@ -128,7 +135,7 @@ export function ActionsTab({ activeProject, openActionModal, deleteAction, quick
               className="w-10 text-center text-[10px] bg-white/5 border border-white/10 rounded px-0.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-cyan-400/50"
             />
             <span className="text-[9px] text-slate-600">dk</span>
-            <button onClick={() => openActionModal(a)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-400 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
+            <button onClick={() => openActionModal(a.id)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-400 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
             <button onClick={() => deleteAction(a.id)} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-400 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
           </div>
         </div>
@@ -185,7 +192,7 @@ export function ActionsTab({ activeProject, openActionModal, deleteAction, quick
               <LayoutGrid className="w-3.5 h-3.5" />Kanban
             </button>
           </div>
-          <button onClick={() => openActionModal()} className="bg-indigo-600/80 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20">
+          <button onClick={() => openActionModal(null)} className="bg-indigo-600/80 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20">
             <Plus className="w-4 h-4" />Aksiyon Ekle
           </button>
         </div>
@@ -197,7 +204,7 @@ export function ActionsTab({ activeProject, openActionModal, deleteAction, quick
           <ListChecks className="w-14 h-14 mx-auto mb-4 text-violet-500/20 empty-state-icon" />
           <p className="text-slate-300 font-medium">Aksiyon listesi boş.</p>
           <p className="text-xs text-slate-400 mt-2">Yapılması gerekeni not düş, takipte kal.</p>
-          <button onClick={() => openActionModal()} className="mt-4 text-xs text-violet-400 hover:text-violet-300 transition-colors">+ Aksiyon Ekle</button>
+          <button onClick={() => openActionModal(null)} className="mt-4 text-xs text-violet-400 hover:text-violet-300 transition-colors">+ Aksiyon Ekle</button>
         </div>
       ) : actionView === 'list' ? (
 
@@ -237,7 +244,7 @@ export function ActionsTab({ activeProject, openActionModal, deleteAction, quick
                       className="w-12 text-center text-xs bg-white/5 border border-white/10 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-cyan-400/50"
                     />
                     <span className="text-[10px] text-slate-500">dk</span>
-                    <button onClick={() => openActionModal(a)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => openActionModal(a.id)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
                     <button onClick={() => deleteAction(a.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>

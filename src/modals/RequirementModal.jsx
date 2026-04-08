@@ -1,8 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BookMarked } from 'lucide-react';
 import { REQ_STATUS_COLORS } from '../constants/index.js';
+import { babokData } from '../data/babokData.jsx';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useUIStore, DEFAULT_REQ_FORM } from '../store/uiStore.js';
 
-export function RequirementModal({ form, setForm, onSave, onClose, editingReq, babokData }) {
+export function RequirementModal() {
+  const activeProject = useProjectStore(selectActiveProject);
+  const saveReq       = useProjectStore((s) => s.saveReq);
+  const reqModal      = useUIStore((s) => s.reqModal);
+  const closeReqModal = useUIStore((s) => s.closeReqModal);
+
+  const editingReq = reqModal.editingId
+    ? (activeProject?.requirements || []).find((r) => r.id === reqModal.editingId)
+    : null;
+
+  const [form, setForm] = useState(
+    editingReq
+      ? { ...DEFAULT_REQ_FORM, ...editingReq }
+      : { ...DEFAULT_REQ_FORM }
+  );
+
+  const onSave = () => {
+    if (!form.name.trim()) return;
+    saveReq(form, reqModal.editingId);
+    closeReqModal();
+  };
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="glass-panel p-6 shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
@@ -59,7 +83,7 @@ export function RequirementModal({ form, setForm, onSave, onClose, editingReq, b
           <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Not / Açıklama (opsiyonel)" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
         </div>
         <div className="flex justify-end gap-3 mt-5">
-          <button onClick={onClose} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+          <button onClick={closeReqModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
           <button onClick={onSave} className="px-4 py-2 text-sm bg-teal-600 hover:bg-teal-700 text-white rounded-md font-medium">Kaydet</button>
         </div>
       </div>

@@ -2,6 +2,8 @@ import React from 'react';
 import { ArrowUpRight, X } from 'lucide-react';
 import { PROB_LABELS, RACI_LABELS } from '../constants/index.js';
 import { getRiskLevel } from '../utils.js';
+import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useUIStore } from '../store/uiStore.js';
 
 /* ── shared helpers ──────────────────────────────────── */
 function Overlay({ onClose, children }) {
@@ -278,32 +280,36 @@ function AssumptionCard({ entity: ass, activeProject, onClose }) {
 }
 
 /* ── MAIN export ─────────────────────────────────────── */
-export function LinkCardModal({ activeProject, linkCardEntity, onClose }) {
-  if (!linkCardEntity) return null;
-  const { type, id } = linkCardEntity;
+export function LinkCardModal() {
+  const activeProject = useProjectStore(selectActiveProject);
+  const linkCardModal = useUIStore((s) => s.linkCardModal);
+  const closeLinkCard = useUIStore((s) => s.closeLinkCard);
 
-  if (type === 'requirement') {
-    const entity = (activeProject.requirements || []).find(r => r.id === id);
+  if (!linkCardModal.isOpen) return null;
+  const { entityType, entityId } = linkCardModal;
+
+  if (entityType === 'requirement') {
+    const entity = (activeProject.requirements || []).find(r => r.id === entityId);
     if (!entity) return null;
-    return <RequirementCard entity={entity} activeProject={activeProject} onClose={onClose} />;
+    return <RequirementCard entity={entity} activeProject={activeProject} onClose={closeLinkCard} />;
   }
 
-  if (type === 'stakeholder') {
-    const entity = (activeProject.stakeholders || []).find(s => s.id === id);
+  if (entityType === 'stakeholder') {
+    const entity = (activeProject.stakeholders || []).find(s => s.id === entityId);
     if (!entity) return null;
-    return <StakeholderCard entity={entity} activeProject={activeProject} onClose={onClose} />;
+    return <StakeholderCard entity={entity} activeProject={activeProject} onClose={closeLinkCard} />;
   }
 
-  if (type === 'risk') {
-    const entity = (activeProject.risks || []).find(r => r.id === id);
+  if (entityType === 'risk') {
+    const entity = (activeProject.risks || []).find(r => r.id === entityId);
     if (!entity) return null;
-    return <RiskCard entity={entity} activeProject={activeProject} onClose={onClose} />;
+    return <RiskCard entity={entity} activeProject={activeProject} onClose={closeLinkCard} />;
   }
 
-  if (type === 'assumption') {
-    const entity = (activeProject.assumptions || []).find(a => a.id === id);
+  if (entityType === 'assumption') {
+    const entity = (activeProject.assumptions || []).find(a => a.id === entityId);
     if (!entity) return null;
-    return <AssumptionCard entity={entity} activeProject={activeProject} onClose={onClose} />;
+    return <AssumptionCard entity={entity} activeProject={activeProject} onClose={closeLinkCard} />;
   }
 
   return null;
