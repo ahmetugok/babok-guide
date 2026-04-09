@@ -3,7 +3,7 @@ import { Settings, Eye, EyeOff, X } from 'lucide-react';
 import { useUIStore } from '../store/uiStore.js';
 
 export function SettingsModal() {
-  const setShowSettingsModal = useUIStore((s) => s.setShowSettingsModal);
+  const closeModal = useUIStore((s) => s.closeModal);
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('groq_api_key') || '');
   const [showKey, setShowKey] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -21,7 +21,7 @@ export function SettingsModal() {
           <h3 className="font-bold text-lg text-slate-100 flex items-center gap-2">
             <Settings className="text-teal-500 w-5 h-5" /> Ayarlar
           </h3>
-          <button onClick={() => setShowSettingsModal(false)} className="text-slate-400 hover:text-slate-200 transition-colors">
+          <button onClick={() => closeModal()} className="text-slate-400 hover:text-slate-200 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -53,7 +53,7 @@ export function SettingsModal() {
 
         <div className="flex justify-end gap-3 mt-5 items-center">
           {saved && <span className="text-xs text-teal-400">Kaydedildi ✓</span>}
-          <button onClick={() => setShowSettingsModal(false)} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">
+          <button onClick={() => closeModal()} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">
             İptal
           </button>
           <button onClick={handleSave} className="px-4 py-2 text-sm bg-teal-600 hover:bg-teal-700 text-white rounded-md font-medium">

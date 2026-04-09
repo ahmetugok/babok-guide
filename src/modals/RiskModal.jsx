@@ -9,11 +9,11 @@ import { useUIStore, DEFAULT_RISK_FORM } from '../store/uiStore.js';
 export function RiskModal() {
   const activeProject = useProjectStore(selectActiveProject);
   const saveRisk      = useProjectStore((s) => s.saveRisk);
-  const riskModal     = useUIStore((s) => s.riskModal);
-  const closeRiskModal = useUIStore((s) => s.closeRiskModal);
+  const modalData  = useUIStore((s) => s.modalData);
+  const closeModal = useUIStore((s) => s.closeModal);
 
-  const editingRisk = riskModal.editingId
-    ? (activeProject?.risks || []).find((r) => r.id === riskModal.editingId)
+  const editingRisk = modalData.editingId
+    ? (activeProject?.risks || []).find((r) => r.id === modalData.editingId)
     : null;
 
   const [form, setForm] = useState(
@@ -24,8 +24,8 @@ export function RiskModal() {
 
   const onSave = () => {
     if (!form.title.trim()) return;
-    saveRisk(form, riskModal.editingId);
-    closeRiskModal();
+    saveRisk(form, modalData.editingId);
+    closeModal();
   };
 
   return (
@@ -74,7 +74,7 @@ export function RiskModal() {
           <input value={form.triggerDescription} onChange={e => setForm({ ...form, triggerDescription: e.target.value })} placeholder="Erken uyarı işareti (risk gerceklesirse ne olur?)" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none" />
         </div>
         <div className="flex justify-end gap-3 mt-5">
-          <button onClick={closeRiskModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+          <button onClick={closeModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
           <button onClick={onSave} className="px-4 py-2 text-sm bg-rose-600/80 hover:bg-rose-500 text-white rounded-md font-medium">Kaydet</button>
         </div>
       </div>

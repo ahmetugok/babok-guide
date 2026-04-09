@@ -12,8 +12,7 @@ const SECTION_LABELS = [
 
 export function ExportModal() {
   const activeProject      = useProjectStore(selectActiveProject);
-  const showExportModal    = useUIStore((s) => s.showExportModal);
-  const setShowExportModal = useUIStore((s) => s.setShowExportModal);
+  const closeModal = useUIStore((s) => s.closeModal);
 
   const [activeSection, setActiveSection] = useState(0);
   const [sections, setSections]           = useState([]);
@@ -22,15 +21,13 @@ export function ExportModal() {
   const [docxLoading, setDocxLoading]     = useState(false);
 
   useEffect(() => {
-    if (!showExportModal || !activeProject) return;
+    if (!activeProject) return;
     const s = generateBABOKSections(activeProject);
     const r = generateBABOKReport(activeProject);
     setSections(s);
     setFullReport(r);
     setActiveSection(0);
-  }, [showExportModal, activeProject]);
-
-  if (!showExportModal) return null;
+  }, [activeProject]);
 
   const p    = activeProject || {};
   const reqs = p.requirements   || [];
@@ -58,7 +55,7 @@ export function ExportModal() {
     URL.revokeObjectURL(url);
   };
 
-  const onClose = () => setShowExportModal(false);
+  const onClose = closeModal;
 
   const badges = [
     { label: 'Gereksinim', value: reqs.length, color: 'bg-teal-500/10 text-teal-400 border-teal-500/20' },

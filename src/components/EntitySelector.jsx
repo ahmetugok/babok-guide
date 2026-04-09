@@ -16,6 +16,7 @@ const SOURCES = {
   businessRule:  { key: 'businessRules',  label: br => `${br.brId} — ${br.title}` },
   meeting:       { key: 'meetings',       label: m  => `${m.date} · ${m.topic}` },
   changeRequest: { key: 'changeRequests', label: cr => `${cr.crId} — ${cr.title}` },
+  glossaryTerm:  { key: 'glossaryTerms',  label: t  => `${t.termId} — ${t.term}` },
 };
 
 export function EntitySelector({

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ListChecks, Play, Square, Clock } from 'lucide-react';
+import { ListChecks, Play, Square, Clock, Link } from 'lucide-react';
 import { EntitySelector } from '../components/EntitySelector.jsx';
 import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
 import { useUIStore, DEFAULT_ACTION_FORM } from '../store/uiStore.js';
@@ -7,11 +7,13 @@ import { useUIStore, DEFAULT_ACTION_FORM } from '../store/uiStore.js';
 export function ActionModal() {
   const activeProject  = useProjectStore(selectActiveProject);
   const saveAction     = useProjectStore((s) => s.saveAction);
-  const actionModal    = useUIStore((s) => s.actionModal);
-  const closeActionModal = useUIStore((s) => s.closeActionModal);
+  const modalData  = useUIStore((s) => s.modalData);
+  const closeModal = useUIStore((s) => s.closeModal);
 
-  const editingAction = actionModal.editingId
-    ? (activeProject?.actions || []).find((a) => a.id === actionModal.editingId)
+  const actions = activeProject?.actions || [];
+
+  const editingAction = modalData.editingId
+    ? actions.find((a) => a.id === modalData.editingId)
     : null;
 
   const [form, setForm] = useState(
@@ -42,8 +44,8 @@ export function ActionModal() {
 
   const onSave = () => {
     if (!form.title.trim()) return;
-    saveAction(form, actionModal.editingId);
-    closeActionModal();
+    saveAction(form, modalData.editingId);
+    closeModal();
   };
 
   const pad = n => String(n).padStart(2, '0');
@@ -70,6 +72,25 @@ export function ActionModal() {
             <EntitySelector entityType="requirement" value={form.linkedRequirementId || ''} onChange={id => setForm({ ...form, linkedRequirementId: id })} placeholder="Gereksinim seçin…" />
           </div>
           <textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Not / Açıklama (opsiyonel)" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none" />
+
+          {/* Predecessor */}
+          <div>
+            <label className="text-xs text-slate-400 block mb-1 flex items-center gap-1">
+              <Link className="w-3 h-3" />Önkoşul Aksiyon (Predecessor)
+            </label>
+            <select
+              value={form.predecessorId || ''}
+              onChange={e => setForm({ ...form, predecessorId: e.target.value })}
+              className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none bg-transparent"
+            >
+              <option value="">— Yok —</option>
+              {actions
+                .filter((a) => a.id !== modalData.editingId)
+                .map((a) => (
+                  <option key={a.id} value={a.id}>{a.title}</option>
+                ))}
+            </select>
+          </div>
 
           {/* Süre girişi + canlı timer */}
           <div className="bg-white/5 rounded-xl border border-white/10 p-3 space-y-2">
@@ -99,7 +120,7 @@ export function ActionModal() {
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-5">
-          <button onClick={closeActionModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+          <button onClick={closeModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
           <button onClick={onSave} className="px-4 py-2 text-sm bg-indigo-600/80 hover:bg-indigo-500 text-white rounded-md font-medium">Kaydet</button>
         </div>
       </div>

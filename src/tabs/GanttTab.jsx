@@ -5,7 +5,7 @@ import { useUIStore } from '../store/uiStore.js';
 
 export function GanttTab() {
   const activeProject   = useProjectStore(selectActiveProject);
-  const openGanttModal  = useUIStore((s) => s.openGanttModal);
+  const openModal       = useUIStore((s) => s.openModal);
   const deleteGanttTask = useProjectStore((s) => s.deleteGanttTask);
   const ganttZoom       = useUIStore((s) => s.ganttZoom);
   const setGanttZoom    = useUIStore((s) => s.setGanttZoom);
@@ -88,7 +88,7 @@ export function GanttTab() {
               <button key={z} onClick={() => setGanttZoom(z)} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${ganttZoom === z ? 'bg-white/5 text-cyan-700 shadow-lg shadow-black/20' : 'text-slate-400 hover:text-slate-300'}`}>{label}</button>
             ))}
           </div>
-          <button onClick={() => openGanttModal(null)} className="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20">
+          <button onClick={() => openModal('gantt')} className="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20">
             <Plus className="w-4 h-4" />Görev Ekle
           </button>
         </div>
@@ -99,7 +99,7 @@ export function GanttTab() {
           <CalendarDays className="w-14 h-14 mx-auto mb-4 text-cyan-500/20 empty-state-icon" />
           <p className="text-slate-300 font-medium">Zaman çizelgesi boş.</p>
           <p className="text-xs text-slate-400 mt-2">Proje fazlarını ve görevlerini ekleyerek zaman çizelgenizi oluşturun.</p>
-          <button onClick={() => openGanttModal(null)} className="mt-4 text-xs text-cyan-400 hover:text-cyan-300 transition-colors">+ İlk Görevi Ekle</button>
+          <button onClick={() => openModal('gantt')} className="mt-4 text-xs text-cyan-400 hover:text-cyan-300 transition-colors">+ İlk Görevi Ekle</button>
         </div>
       ) : (
         <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 overflow-hidden">
@@ -136,7 +136,7 @@ export function GanttTab() {
                   </div>
                   {(() => { const te = new Date(row.task.endDate); te.setHours(0,0,0,0); const isD = te < new Date(new Date().setHours(0,0,0,0)) && (row.task.progress || 0) < 100; return isD ? <span className="text-[9px] bg-rose-100 text-rose-700 px-1 py-0.5 rounded-full font-bold ml-1 shrink-0" title={row.task.delayReason || 'Gecikmiş'}>⚠️</span> : null; })()}
                   <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
-                    <button onClick={() => openGanttModal(row.task.id)} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-600"><Pencil className="w-3 h-3" /></button>
+                    <button onClick={() => openModal('gantt', { editingId: row.task.id })} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-600"><Pencil className="w-3 h-3" /></button>
                     <button onClick={() => deleteGanttTask(row.task.id)} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-600"><Trash2 className="w-3 h-3" /></button>
                   </div>
                 </div>
@@ -185,7 +185,7 @@ export function GanttTab() {
                     <div
                       className={`absolute top-2 h-10 rounded-md shadow-lg shadow-black/20 cursor-pointer hover:brightness-110 transition-all flex flex-col justify-center px-2 overflow-hidden ${isDelayed ? 'ring-2 ring-rose-400 ring-offset-1' : ''}`}
                       style={{ left: getBarPos(row.task).left, width: getBarPos(row.task).width, backgroundColor: row.task.color || '#3b82f6' }}
-                      onClick={() => openGanttModal(row.task.id)}
+                      onClick={() => openModal('gantt', { editingId: row.task.id })}
                       title={`${row.task.name}\n${row.task.startDate} → ${row.task.endDate}\nİlerleme: %${row.task.progress || 0}${row.task.assignedTo ? '\nSorumlu: ' + row.task.assignedTo : ''}${isDelayed ? '\n⚠️ ' + delayDays + ' gün gecikme' : ''}${row.task.delayReason ? '\nNeden: ' + row.task.delayReason : ''}`}
                     >
                       {getBarPos(row.task).width > 70 && <span className="text-[10px] text-white font-medium truncate drop-shadow-lg shadow-black/20 leading-tight">{row.task.name}</span>}

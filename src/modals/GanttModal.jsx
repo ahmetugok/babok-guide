@@ -7,11 +7,11 @@ import { useUIStore, DEFAULT_GANTT_FORM } from '../store/uiStore.js';
 export function GanttModal() {
   const activeProject  = useProjectStore(selectActiveProject);
   const saveGanttTask  = useProjectStore((s) => s.saveGanttTask);
-  const ganttModal     = useUIStore((s) => s.ganttModal);
-  const closeGanttModal = useUIStore((s) => s.closeGanttModal);
+  const modalData  = useUIStore((s) => s.modalData);
+  const closeModal = useUIStore((s) => s.closeModal);
 
-  const editingGanttTask = ganttModal.editingId
-    ? (activeProject?.ganttTasks || []).find((t) => t.id === ganttModal.editingId)
+  const editingGanttTask = modalData.editingId
+    ? (activeProject?.ganttTasks || []).find((t) => t.id === modalData.editingId)
     : null;
 
   const [form, setForm] = useState(
@@ -22,8 +22,8 @@ export function GanttModal() {
 
   const onSave = () => {
     if (!form.name.trim() || !form.startDate || !form.endDate) return;
-    saveGanttTask(form, ganttModal.editingId);
-    closeGanttModal();
+    saveGanttTask(form, modalData.editingId);
+    closeModal();
   };
 
   return (
@@ -72,7 +72,7 @@ export function GanttModal() {
           )}
         </div>
         <div className="flex justify-end gap-3 mt-5">
-          <button onClick={closeGanttModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+          <button onClick={closeModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
           <button onClick={onSave} className="px-4 py-2 text-sm bg-cyan-600 hover:bg-cyan-700 text-white rounded-md font-medium">Kaydet</button>
         </div>
       </div>

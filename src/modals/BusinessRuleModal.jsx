@@ -7,11 +7,11 @@ import { useUIStore, DEFAULT_BR_FORM } from '../store/uiStore.js';
 export function BusinessRuleModal() {
   const activeProject = useProjectStore(selectActiveProject);
   const saveBR        = useProjectStore((s) => s.saveBR);
-  const brModal       = useUIStore((s) => s.brModal);
-  const closeBRModal  = useUIStore((s) => s.closeBRModal);
+  const modalData  = useUIStore((s) => s.modalData);
+  const closeModal = useUIStore((s) => s.closeModal);
 
-  const editingBR = brModal.editingId
-    ? (activeProject?.businessRules || []).find((r) => r.id === brModal.editingId)
+  const editingBR = modalData.editingId
+    ? (activeProject?.businessRules || []).find((r) => r.id === modalData.editingId)
     : null;
 
   const [form, setForm] = useState(
@@ -22,8 +22,8 @@ export function BusinessRuleModal() {
 
   const onSave = () => {
     if (!form.title.trim()) return;
-    saveBR(form, brModal.editingId);
-    closeBRModal();
+    saveBR(form, modalData.editingId);
+    closeModal();
   };
 
   return (
@@ -66,7 +66,7 @@ export function BusinessRuleModal() {
           )}
         </div>
         <div className="flex justify-end gap-3 mt-5">
-          <button onClick={closeBRModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Iptal</button>
+          <button onClick={closeModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Iptal</button>
           <button onClick={onSave} className="px-4 py-2 text-sm bg-blue-600/80 hover:bg-blue-500 text-white rounded-md font-medium">Kaydet</button>
         </div>
       </div>

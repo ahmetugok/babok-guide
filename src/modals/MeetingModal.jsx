@@ -5,7 +5,7 @@ import { useUIStore, DEFAULT_MEETING_FORM } from '../store/uiStore.js';
 
 export function MeetingModal() {
   const saveMeeting     = useProjectStore((s) => s.saveMeeting);
-  const closeMeetingModal = useUIStore((s) => s.closeMeetingModal);
+  const closeModal = useUIStore((s) => s.closeModal);
 
   const [form, setForm] = useState({ ...DEFAULT_MEETING_FORM });
   const [timerRunning, setTimerRunning] = useState(false);
@@ -32,7 +32,7 @@ export function MeetingModal() {
   const onSave = () => {
     if (!form.topic.trim()) return;
     saveMeeting(form);
-    closeMeetingModal();
+    closeModal();
   };
 
   const pad = n => String(n).padStart(2, '0');
@@ -75,7 +75,7 @@ export function MeetingModal() {
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-5">
-          <button onClick={closeMeetingModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+          <button onClick={closeModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
           <button onClick={onSave} className="px-4 py-2 text-sm bg-violet-600 hover:bg-violet-700 text-white rounded-md font-medium">Oluştur</button>
         </div>
       </div>

@@ -282,34 +282,33 @@ function AssumptionCard({ entity: ass, activeProject, onClose }) {
 /* ── MAIN export ─────────────────────────────────────── */
 export function LinkCardModal() {
   const activeProject = useProjectStore(selectActiveProject);
-  const linkCardModal = useUIStore((s) => s.linkCardModal);
-  const closeLinkCard = useUIStore((s) => s.closeLinkCard);
+  const modalData  = useUIStore((s) => s.modalData);
+  const closeModal = useUIStore((s) => s.closeModal);
 
-  if (!linkCardModal.isOpen) return null;
-  const { entityType, entityId } = linkCardModal;
+  const { entityType, entityId } = modalData;
 
   if (entityType === 'requirement') {
     const entity = (activeProject.requirements || []).find(r => r.id === entityId);
     if (!entity) return null;
-    return <RequirementCard entity={entity} activeProject={activeProject} onClose={closeLinkCard} />;
+    return <RequirementCard entity={entity} activeProject={activeProject} onClose={closeModal} />;
   }
 
   if (entityType === 'stakeholder') {
     const entity = (activeProject.stakeholders || []).find(s => s.id === entityId);
     if (!entity) return null;
-    return <StakeholderCard entity={entity} activeProject={activeProject} onClose={closeLinkCard} />;
+    return <StakeholderCard entity={entity} activeProject={activeProject} onClose={closeModal} />;
   }
 
   if (entityType === 'risk') {
     const entity = (activeProject.risks || []).find(r => r.id === entityId);
     if (!entity) return null;
-    return <RiskCard entity={entity} activeProject={activeProject} onClose={closeLinkCard} />;
+    return <RiskCard entity={entity} activeProject={activeProject} onClose={closeModal} />;
   }
 
   if (entityType === 'assumption') {
     const entity = (activeProject.assumptions || []).find(a => a.id === entityId);
     if (!entity) return null;
-    return <AssumptionCard entity={entity} activeProject={activeProject} onClose={closeLinkCard} />;
+    return <AssumptionCard entity={entity} activeProject={activeProject} onClose={closeModal} />;
   }
 
   return null;

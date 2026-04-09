@@ -92,6 +92,7 @@ export const DEFAULT_ACTION_FORM = {
   linkedRequirementId: '',
   sourceMeetingId: '',
   duration: 0,
+  predecessorId: '',              // önkoşul action ID
 };
 export const DEFAULT_STAKEHOLDER_FORM = {
   name: '',
@@ -144,6 +145,21 @@ export const DEFAULT_REQ_FORM = {
   babokKnowledgeArea: '',
   functionalType: '',
   nfCategory: '',
+  // R4 — Hiyerarşi & User Story
+  hierarchyType: 'requirement',   // 'epic' | 'story' | 'requirement'
+  parentId: '',                   // parent epic/story ID
+  userStoryRole: '',              // "As a [rol]..."
+  userStoryAction: '',            // "I want [aksiyon]..."
+  userStoryBenefit: '',           // "So that [fayda]..."
+  gherkinScenarios: [],           // [{ given, when, then }]
+  predecessorId: '',              // önkoşul req ID
+};
+
+export const DEFAULT_GLOSSARY_FORM = {
+  term: '',
+  definition: '',
+  source: '',
+  linkedRequirementId: '',
 };
 export const DEFAULT_MEETING_FORM = {
   topic: '',
@@ -161,9 +177,6 @@ export const DEFAULT_GANTT_FORM = {
   progress: 0,
   delayReason: '',
 };
-
-// ── Modal state yardımcısı ────────────────────────────────────────────────────
-const modalState = (isOpen = false, editingId = null) => ({ isOpen, editingId });
 
 export const useUIStore = create((set, get) => ({
   // ── Navigation ────────────────────────────────────────────────────────────
@@ -183,23 +196,15 @@ export const useUIStore = create((set, get) => ({
 
   // ── Project UI ────────────────────────────────────────────────────────────
   newProjectName: '',
-  showProjectModal: false,
-  showResetConfirm: false,
-  showExportModal: false,
-  showDocAnalysisModal: false,
-  showSettingsModal: false,
 
-  // ── Modal states (isOpen + editingId) ─────────────────────────────────────
-  riskModal: modalState(),
-  assumptionModal: modalState(),
-  actionModal: modalState(),
-  stakeholderModal: modalState(),
-  brModal: modalState(),
-  crModal: modalState(),
-  reqModal: modalState(),
-  meetingModal: modalState(),
-  ganttModal: modalState(),
-  linkCardModal: { isOpen: false, entityType: null, entityId: null },
+  // ── Merkezi Modal State ───────────────────────────────────────────────────
+  // activeModal: null | 'risk' | 'assumption' | 'action' | 'stakeholder' |
+  //              'businessRule' | 'changeRequest' | 'requirement' | 'meeting' |
+  //              'gantt' | 'linkCard' | 'export' | 'settings' |
+  //              'documentAnalysis' | 'aiGeneration' | 'projectCreate' | 'resetConfirm'
+  activeModal: null,
+  modalData: {},       // { editingId?, entityType?, entityId?, loading?, result?, activeTask? }
+  isContextSaved: false,
 
   // ── Meeting notes ─────────────────────────────────────────────────────────
   selectedMeetingId: null,
@@ -209,15 +214,6 @@ export const useUIStore = create((set, get) => ({
   // ── Vault ─────────────────────────────────────────────────────────────────
   vaultHandle: null,
   vaultReady: false,
-
-  // ── AI Modal ──────────────────────────────────────────────────────────────
-  aiModal: {
-    isOpen: false,
-    loading: false,
-    result: '',
-    activeTask: null,
-    isContextSaved: false,
-  },
 
   // ── Navigation actions ────────────────────────────────────────────────────
   setActiveTab: (tab) => set({ activeTab: tab, showDashboardDetail: null }),
@@ -241,52 +237,10 @@ export const useUIStore = create((set, get) => ({
 
   // ── Project UI actions ────────────────────────────────────────────────────
   setNewProjectName: (v) => set({ newProjectName: v }),
-  setShowProjectModal: (v) => set({ showProjectModal: v }),
-  setShowResetConfirm: (v) => set({ showResetConfirm: v }),
-  setShowExportModal: (v) => set({ showExportModal: v }),
-  setShowDocAnalysisModal: (v) => set({ showDocAnalysisModal: v }),
-  setShowSettingsModal: (v) => set({ showSettingsModal: v }),
 
-  // ── Modal actions ─────────────────────────────────────────────────────────
-  openRiskModal: (editingId = null) =>
-    set({ riskModal: { isOpen: true, editingId } }),
-  closeRiskModal: () => set({ riskModal: modalState() }),
-
-  openAssumptionModal: (editingId = null) =>
-    set({ assumptionModal: { isOpen: true, editingId } }),
-  closeAssumptionModal: () => set({ assumptionModal: modalState() }),
-
-  openActionModal: (editingId = null) =>
-    set({ actionModal: { isOpen: true, editingId } }),
-  closeActionModal: () => set({ actionModal: modalState() }),
-
-  openStakeholderModal: (editingId = null) =>
-    set({ stakeholderModal: { isOpen: true, editingId } }),
-  closeStakeholderModal: () => set({ stakeholderModal: modalState() }),
-
-  openBRModal: (editingId = null) =>
-    set({ brModal: { isOpen: true, editingId } }),
-  closeBRModal: () => set({ brModal: modalState() }),
-
-  openCRModal: (editingId = null) =>
-    set({ crModal: { isOpen: true, editingId } }),
-  closeCRModal: () => set({ crModal: modalState() }),
-
-  openReqModal: (editingId = null) =>
-    set({ reqModal: { isOpen: true, editingId } }),
-  closeReqModal: () => set({ reqModal: modalState() }),
-
-  openMeetingModal: () => set({ meetingModal: { isOpen: true, editingId: null } }),
-  closeMeetingModal: () => set({ meetingModal: modalState() }),
-
-  openGanttModal: (editingId = null) =>
-    set({ ganttModal: { isOpen: true, editingId } }),
-  closeGanttModal: () => set({ ganttModal: modalState() }),
-
-  openLinkCard: (entityType, entityId) =>
-    set({ linkCardModal: { isOpen: true, entityType, entityId } }),
-  closeLinkCard: () =>
-    set({ linkCardModal: { isOpen: false, entityType: null, entityId: null } }),
+  // ── Merkezi Modal actions ─────────────────────────────────────────────────
+  openModal: (modalName, data = {}) => set({ activeModal: modalName, modalData: data }),
+  closeModal: () => set({ activeModal: null, modalData: {} }),
 
   // ── Meeting notes actions ─────────────────────────────────────────────────
   setSelectedMeetingId: (id) => set({ selectedMeetingId: id }),
@@ -298,16 +252,12 @@ export const useUIStore = create((set, get) => ({
   setVaultReady: (v) => set({ vaultReady: v }),
 
   // ── AI actions ────────────────────────────────────────────────────────────
-  setIsContextSaved: (v) =>
-    set((s) => ({ aiModal: { ...s.aiModal, isContextSaved: v } })),
-
-  closeAiModal: () =>
-    set((s) => ({ aiModal: { ...s.aiModal, isOpen: false } })),
+  setIsContextSaved: (v) => set({ isContextSaved: v }),
 
   handleRegenerateAI: () => {
-    const { aiModal } = get();
-    if (aiModal.activeTask) {
-      get().handleOpenAIModal(aiModal.activeTask, '');
+    const { modalData } = get();
+    if (modalData.activeTask) {
+      get().handleOpenAIModal(modalData.activeTask, '');
     }
   },
 
@@ -324,13 +274,8 @@ export const useUIStore = create((set, get) => ({
     }
 
     set({
-      aiModal: {
-        isOpen: true,
-        loading: true,
-        result: '',
-        activeTask: task,
-        isContextSaved: get().aiModal.isContextSaved,
-      },
+      activeModal: 'aiGeneration',
+      modalData: { loading: true, result: '', activeTask: task },
     });
 
     const checklistText = task.checklist.map((c) => `- ${c.text}`).join('\n');
@@ -359,7 +304,7 @@ Yanıtın tamamı Türkçe olmalıdır.
 
     const generatedText = await generateWithGemini(prompt);
     set((s) => ({
-      aiModal: { ...s.aiModal, loading: false, result: generatedText },
+      modalData: { ...s.modalData, loading: false, result: generatedText },
     }));
   },
 }));

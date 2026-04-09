@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, LayoutGrid, Lightbulb, BookOpen, RefreshCw,
   AlertTriangle, ListChecks, Users, BookMarked, ArrowUpRight,
-  MessageSquare, CalendarDays, FileStack, Download,
+  MessageSquare, CalendarDays, FileStack, Download, BookText,
 } from 'lucide-react';
 
 // --- PURE JS CONSTANTS (no JSX) ---
@@ -10,7 +10,8 @@ export const DEFAULT_PROJECT = {
   id: 'proj_1', name: 'Ana Proje', projectContext: '',
   completedTasks: [], completedSubTasks: [],
   completedTaskDurations: {},
-  risks: [], assumptions: [], businessRules: [], changeRequests: [], actions: [], stakeholders: [], requirements: [], meetings: [], ganttTasks: [], reqCounter: 1, brCounter: 1, crCounter: 1,
+  risks: [], assumptions: [], businessRules: [], changeRequests: [], actions: [], stakeholders: [], requirements: [], meetings: [], ganttTasks: [], glossaryTerms: [],
+  reqCounter: 1, brCounter: 1, crCounter: 1, glossaryCounter: 1,
 };
 
 // Timer alanları — yeni meeting/action objeleri oluşturulurken spread edilir
@@ -62,6 +63,7 @@ export const TAB_ITEMS = [
   { id: 'traceability', label: 'Traceability', Icon: ArrowUpRight },
   { id: 'meetings', label: 'Toplantılar', Icon: MessageSquare },
   { id: 'gantt', label: 'Timeline', Icon: CalendarDays },
+  { id: 'glossary', label: 'Sözlük', Icon: BookText },
   { id: 'templates', label: 'Dokümanlar', Icon: FileStack },
   { id: 'export', label: 'Export', Icon: Download },
 ];

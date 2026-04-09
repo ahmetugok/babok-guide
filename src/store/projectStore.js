@@ -241,6 +241,36 @@ export const useProjectStore = create(
           }));
       },
 
+      // ── Glossary ─────────────────────────────────────────────────────────
+      saveGlossaryTerm: (form, editingId) => {
+        get().updateActive((p) => {
+          const cnt = p.glossaryCounter || 1;
+          return {
+            ...p,
+            glossaryTerms: editingId
+              ? (p.glossaryTerms || []).map((t) =>
+                  t.id === editingId ? { ...form, id: editingId, termId: t.termId } : t
+                )
+              : [
+                  ...(p.glossaryTerms || []),
+                  {
+                    ...form,
+                    id: generateId(),
+                    termId: `GLO-${String(cnt).padStart(3, '0')}`,
+                  },
+                ],
+            glossaryCounter: editingId ? cnt : cnt + 1,
+          };
+        });
+      },
+      deleteGlossaryTerm: (id) => {
+        if (window.confirm('Terimi silmek istiyor musunuz?'))
+          get().updateActive((p) => ({
+            ...p,
+            glossaryTerms: (p.glossaryTerms || []).filter((t) => t.id !== id),
+          }));
+      },
+
       // ── Meeting ───────────────────────────────────────────────────────────
       saveMeeting: (form) => {
         const nm = { ...form, id: generateId(), notes: [] };

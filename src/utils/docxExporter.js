@@ -199,18 +199,61 @@ function buildBusinessRules(businessRules) {
 
 function buildRequirements(requirements) {
   if (!hasData(requirements)) return [];
+  const reqMap = Object.fromEntries(requirements.map((r) => [r.id, r]));
   return [
     h2('Gereksinim Kataloğu'),
     makeTable(
-      ['REQ ID', 'Başlık', 'Açıklama', 'MoSCoW', 'Tür', 'Durum'],
-      requirements.map((r) => [
-        r.reqId || '—',
-        r.name || '—',
-        r.objective || '—',
-        r.moscow || '—',
-        r.requirementType || '—',
-        r.status || '—',
-      ])
+      ['REQ ID', 'Seviye', 'Başlık / User Story', 'MoSCoW', 'Tür', 'Durum', 'Kabul Kriteri', 'Önkoşul'],
+      requirements.map((r) => {
+        const levelLabel =
+          r.hierarchyType === 'epic'  ? 'Epic' :
+          r.hierarchyType === 'story' ? 'Story' : 'Req';
+        const nameOrStory =
+          r.hierarchyType === 'story' && r.userStoryRole
+            ? `As a ${r.userStoryRole}, I want ${r.userStoryAction || '—'}`
+            : (r.name || '—');
+        const ac =
+          (r.gherkinScenarios && r.gherkinScenarios.length > 0)
+            ? r.gherkinScenarios.map((s, i) => `[${i+1}] Given: ${s.given || '—'} | When: ${s.when || '—'} | Then: ${s.then || '—'}`).join('\n')
+            : (r.acceptanceCriteria || '—');
+        const predecessor = r.predecessorId && reqMap[r.predecessorId]
+          ? `${reqMap[r.predecessorId].reqId}`
+          : '—';
+        return [
+          r.reqId || '—',
+          levelLabel,
+          nameOrStory,
+          r.moscow || '—',
+          r.requirementType || '—',
+          r.status || '—',
+          ac,
+          predecessor,
+        ];
+      })
+    ),
+  ];
+}
+
+function buildGlossary(glossaryTerms, requirements) {
+  if (!hasData(glossaryTerms)) return [];
+  const reqs = requirements || [];
+  const sorted = [...glossaryTerms].sort((a, b) => a.term.localeCompare(b.term, 'tr'));
+  return [
+    h2('Terimler Sözlüğü'),
+    makeTable(
+      ['ID', 'Terim', 'Tanım', 'Kaynak', 'İlgili Gereksinim'],
+      sorted.map((t) => {
+        const linkedReq = t.linkedRequirementId
+          ? reqs.find((r) => r.id === t.linkedRequirementId)
+          : null;
+        return [
+          t.termId || '—',
+          t.term || '—',
+          t.definition || '—',
+          t.source || '—',
+          linkedReq ? `${linkedReq.reqId} — ${linkedReq.name}` : '—',
+        ];
+      })
     ),
   ];
 }
@@ -290,6 +333,8 @@ export async function generateDocx(project) {
     ...buildChangeRequests(project.changeRequests),
     ...(hasData(project.changeRequests) ? [spacer()] : []),
     ...buildActions(project.actions),
+    ...(hasData(project.actions) ? [spacer()] : []),
+    ...buildGlossary(project.glossaryTerms, project.requirements),
   ];
 
   const doc = new Document({

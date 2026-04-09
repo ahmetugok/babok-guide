@@ -138,6 +138,7 @@ function section5(p) {
 
   if (sorted.length === 0) return null;
 
+  const reqMap = Object.fromEntries(reqs.map((r) => [r.id, r]));
   const lines = [`## Gereksinim Kataloğu`, ``];
 
   for (const r of sorted) {
@@ -145,11 +146,37 @@ function section5(p) {
     const linkedRisks  = risks.filter(ri => ri.linkedRequirementId === r.id);
     const linkedCRs    = crs.filter(cr  => cr.affectedEntityId === r.id);
 
-    lines.push(`### ${r.reqId}: ${r.name}`);
+    // Hiyerarşi başlığı
+    const typeLabel =
+      r.hierarchyType === 'epic'  ? '🏔 Epic' :
+      r.hierarchyType === 'story' ? '📖 Story' : '📋';
+    lines.push(`### ${typeLabel} ${r.reqId}: ${r.name}`);
+
+    // User Story formatı
+    if (r.hierarchyType === 'story' && r.userStoryRole) {
+      lines.push(`> **As a** ${r.userStoryRole}, **I want** ${r.userStoryAction || '—'}, **so that** ${r.userStoryBenefit || '—'}`);
+    }
+
     lines.push(`- **Tip:** ${r.requirementType || '—'} | **Durum:** ${r.status || '—'} | **MoSCoW:** ${r.moscow || '—'}`);
     lines.push(`- **İş Hedefi:** ${r.objective || '—'}`);
     lines.push(`- **Modül/Ekran:** ${r.module || '—'}`);
-    lines.push(`- **Kabul Kriteri:** ${r.acceptanceCriteria || 'TANIMLANMAMIŞ'}`);
+
+    // Predecessor
+    if (r.predecessorId && reqMap[r.predecessorId]) {
+      const pre = reqMap[r.predecessorId];
+      lines.push(`- **Önkoşul (Predecessor):** ${pre.reqId} — ${pre.name}`);
+    }
+
+    // Kabul Kriterleri: Gherkin önce, fallback serbest metin
+    if (r.gherkinScenarios && r.gherkinScenarios.length > 0) {
+      lines.push(`- **Kabul Kriterleri (Gherkin):**`);
+      r.gherkinScenarios.forEach((s, i) => {
+        lines.push(`  - *Senaryo ${i + 1}:* **Given** ${s.given || '—'} | **When** ${s.when || '—'} | **Then** ${s.then || '—'}`);
+      });
+    } else {
+      lines.push(`- **Kabul Kriteri:** ${r.acceptanceCriteria || 'TANIMLANMAMIŞ'}`);
+    }
+
     lines.push(`- **BABOK Bilgi Alanı:** ${r.babokKnowledgeArea || '—'}`);
 
     if (linkedBRs.length > 0) {
@@ -175,6 +202,26 @@ function section5(p) {
 
     if (r.notes) lines.push(`- **Not:** ${r.notes}`);
     lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+// ── Section Glossary: Terimler Sözlüğü ──────────────────────────────────────
+function sectionGlossary(p) {
+  const terms = p.glossaryTerms || [];
+  const reqs  = p.requirements  || [];
+  if (terms.length === 0) return null;
+
+  const sorted = [...terms].sort((a, b) => a.term.localeCompare(b.term, 'tr'));
+  const lines = [`## Terimler Sözlüğü`, ``, `| ID | Terim | Tanım | Kaynak | İlgili Gereksinim |`, `|---|---|---|---|---|`];
+
+  for (const t of sorted) {
+    const linkedReq = t.linkedRequirementId
+      ? reqs.find((r) => r.id === t.linkedRequirementId)
+      : null;
+    const reqRef = linkedReq ? `${linkedReq.reqId} — ${linkedReq.name}` : '—';
+    lines.push(`| ${t.termId} | **${t.term}** | ${(t.definition || '—').replace(/\n/g, ' ')} | ${t.source || '—'} | ${reqRef} |`);
   }
 
   return lines.join('\n');
@@ -309,6 +356,7 @@ export function generateBABOKSections(project) {
     section6(p),
     section7(p),
     section8(p),
+    sectionGlossary(p),
   ].filter(Boolean);
 }
 

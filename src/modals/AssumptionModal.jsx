@@ -7,11 +7,11 @@ import { useUIStore, DEFAULT_ASSUMPTION_FORM } from '../store/uiStore.js';
 export function AssumptionModal() {
   const activeProject      = useProjectStore(selectActiveProject);
   const saveAssumption     = useProjectStore((s) => s.saveAssumption);
-  const assumptionModal    = useUIStore((s) => s.assumptionModal);
-  const closeAssumptionModal = useUIStore((s) => s.closeAssumptionModal);
+  const modalData  = useUIStore((s) => s.modalData);
+  const closeModal = useUIStore((s) => s.closeModal);
 
-  const editingAssumption = assumptionModal.editingId
-    ? (activeProject?.assumptions || []).find((a) => a.id === assumptionModal.editingId)
+  const editingAssumption = modalData.editingId
+    ? (activeProject?.assumptions || []).find((a) => a.id === modalData.editingId)
     : null;
 
   const [form, setForm] = useState(
@@ -22,8 +22,8 @@ export function AssumptionModal() {
 
   const onSave = () => {
     if (!form.title.trim()) return;
-    saveAssumption(form, assumptionModal.editingId);
-    closeAssumptionModal();
+    saveAssumption(form, modalData.editingId);
+    closeModal();
   };
 
   return (
@@ -70,7 +70,7 @@ export function AssumptionModal() {
           <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Not (opsiyonel)" rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
         </div>
         <div className="flex justify-end gap-3 mt-5">
-          <button onClick={closeAssumptionModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Iptal</button>
+          <button onClick={closeModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Iptal</button>
           <button onClick={onSave} className="px-4 py-2 text-sm bg-amber-600/80 hover:bg-amber-500 text-white rounded-md font-medium">Kaydet</button>
         </div>
       </div>

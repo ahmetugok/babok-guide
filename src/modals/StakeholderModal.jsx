@@ -7,11 +7,11 @@ import { useUIStore, DEFAULT_STAKEHOLDER_FORM } from '../store/uiStore.js';
 export function StakeholderModal() {
   const activeProject       = useProjectStore(selectActiveProject);
   const saveStakeholder     = useProjectStore((s) => s.saveStakeholder);
-  const stakeholderModal    = useUIStore((s) => s.stakeholderModal);
-  const closeStakeholderModal = useUIStore((s) => s.closeStakeholderModal);
+  const modalData  = useUIStore((s) => s.modalData);
+  const closeModal = useUIStore((s) => s.closeModal);
 
-  const editingStakeholder = stakeholderModal.editingId
-    ? (activeProject?.stakeholders || []).find((s) => s.id === stakeholderModal.editingId)
+  const editingStakeholder = modalData.editingId
+    ? (activeProject?.stakeholders || []).find((s) => s.id === modalData.editingId)
     : null;
 
   const [form, setForm] = useState(
@@ -22,8 +22,8 @@ export function StakeholderModal() {
 
   const onSave = () => {
     if (!form.name.trim()) return;
-    saveStakeholder(form, stakeholderModal.editingId);
-    closeStakeholderModal();
+    saveStakeholder(form, modalData.editingId);
+    closeModal();
   };
 
   return (
@@ -55,7 +55,7 @@ export function StakeholderModal() {
           <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Notlar..." rows="2" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none" />
         </div>
         <div className="flex justify-end gap-3 mt-5">
-          <button onClick={closeStakeholderModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
+          <button onClick={closeModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">İptal</button>
           <button onClick={onSave} className="px-4 py-2 text-sm bg-orange-500/100 hover:bg-orange-600 text-white rounded-md font-medium">Kaydet</button>
         </div>
       </div>

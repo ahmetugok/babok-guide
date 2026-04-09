@@ -14,11 +14,11 @@ const ENTITY_TYPE_MAP = {
 export function ChangeRequestModal() {
   const activeProject = useProjectStore(selectActiveProject);
   const saveCR        = useProjectStore((s) => s.saveCR);
-  const crModal       = useUIStore((s) => s.crModal);
-  const closeCRModal  = useUIStore((s) => s.closeCRModal);
+  const modalData  = useUIStore((s) => s.modalData);
+  const closeModal = useUIStore((s) => s.closeModal);
 
-  const editingCR = crModal.editingId
-    ? (activeProject?.changeRequests || []).find((cr) => cr.id === crModal.editingId)
+  const editingCR = modalData.editingId
+    ? (activeProject?.changeRequests || []).find((cr) => cr.id === modalData.editingId)
     : null;
 
   const [form, setForm] = useState(
@@ -29,8 +29,8 @@ export function ChangeRequestModal() {
 
   const onSave = () => {
     if (!form.title.trim()) return;
-    saveCR(form, crModal.editingId);
-    closeCRModal();
+    saveCR(form, modalData.editingId);
+    closeModal();
   };
 
   const entityType = ENTITY_TYPE_MAP[form.affectedEntityType] || null;
@@ -88,7 +88,7 @@ export function ChangeRequestModal() {
           )}
         </div>
         <div className="flex justify-end gap-3 mt-5">
-          <button onClick={closeCRModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Iptal</button>
+          <button onClick={closeModal} className="px-4 py-2 text-sm text-slate-400 hover:bg-white/10 rounded-md">Iptal</button>
           <button onClick={onSave} className="px-4 py-2 text-sm bg-amber-600/80 hover:bg-amber-500 text-white rounded-md font-medium">Kaydet</button>
         </div>
       </div>

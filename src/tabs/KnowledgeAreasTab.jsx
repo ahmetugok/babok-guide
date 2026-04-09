@@ -18,7 +18,7 @@ export function KnowledgeAreasTab({ babokData }) {
   const selectedTask      = useUIStore((s) => s.selectedTask);
   const setSelectedTask   = useUIStore((s) => s.setSelectedTask);
   const setIsContextSaved = useUIStore((s) => s.setIsContextSaved);
-  const isContextSaved    = useUIStore((s) => s.aiModal.isContextSaved);
+  const isContextSaved    = useUIStore((s) => s.isContextSaved);
   const handleOpenAIModal = useUIStore((s) => s.handleOpenAIModal);
 
   const completedTasks    = activeProject?.completedTasks || [];

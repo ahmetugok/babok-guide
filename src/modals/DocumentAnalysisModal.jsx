@@ -16,9 +16,8 @@ const ACCEPTED = '.pdf,.txt,.md';
 
 export function DocumentAnalysisModal() {
   const applyDocAnalysisResults  = useProjectStore((s) => s.applyDocAnalysisResults);
-  const showDocAnalysisModal     = useUIStore((s) => s.showDocAnalysisModal);
-  const setShowDocAnalysisModal  = useUIStore((s) => s.setShowDocAnalysisModal);
-  const setShowSettingsModal     = useUIStore((s) => s.setShowSettingsModal);
+  const openModal  = useUIStore((s) => s.openModal);
+  const closeModal = useUIStore((s) => s.closeModal);
 
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
@@ -27,7 +26,7 @@ export function DocumentAnalysisModal() {
   const [results, setResults] = useState(null);
   const fileInputRef = useRef(null);
 
-  const onClose = () => setShowDocAnalysisModal(false);
+  const onClose = closeModal;
 
   const handleFile = (f) => {
     if (!f) return;
@@ -54,7 +53,7 @@ export function DocumentAnalysisModal() {
     const key = localStorage.getItem('groq_api_key') || '';
     if (!key.trim()) {
       onClose();
-      setShowSettingsModal(true);
+      openModal('settings');
       return;
     }
 
@@ -83,8 +82,6 @@ export function DocumentAnalysisModal() {
     setFile(null);
     onClose();
   };
-
-  if (!showDocAnalysisModal) return null;
 
   if (results) {
     return (

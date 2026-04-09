@@ -23,7 +23,7 @@ export function DashboardTab({ RingChart }) {
   const activeProject   = useProjectStore(selectActiveProject);
   const setActiveTab    = useUIStore((s) => s.setActiveTab);
   const setExpandedKA   = useUIStore((s) => s.setExpandedKA);
-  const openExportModal = useUIStore((s) => s.setShowExportModal);
+  const openModal = useUIStore((s) => s.openModal);
 
   const completedTasks    = activeProject?.completedTasks || [];
   const completedSubTasks = activeProject?.completedSubTasks || [];
@@ -63,7 +63,7 @@ export function DashboardTab({ RingChart }) {
         <div className="absolute -top-16 -right-16 w-48 h-48 bg-cyan-500/5 rounded-full blur-3xl" />
         {/* Export icon — top right */}
         <button
-          onClick={() => openExportModal(true)}
+          onClick={() => openModal('export')}
           title="Raporu Dışa Aktar"
           className="absolute top-3 right-3 p-1.5 rounded-lg text-slate-500 hover:text-cyan-400 hover:bg-white/10 transition-colors z-10"
         >

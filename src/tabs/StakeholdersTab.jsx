@@ -6,9 +6,8 @@ import { useUIStore } from '../store/uiStore.js';
 
 export function StakeholdersTab() {
   const activeProject         = useProjectStore(selectActiveProject);
-  const openStakeholderModal  = useUIStore((s) => s.openStakeholderModal);
-  const deleteStakeholder     = useProjectStore((s) => s.deleteStakeholder);
-  const openLinkCard          = useUIStore((s) => s.openLinkCard);
+  const openModal         = useUIStore((s) => s.openModal);
+  const deleteStakeholder = useProjectStore((s) => s.deleteStakeholder);
   const focusedStakeholderId  = useUIStore((s) => s.focusedStakeholderId);
   const setFocusedStakeholderId = useUIStore((s) => s.setFocusedStakeholderId);
   return (
@@ -18,7 +17,7 @@ export function StakeholdersTab() {
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><UserPlus className="text-orange-500 w-5 h-5" />Paydaş Yönetimi</h2>
           <p className="text-sm text-slate-400">{activeProject.stakeholders.length} paydaş kayıtlı</p>
         </div>
-        <button onClick={() => openStakeholderModal(null)} className="bg-orange-500/100 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Paydaş Ekle</button>
+        <button onClick={() => openModal('stakeholder')} className="bg-orange-500/100 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Paydaş Ekle</button>
       </div>
       {activeProject.stakeholders.length > 0 && (
         <div className="bg-white/5 rounded-xl border border-white/10 p-5 shadow-lg shadow-black/20">
@@ -129,8 +128,8 @@ export function StakeholdersTab() {
                 {s.notes && <p className="text-xs text-slate-400 mt-1 italic">{s.notes}</p>}
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <button onClick={() => openLinkCard('stakeholder', s.id)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-cyan-400 transition-colors" title="Baglantilar"><ArrowUpRight className="w-4 h-4" /></button>
-                <button onClick={() => openStakeholderModal(s.id)} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
+                <button onClick={() => openModal('linkCard', { entityType: 'stakeholder', entityId: s.id })} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-cyan-400 transition-colors" title="Baglantilar"><ArrowUpRight className="w-4 h-4" /></button>
+                <button onClick={() => openModal('stakeholder', { editingId: s.id })} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
                 <button onClick={() => deleteStakeholder(s.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
