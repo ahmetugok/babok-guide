@@ -4,8 +4,9 @@ import { DEFAULT_PROJECT } from '../constants/index.js';
 import { generateId } from '../utils.js';
 
 // Custom storage — mevcut localStorage key'lerini korur, veri kaybı olmaz
+// Zustand v5: PersistStorage interface — getItem nesne döndürür, setItem nesne alır
 const babokStorage = {
-  getItem: () => {
+  getItem: (_name) => {
     try {
       const raw = localStorage.getItem('babok_v2_projects');
       if (raw) {
@@ -14,7 +15,7 @@ const babokStorage = {
           localStorage.getItem('babok_v2_activeProjectId') ||
           projects[0]?.id ||
           'proj_1';
-        return JSON.stringify({ state: { projects, activeProjectId }, version: 0 });
+        return { state: { projects, activeProjectId }, version: 0 };
       }
       // Legacy migration (babok_project_tasks vb.)
       const projects = [
@@ -29,19 +30,18 @@ const babokStorage = {
           projectContext: localStorage.getItem('babok_project_context') || '',
         },
       ];
-      return JSON.stringify({ state: { projects, activeProjectId: 'proj_1' }, version: 0 });
+      return { state: { projects, activeProjectId: 'proj_1' }, version: 0 };
     } catch {
       return null;
     }
   },
   setItem: (_name, value) => {
     try {
-      const parsed = JSON.parse(value);
-      localStorage.setItem('babok_v2_projects', JSON.stringify(parsed.state.projects));
-      if (parsed.state.activeProjectId !== undefined) {
+      localStorage.setItem('babok_v2_projects', JSON.stringify(value.state.projects));
+      if (value.state.activeProjectId !== undefined) {
         localStorage.setItem(
           'babok_v2_activeProjectId',
-          parsed.state.activeProjectId || ''
+          value.state.activeProjectId || ''
         );
       }
     } catch {}
