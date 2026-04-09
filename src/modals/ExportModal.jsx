@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Download, Copy, X } from 'lucide-react';
+import { Download, Copy, X, Loader2 } from 'lucide-react';
 import { generateBABOKReport, generateBABOKSections } from '../utils/exportEngine.js';
+import { generateDocx } from '../utils/docxExporter.js';
 import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
 import { useUIStore } from '../store/uiStore.js';
 
@@ -18,6 +19,7 @@ export function ExportModal() {
   const [sections, setSections]           = useState([]);
   const [fullReport, setFullReport]       = useState('');
   const [copied, setCopied]               = useState(false);
+  const [docxLoading, setDocxLoading]     = useState(false);
 
   useEffect(() => {
     if (!showExportModal || !activeProject) return;
@@ -40,6 +42,12 @@ export function ExportModal() {
     await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 1800);
+  };
+
+  const downloadDocx = async () => {
+    setDocxLoading(true);
+    try { await generateDocx(p); }
+    finally { setDocxLoading(false); }
   };
 
   const download = () => {
@@ -132,6 +140,14 @@ export function ExportModal() {
           >
             <Download className="w-3.5 h-3.5" />
             .md Olarak İndir
+          </button>
+          <button
+            onClick={downloadDocx}
+            disabled={docxLoading}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-indigo-600/80 hover:bg-indigo-500 text-white rounded-lg transition-colors shadow-lg shadow-indigo-900/30 disabled:opacity-60"
+          >
+            {docxLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+            .docx Olarak İndir
           </button>
           <button
             onClick={onClose}
