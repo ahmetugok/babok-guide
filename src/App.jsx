@@ -5,7 +5,7 @@ import {
   Sparkles, X, Copy, Loader2,
   AlertTriangle, Trash2, Plus, Download, ListChecks,
   FolderPlus, RotateCcw,
-  BookMarked, Upload, Moon, Sun
+  BookMarked, Upload, Moon, Sun, Settings
 } from 'lucide-react';
 
 import { DEFAULT_PROJECT, TAB_ITEMS } from './constants/index.js';
@@ -41,6 +41,7 @@ import { MeetingModal } from './modals/MeetingModal.jsx';
 import { GanttModal } from './modals/GanttModal.jsx';
 import { ExportModal } from './modals/ExportModal.jsx';
 import { DocumentAnalysisModal } from './modals/DocumentAnalysisModal.jsx';
+import { SettingsModal } from './modals/SettingsModal.jsx';
 
 export default function App() {
   // ── Store reads ──────────────────────────────────────────────────────────
@@ -59,7 +60,8 @@ export default function App() {
     brModal, crModal, reqModal, meetingModal, ganttModal, linkCardModal,
     aiModal,
     setActiveTab, toggleDarkMode, setShowBackupMenu, setShowFabMenu, setShowMobileMenu,
-    setShowProjectModal, setShowResetConfirm, setShowExportModal, setShowDocAnalysisModal,
+    setShowProjectModal, setShowResetConfirm, setShowExportModal, setShowDocAnalysisModal, setShowSettingsModal,
+    showSettingsModal,
     setNewProjectName, setVaultHandle, setVaultReady,
     openRiskModal, openReqModal, openActionModal,
     closeAiModal, handleRegenerateAI,
@@ -314,6 +316,9 @@ export default function App() {
             </div>
             {/* Right: Theme Toggle + Progress Ring */}
             <div className="flex items-center gap-3">
+              <button onClick={() => setShowSettingsModal(true)} className="theme-toggle" title="Ayarlar">
+                <Settings className="w-[18px] h-[18px]" />
+              </button>
               <button onClick={toggleDarkMode} className="theme-toggle" title={darkMode ? 'Açık Tema' : 'Koyu Tema'}>
                 {darkMode ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
               </button>
@@ -469,6 +474,9 @@ export default function App() {
 
         {/* DOCUMENT ANALYSIS MODAL */}
         <DocumentAnalysisModal />
+
+        {/* SETTINGS MODAL */}
+        {showSettingsModal && <SettingsModal />}
 
       </div>{/* end lg:ml-[78px] */}
 

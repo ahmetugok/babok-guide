@@ -187,6 +187,7 @@ export const useUIStore = create((set, get) => ({
   showResetConfirm: false,
   showExportModal: false,
   showDocAnalysisModal: false,
+  showSettingsModal: false,
 
   // ── Modal states (isOpen + editingId) ─────────────────────────────────────
   riskModal: modalState(),
@@ -244,6 +245,7 @@ export const useUIStore = create((set, get) => ({
   setShowResetConfirm: (v) => set({ showResetConfirm: v }),
   setShowExportModal: (v) => set({ showExportModal: v }),
   setShowDocAnalysisModal: (v) => set({ showDocAnalysisModal: v }),
+  setShowSettingsModal: (v) => set({ showSettingsModal: v }),
 
   // ── Modal actions ─────────────────────────────────────────────────────────
   openRiskModal: (editingId = null) =>

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { X, Upload, Key, FileText, Loader2, AlertTriangle } from 'lucide-react';
+import { X, Upload, FileText, Loader2, AlertTriangle } from 'lucide-react';
 import { readFileAsText } from '../utils/documentParser.js';
 import { analyzeDocument } from '../utils/groqClient.js';
 import { AnalysisResultsModal } from './AnalysisResultsModal.jsx';
@@ -18,21 +18,16 @@ export function DocumentAnalysisModal() {
   const applyDocAnalysisResults  = useProjectStore((s) => s.applyDocAnalysisResults);
   const showDocAnalysisModal     = useUIStore((s) => s.showDocAnalysisModal);
   const setShowDocAnalysisModal  = useUIStore((s) => s.setShowDocAnalysisModal);
+  const setShowSettingsModal     = useUIStore((s) => s.setShowSettingsModal);
 
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('groq_api_key') || '');
   const [loadingStep, setLoadingStep] = useState(null);
   const [error, setError] = useState('');
   const [results, setResults] = useState(null);
   const fileInputRef = useRef(null);
 
   const onClose = () => setShowDocAnalysisModal(false);
-
-  const saveKey = (val) => {
-    setApiKey(val);
-    localStorage.setItem('groq_api_key', val);
-  };
 
   const handleFile = (f) => {
     if (!f) return;
@@ -56,7 +51,12 @@ export function DocumentAnalysisModal() {
 
   const startAnalysis = async () => {
     if (!file) { setError('Lütfen bir dosya seçin.'); return; }
-    if (!apiKey.trim()) { setError('Lütfen Groq API anahtarınızı girin.'); return; }
+    const key = localStorage.getItem('groq_api_key') || '';
+    if (!key.trim()) {
+      onClose();
+      setShowSettingsModal(true);
+      return;
+    }
 
     setError('');
     try {
@@ -64,7 +64,7 @@ export function DocumentAnalysisModal() {
       const text = await readFileAsText(file);
 
       setLoadingStep(1);
-      const data = await analyzeDocument(text, apiKey.trim());
+      const data = await analyzeDocument(text, key.trim());
 
       setLoadingStep(2);
       await new Promise((r) => setTimeout(r, 400));
@@ -153,22 +153,6 @@ export function DocumentAnalysisModal() {
             )}
           </div>
 
-          {/* API Key */}
-          <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1.5">
-              <Key className="w-3.5 h-3.5" /> Groq API Anahtarı
-            </label>
-            <input
-              type="password"
-              value={apiKey}
-              onChange={(e) => saveKey(e.target.value)}
-              placeholder="gsk_..."
-              disabled={isLoading}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 disabled:opacity-50"
-            />
-            <p className="text-xs text-slate-500 mt-1">Tarayıcınızda saklanır, sunucuya gönderilmez.</p>
-          </div>
-
           {/* Error */}
           {error && (
             <div className="flex items-start gap-2 bg-rose-500/10 border border-rose-500/20 rounded-lg p-3">
@@ -205,7 +189,7 @@ export function DocumentAnalysisModal() {
           </button>
           <button
             onClick={startAnalysis}
-            disabled={isLoading || !file || !apiKey.trim()}
+            disabled={isLoading || !file}
             className="px-5 py-2 rounded-lg text-sm font-medium bg-violet-600 hover:bg-violet-500 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
