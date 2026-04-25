@@ -135,7 +135,7 @@ export function ActionsTab() {
             />
             <span className="text-[9px] text-slate-600">dk</span>
             <button onClick={() => openModal('action', { editingId: a.id })} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-400 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
-            <button onClick={() => deleteAction(a.id)} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-400 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+            <button onClick={() => { if (window.confirm('Aksiyonu silmek istiyor musunuz?')) deleteAction(a.id); }} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-400 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
           </div>
         </div>
         <p className="text-xs text-slate-500 mb-2">
@@ -244,7 +244,7 @@ export function ActionsTab() {
                     />
                     <span className="text-[10px] text-slate-500">dk</span>
                     <button onClick={() => openModal('action', { editingId: a.id })} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => deleteAction(a.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => { if (window.confirm('Aksiyonu silmek istiyor musunuz?')) deleteAction(a.id); }} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
                 {a.notes && (

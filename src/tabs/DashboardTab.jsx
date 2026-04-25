@@ -6,7 +6,7 @@ import {
 import { getRiskLevel, isOverdue } from '../utils.js';
 import { REQ_STATUS_COLORS } from '../constants/index.js';
 import { formatDuration } from '../utils/timeTracker.js';
-import { babokData } from '../data/babokData.jsx';
+import { babokData, TOTAL_TASKS, TOTAL_SUBTASKS } from '../data/babokData.jsx';
 import { useProjectStore } from '../store/projectStore.js';
 import {
   selectActiveCompletedTasks, selectActiveCompletedSubTasks, selectActiveCompletedTaskDurs,
@@ -15,6 +15,7 @@ import {
   selectActiveGanttTasks, selectActiveName,
 } from '../store/selectors.js';
 import { useUIStore } from '../store/uiStore.js';
+import { RingChart } from '../components/RingChart.jsx';
 
 const KA_COLORS = {
   ka1: { bar: '#a855f7', bg: 'bg-purple-500/10',  text: 'text-purple-400'  },
@@ -25,7 +26,7 @@ const KA_COLORS = {
   ka6: { bar: '#10b981', bg: 'bg-emerald-500/10', text: 'text-emerald-400' },
 };
 
-export function DashboardTab({ RingChart }) {
+export function DashboardTab() {
   const completedTasks        = useProjectStore(selectActiveCompletedTasks);
   const completedSubTasks     = useProjectStore(selectActiveCompletedSubTasks);
   const completedTaskDurations = useProjectStore(selectActiveCompletedTaskDurs);
@@ -42,9 +43,7 @@ export function DashboardTab({ RingChart }) {
   const setExpandedKA   = useUIStore((s) => s.setExpandedKA);
   const openModal = useUIStore((s) => s.openModal);
 
-  const totalTasks        = babokData.reduce((acc, ka) => acc + ka.tasks.length, 0);
-  const totalSubTasks     = babokData.reduce((acc, ka) => acc + ka.tasks.reduce((a, t) => a + t.checklist.length, 0), 0);
-  const overallProgress   = Math.round(((completedTasks.length + completedSubTasks.length) / (totalTasks + totalSubTasks)) * 100) || 0;
+  const overallProgress   = Math.round(((completedTasks.length + completedSubTasks.length) / (TOTAL_TASKS + TOTAL_SUBTASKS)) * 100) || 0;
   // ── Zaman analizi hesaplamaları ──────────────────────────────────────────
   const totalMeetingMinutes  = (meetings  || []).reduce((s, m) => s + (m.duration  || 0), 0);
   const totalActionMinutes   = (actions   || []).reduce((s, a) => s + (a.duration  || 0), 0);
@@ -85,7 +84,7 @@ export function DashboardTab({ RingChart }) {
         <div className="flex items-center gap-5">
           {/* Ring Chart */}
           <div className="relative flex-shrink-0">
-            <RingChart progress={overallProgress} size={110} stroke={10} />
+            <RingChart progress={overallProgress} label={projectName} size={110} stroke={10} />
           </div>
           {/* Stats Grid */}
           <div className="flex-1 min-w-0">

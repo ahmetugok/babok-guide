@@ -94,7 +94,7 @@ export function GlossaryTab() {
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => deleteGlossaryTerm(t.id)}
+                            onClick={() => { if (window.confirm('Terimi silmek istiyor musunuz?')) deleteGlossaryTerm(t.id); }}
                             className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-500 transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5" />

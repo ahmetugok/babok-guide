@@ -311,3 +311,6 @@ export const babokData = [
     ]
   }
 ];
+
+export const TOTAL_TASKS    = babokData.reduce((acc, ka) => acc + ka.tasks.length, 0);
+export const TOTAL_SUBTASKS = babokData.reduce((acc, ka) => acc + ka.tasks.reduce((a, t) => a + t.checklist.length, 0), 0);

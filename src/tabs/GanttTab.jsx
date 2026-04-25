@@ -137,7 +137,7 @@ export function GanttTab() {
                   {(() => { const te = new Date(row.task.endDate); te.setHours(0,0,0,0); const isD = te < new Date(new Date().setHours(0,0,0,0)) && (row.task.progress || 0) < 100; return isD ? <span className="text-[9px] bg-rose-100 text-rose-700 px-1 py-0.5 rounded-full font-bold ml-1 shrink-0" title={row.task.delayReason || 'Gecikmiş'}>⚠️</span> : null; })()}
                   <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
                     <button onClick={() => openModal('gantt', { editingId: row.task.id })} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-600"><Pencil className="w-3 h-3" /></button>
-                    <button onClick={() => deleteGanttTask(row.task.id)} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-600"><Trash2 className="w-3 h-3" /></button>
+                    <button onClick={() => { if (window.confirm('Görevi silmek istiyor musunuz?')) deleteGanttTask(row.task.id); }} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-600"><Trash2 className="w-3 h-3" /></button>
                   </div>
                 </div>
               ))}

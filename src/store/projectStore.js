@@ -2,6 +2,80 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { DEFAULT_PROJECT } from '../constants/index.js';
 import { generateId } from '../utils.js';
+import {
+  DEFAULT_REQ_FORM, DEFAULT_RISK_FORM, DEFAULT_ASSUMPTION_FORM,
+  DEFAULT_BR_FORM, DEFAULT_STAKEHOLDER_FORM, DEFAULT_ACTION_FORM,
+} from './uiStore.js';
+
+// ── Entity factory helpers — used by applyDocAnalysisResults and addNote ───
+const buildReqFromAnalysis = (r, counter) => ({
+  ...DEFAULT_REQ_FORM,
+  id: generateId(),
+  reqId: `REQ-${String(counter).padStart(3, '0')}`,
+  name: r.title,
+  objective: r.description,
+  moscow: r.priority === 'Yüksek' ? 'M' : r.priority === 'Orta' ? 'S' : 'C',
+  requirementType: r.type || '',
+});
+
+const buildRiskFromAnalysis = (r) => ({
+  ...DEFAULT_RISK_FORM,
+  id: generateId(),
+  title: r.title,
+  probability: r.probability || 2,
+  impact: r.impact || 2,
+  mitigation: r.description,
+});
+
+const buildAssumptionFromAnalysis = (a, type = 'Varsayim') => ({
+  ...DEFAULT_ASSUMPTION_FORM,
+  id: generateId(),
+  title: a.title,
+  content: a.description,
+  type,
+});
+
+const buildBRFromAnalysis = (br, counter) => ({
+  ...DEFAULT_BR_FORM,
+  id: generateId(),
+  brId: `BR-${String(counter).padStart(3, '0')}`,
+  title: br.title,
+  ruleText: br.description,
+  source: 'Döküman Analizi',
+});
+
+const buildStakeholderFromAnalysis = (s) => ({
+  ...DEFAULT_STAKEHOLDER_FORM,
+  id: generateId(),
+  name: s.name,
+  role: s.role,
+  department: s.department,
+});
+
+// ── addNote entity creators ────────────────────────────────────────────────
+const createActionFromNote = (meetingId, topic, text) => ({
+  ...DEFAULT_ACTION_FORM,
+  id: generateId(),
+  title: text,
+  source: topic,
+  sourceMeetingId: meetingId,
+});
+
+const createReqFromNote = (meetingId, text, counter) => ({
+  ...DEFAULT_REQ_FORM,
+  id: generateId(),
+  reqId: `REQ-${String(counter).padStart(3, '0')}`,
+  name: text,
+  sourceMeetingId: meetingId,
+});
+
+const createAssumptionFromNote = (meetingId, text) => ({
+  ...DEFAULT_ASSUMPTION_FORM,
+  id: generateId(),
+  title: text,
+  type: 'Varsayim',
+  sourceMeetingId: meetingId,
+});
 
 // Custom storage — mevcut localStorage key'lerini korur, veri kaybı olmaz
 // Zustand v5: PersistStorage interface — getItem nesne döndürür, setItem nesne alır
@@ -90,8 +164,7 @@ export const useProjectStore = create(
         }));
       },
       deleteRisk: (id) => {
-        if (window.confirm('Riski silmek istiyor musunuz?'))
-          get().updateActive((p) => ({ ...p, risks: p.risks.filter((r) => r.id !== id) }));
+        get().updateActive((p) => ({ ...p, risks: p.risks.filter((r) => r.id !== id) }));
       },
 
       // ── Assumption ────────────────────────────────────────────────────────
@@ -104,11 +177,10 @@ export const useProjectStore = create(
         }));
       },
       deleteAssumption: (id) => {
-        if (window.confirm('Varsayimi silmek istiyor musunuz?'))
-          get().updateActive((p) => ({
-            ...p,
-            assumptions: p.assumptions.filter((a) => a.id !== id),
-          }));
+        get().updateActive((p) => ({
+          ...p,
+          assumptions: p.assumptions.filter((a) => a.id !== id),
+        }));
       },
 
       // ── Action ────────────────────────────────────────────────────────────
@@ -121,8 +193,7 @@ export const useProjectStore = create(
         }));
       },
       deleteAction: (id) => {
-        if (window.confirm('Aksiyonu silmek istiyor musunuz?'))
-          get().updateActive((p) => ({ ...p, actions: p.actions.filter((a) => a.id !== id) }));
+        get().updateActive((p) => ({ ...p, actions: p.actions.filter((a) => a.id !== id) }));
       },
       quickUpdateActionStatus: (actionId, newStatus) => {
         get().updateActive((p) => ({
@@ -141,11 +212,10 @@ export const useProjectStore = create(
         }));
       },
       deleteStakeholder: (id) => {
-        if (window.confirm('Paydaşı silmek istiyor musunuz?'))
-          get().updateActive((p) => ({
-            ...p,
-            stakeholders: p.stakeholders.filter((s) => s.id !== id),
-          }));
+        get().updateActive((p) => ({
+          ...p,
+          stakeholders: p.stakeholders.filter((s) => s.id !== id),
+        }));
       },
 
       // ── Business Rule ─────────────────────────────────────────────────────
@@ -171,11 +241,10 @@ export const useProjectStore = create(
         });
       },
       deleteBR: (id) => {
-        if (window.confirm('Is kuralini silmek istiyor musunuz?'))
-          get().updateActive((p) => ({
-            ...p,
-            businessRules: p.businessRules.filter((r) => r.id !== id),
-          }));
+        get().updateActive((p) => ({
+          ...p,
+          businessRules: p.businessRules.filter((r) => r.id !== id),
+        }));
       },
 
       // ── Change Request ────────────────────────────────────────────────────
@@ -204,11 +273,10 @@ export const useProjectStore = create(
         });
       },
       deleteCR: (id) => {
-        if (window.confirm('Degisiklik talebini silmek istiyor musunuz?'))
-          get().updateActive((p) => ({
-            ...p,
-            changeRequests: p.changeRequests.filter((r) => r.id !== id),
-          }));
+        get().updateActive((p) => ({
+          ...p,
+          changeRequests: p.changeRequests.filter((r) => r.id !== id),
+        }));
       },
 
       // ── Requirement ───────────────────────────────────────────────────────
@@ -234,11 +302,10 @@ export const useProjectStore = create(
         });
       },
       deleteReq: (id) => {
-        if (window.confirm('Gereksinimi silmek istiyor musunuz?'))
-          get().updateActive((p) => ({
-            ...p,
-            requirements: p.requirements.filter((r) => r.id !== id),
-          }));
+        get().updateActive((p) => ({
+          ...p,
+          requirements: p.requirements.filter((r) => r.id !== id),
+        }));
       },
 
       // ── Glossary ─────────────────────────────────────────────────────────
@@ -264,11 +331,10 @@ export const useProjectStore = create(
         });
       },
       deleteGlossaryTerm: (id) => {
-        if (window.confirm('Terimi silmek istiyor musunuz?'))
-          get().updateActive((p) => ({
-            ...p,
-            glossaryTerms: (p.glossaryTerms || []).filter((t) => t.id !== id),
-          }));
+        get().updateActive((p) => ({
+          ...p,
+          glossaryTerms: (p.glossaryTerms || []).filter((t) => t.id !== id),
+        }));
       },
 
       // ── Meeting ───────────────────────────────────────────────────────────
@@ -278,14 +344,10 @@ export const useProjectStore = create(
         return nm;
       },
       deleteMeeting: (id) => {
-        if (window.confirm('Toplantıyı silmek istiyor musunuz?')) {
-          get().updateActive((p) => ({
-            ...p,
-            meetings: p.meetings.filter((m) => m.id !== id),
-          }));
-          return true;
-        }
-        return false;
+        get().updateActive((p) => ({
+          ...p,
+          meetings: p.meetings.filter((m) => m.id !== id),
+        }));
       },
       addNote: (meetingId, noteType, noteText) => {
         const activeProject = selectActiveProject(get());
@@ -293,74 +355,32 @@ export const useProjectStore = create(
         if (!meeting) return;
         const note = { id: generateId(), type: noteType, text: noteText };
         const updatedMeeting = { ...meeting, notes: [...meeting.notes, note] };
+        const patchMeetings = (p) => p.meetings.map((m) => (m.id === meetingId ? updatedMeeting : m));
 
         if (noteType === 'Aksiyon') {
-          const newAction = {
-            id: generateId(),
-            title: noteText,
-            owner: '',
-            dueDate: '',
-            status: 'Bekliyor',
-            source: meeting.topic,
-            notes: '',
-            linkedRequirementId: '',
-          };
           get().updateActive((p) => ({
             ...p,
-            meetings: p.meetings.map((m) => (m.id === meetingId ? updatedMeeting : m)),
-            actions: [...p.actions, newAction],
+            meetings: patchMeetings(p),
+            actions: [...p.actions, createActionFromNote(meetingId, meeting.topic, noteText)],
           }));
         } else if (noteType === 'Gereksinim') {
           get().updateActive((p) => {
             const cnt = p.reqCounter || 1;
-            const newReq = {
-              id: generateId(),
-              reqId: `REQ-${String(cnt).padStart(3, '0')}`,
-              name: noteText,
-              objective: '',
-              module: '',
-              status: 'Taslak',
-              testId: '',
-              moscow: '',
-              notes: '',
-              requirementType: '',
-              acceptanceCriteria: '',
-              sourceMeetingId: meetingId,
-              approvalStatus: 'Taslak',
-              approvedById: '',
-              babokKnowledgeArea: '',
-            };
             return {
               ...p,
-              meetings: p.meetings.map((m) => (m.id === meetingId ? updatedMeeting : m)),
-              requirements: [...p.requirements, newReq],
+              meetings: patchMeetings(p),
+              requirements: [...p.requirements, createReqFromNote(meetingId, noteText, cnt)],
               reqCounter: cnt + 1,
             };
           });
         } else if (noteType === 'Varsayim') {
-          const newAss = {
-            id: generateId(),
-            title: noteText,
-            content: '',
-            type: 'Varsayim',
-            category: 'Is',
-            validationStatus: 'Dogrulanmadi',
-            ownerId: '',
-            linkedRequirements: [],
-            linkedRisks: [],
-            notes: '',
-            sourceMeetingId: meetingId,
-          };
           get().updateActive((p) => ({
             ...p,
-            meetings: p.meetings.map((m) => (m.id === meetingId ? updatedMeeting : m)),
-            assumptions: [...(p.assumptions || []), newAss],
+            meetings: patchMeetings(p),
+            assumptions: [...(p.assumptions || []), createAssumptionFromNote(meetingId, noteText)],
           }));
         } else {
-          get().updateActive((p) => ({
-            ...p,
-            meetings: p.meetings.map((m) => (m.id === meetingId ? updatedMeeting : m)),
-          }));
+          get().updateActive((p) => ({ ...p, meetings: patchMeetings(p) }));
         }
       },
       deleteNote: (meetingId, noteId) => {
@@ -392,11 +412,10 @@ export const useProjectStore = create(
         return true;
       },
       deleteGanttTask: (id) => {
-        if (window.confirm('Görevi silmek istiyor musunuz?'))
-          get().updateActive((p) => ({
-            ...p,
-            ganttTasks: (p.ganttTasks || []).filter((t) => t.id !== id),
-          }));
+        get().updateActive((p) => ({
+          ...p,
+          ganttTasks: (p.ganttTasks || []).filter((t) => t.id !== id),
+        }));
       },
 
       // ── Project management ────────────────────────────────────────────────
@@ -471,100 +490,20 @@ export const useProjectStore = create(
           let reqCounter = p.reqCounter || 1;
           let brCounter = p.brCounter || 1;
 
-          const newReqs = (selected.requirements || []).map((r) => ({
-            id: generateId(),
-            reqId: `REQ-${String(reqCounter++).padStart(3, '0')}`,
-            name: r.title,
-            objective: r.description,
-            module: '',
-            status: 'Taslak',
-            testId: '',
-            notes: '',
-            moscow:
-              r.priority === 'Yüksek' ? 'M' : r.priority === 'Orta' ? 'S' : 'C',
-            requirementType: r.type || '',
-            sourceMeetingId: '',
-            acceptanceCriteria: '',
-            approvalStatus: 'Taslak',
-            approvedById: '',
-            babokKnowledgeArea: '',
-          }));
-          const newRisks = (selected.risks || []).map((r) => ({
-            id: generateId(),
-            title: r.title,
-            category: '',
-            probability: r.probability || 2,
-            impact: r.impact || 2,
-            owner: '',
-            mitigation: r.description,
-            status: 'Açık',
-            linkedRequirementId: '',
-            linkedAssumptionId: '',
-            affectedStakeholderId: '',
-            triggerDescription: '',
-          }));
-          const newAssumptions = (selected.assumptions || []).map((a) => ({
-            id: generateId(),
-            title: a.title,
-            content: a.description,
-            type: 'Varsayim',
-            category: 'Is',
-            ownerId: '',
-            validationStatus: 'Dogrulanmadi',
-            validationDate: '',
-            linkedRequirements: '',
-            linkedRisks: '',
-            notes: '',
-          }));
-          const newConstraints = (selected.constraints || []).map((c) => ({
-            id: generateId(),
-            title: c.title,
-            content: c.description,
-            type: 'Kisit',
-            category: 'Is',
-            ownerId: '',
-            validationStatus: 'Dogrulanmadi',
-            validationDate: '',
-            linkedRequirements: '',
-            linkedRisks: '',
-            notes: '',
-          }));
-          const newBRs = (selected.business_rules || []).map((br) => ({
-            id: generateId(),
-            brId: `BR-${String(brCounter++).padStart(3, '0')}`,
-            title: br.title,
-            ruleText: br.description,
-            category: 'Surec',
-            source: 'Döküman Analizi',
-            sourceRef: '',
-            version: 'v1.0',
-            status: 'Aktif',
-            linkedRequirements: '',
-            linkedStakeholderId: '',
-            notes: '',
-          }));
-          const newStakeholders = (selected.stakeholders || []).map((s) => ({
-            id: generateId(),
-            name: s.name,
-            role: s.role,
-            department: s.department,
-            interest: 2,
-            influence: 2,
-            raci: 'I',
-            notes: '',
-          }));
+          const newReqs        = (selected.requirements  || []).map((r) => buildReqFromAnalysis(r, reqCounter++));
+          const newRisks       = (selected.risks         || []).map((r) => buildRiskFromAnalysis(r));
+          const newAssumptions = (selected.assumptions   || []).map((a) => buildAssumptionFromAnalysis(a));
+          const newConstraints = (selected.constraints   || []).map((c) => buildAssumptionFromAnalysis(c, 'Kisit'));
+          const newBRs         = (selected.business_rules|| []).map((br) => buildBRFromAnalysis(br, brCounter++));
+          const newStakeholders= (selected.stakeholders  || []).map((s) => buildStakeholderFromAnalysis(s));
 
           return {
             ...p,
-            requirements: [...p.requirements, ...newReqs],
-            risks: [...p.risks, ...newRisks],
-            assumptions: [
-              ...(p.assumptions || []),
-              ...newAssumptions,
-              ...newConstraints,
-            ],
+            requirements:  [...p.requirements, ...newReqs],
+            risks:         [...p.risks, ...newRisks],
+            assumptions:   [...(p.assumptions || []), ...newAssumptions, ...newConstraints],
             businessRules: [...(p.businessRules || []), ...newBRs],
-            stakeholders: [...p.stakeholders, ...newStakeholders],
+            stakeholders:  [...p.stakeholders, ...newStakeholders],
             reqCounter,
             brCounter,
           };

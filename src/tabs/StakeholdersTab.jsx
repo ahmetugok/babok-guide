@@ -131,7 +131,7 @@ export function StakeholdersTab() {
               <div className="flex items-center gap-1 shrink-0">
                 <button onClick={() => openModal('linkCard', { entityType: 'stakeholder', entityId: s.id })} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-cyan-400 transition-colors" title="Baglantilar"><ArrowUpRight className="w-4 h-4" /></button>
                 <button onClick={() => openModal('stakeholder', { editingId: s.id })} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
-                <button onClick={() => deleteStakeholder(s.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => { if (window.confirm('Paydaşı silmek istiyor musunuz?')) deleteStakeholder(s.id); }} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
           ))}

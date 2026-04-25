@@ -7,8 +7,9 @@ import { formatDuration, startTimer, stopTimer, getActiveTimer, getAllActiveTime
 import { useProjectStore } from '../store/projectStore.js';
 import { selectActiveCompletedTasks, selectActiveCompletedSubTasks, selectActiveProjectContext, selectActiveCompletedTaskDurs } from '../store/selectors.js';
 import { useUIStore } from '../store/uiStore.js';
+import { babokData } from '../data/babokData.jsx';
 
-export function KnowledgeAreasTab({ babokData }) {
+export function KnowledgeAreasTab() {
   const completedTasks    = useProjectStore(selectActiveCompletedTasks);
   const completedSubTasks = useProjectStore(selectActiveCompletedSubTasks);
   const projectContext    = useProjectStore(selectActiveProjectContext);

@@ -237,7 +237,7 @@ export function RequirementsTab() {
                         <div className="flex items-center gap-1">
                           <button onClick={() => openModal('linkCard', { entityType: 'requirement', entityId: r.id })} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-cyan-400 transition-colors" title="Bağlantılar"><ArrowUpRight className="w-3.5 h-3.5" /></button>
                           <button onClick={() => openModal('requirement', { editingId: r.id })} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
-                          <button onClick={() => deleteReq(r.id)} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                          <button onClick={() => { if (window.confirm('Gereksinimi silmek istiyor musunuz?')) deleteReq(r.id); }} className="p-1 hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
                         </div>
                       </td>
                     </tr>

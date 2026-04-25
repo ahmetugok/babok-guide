@@ -51,7 +51,7 @@ export function RisksTab() {
                 <div className="flex items-center gap-1 shrink-0">
                   <button onClick={() => openModal('linkCard', { entityType: 'risk', entityId: r.id })} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-cyan-400 transition-colors" title="Baglantilar"><ArrowUpRight className="w-4 h-4" /></button>
                   <button onClick={() => openModal('risk', { editingId: r.id })} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
-                  <button onClick={() => deleteRisk(r.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => { if (window.confirm('Riski silmek istiyor musunuz?')) deleteRisk(r.id); }} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
             );

@@ -95,8 +95,9 @@ export function MeetingsTab() {
 
   const handleDeleteMeeting = (e, id) => {
     e.stopPropagation();
-    const deleted = deleteMeeting(id);
-    if (deleted && selectedMeetingId === id) setSelectedMeetingId(null);
+    if (!window.confirm('Toplantıyı silmek istiyor musunuz?')) return;
+    deleteMeeting(id);
+    if (selectedMeetingId === id) setSelectedMeetingId(null);
   };
 
   return (

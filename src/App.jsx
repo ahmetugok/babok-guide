@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 
 import { DEFAULT_PROJECT, TAB_ITEMS } from './constants/index.js';
-import { babokData } from './data/babokData.jsx';
+import { babokData, TOTAL_TASKS, TOTAL_SUBTASKS } from './data/babokData.jsx';
 
 import { useProjectStore, selectActiveProject } from './store/projectStore.js';
 import { useUIStore } from './store/uiStore.js';
@@ -32,6 +32,7 @@ const GlossaryTab      = lazy(() => import('./tabs/GlossaryTab.jsx').then(m => (
 import { ModalManager } from './components/ModalManager.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { TabFallback } from './components/LoadingFallback.jsx';
+import { openVault, writeProjectFile, readAllProjectFiles, deleteProjectFile } from './utils/vaultStorage.js';
 
 export default function App() {
   // ── Store reads ──────────────────────────────────────────────────────────
@@ -53,55 +54,7 @@ export default function App() {
   // ── Computed totals ───────────────────────────────────────────────────────
   const completedTasks    = activeProject?.completedTasks || [];
   const completedSubTasks = activeProject?.completedSubTasks || [];
-  const totalTasks        = babokData.reduce((acc, ka) => acc + ka.tasks.length, 0);
-  const totalSubTasks     = babokData.reduce((acc, ka) => acc + ka.tasks.reduce((a, t) => a + t.checklist.length, 0), 0);
-  const overallProgress   = Math.round(((completedTasks.length + completedSubTasks.length) / (totalTasks + totalSubTasks)) * 100) || 0;
-
-  // ── File System API helpers ───────────────────────────────────────────────
-  const openVault = async () => {
-    try {
-      const handle = await window.showDirectoryPicker({ mode: 'readwrite', startIn: 'documents' });
-      setVaultHandle(handle);
-      localStorage.setItem('babok_vault_name', handle.name);
-      return handle;
-    } catch { return null; }
-  };
-
-  const writeProjectFile = async (handle, project) => {
-    if (!handle) return;
-    try {
-      const safeName = project.name.replace(/[^a-zA-Z0-9çÇğĞıİöÖşŞüÜ _-]/g, '_');
-      const fileHandle = await handle.getFileHandle(`${safeName}.babok.json`, { create: true });
-      const writable = await fileHandle.createWritable();
-      await writable.write(JSON.stringify(project, null, 2));
-      await writable.close();
-    } catch (err) { console.warn('Dosya yazılamadı:', err); }
-  };
-
-  const readAllProjectFiles = async (handle) => {
-    if (!handle) return [];
-    const ps = [];
-    try {
-      for await (const entry of handle.values()) {
-        if (entry.kind === 'file' && entry.name.endsWith('.babok.json')) {
-          try {
-            const file = await entry.getFile();
-            const data = JSON.parse(await file.text());
-            if (data?.name) ps.push({ ...DEFAULT_PROJECT, ...data });
-          } catch { /* skip invalid */ }
-        }
-      }
-    } catch (err) { console.warn('Vault okunamadı:', err); }
-    return ps;
-  };
-
-  const deleteProjectFile = async (handle, project) => {
-    if (!handle) return;
-    try {
-      const safeName = project.name.replace(/[^a-zA-Z0-9çÇğĞıİöÖşŞüÜ _-]/g, '_');
-      await handle.removeEntry(`${safeName}.babok.json`);
-    } catch { /* file may not exist */ }
-  };
+  const overallProgress   = Math.round(((completedTasks.length + completedSubTasks.length) / (TOTAL_TASKS + TOTAL_SUBTASKS)) * 100) || 0;
 
   // ── Vault auto-save when projects change ─────────────────────────────────
   useEffect(() => {
@@ -114,6 +67,7 @@ export default function App() {
   const openVaultAndLoad = async () => {
     const handle = await openVault();
     if (!handle) return;
+    setVaultHandle(handle);
     const vaultProjects = await readAllProjectFiles(handle);
     if (vaultProjects.length > 0) {
       useProjectStore.setState({ projects: vaultProjects, activeProjectId: vaultProjects[0].id });
@@ -129,6 +83,7 @@ export default function App() {
     if (!handle) {
       handle = await openVault();
       if (!handle) return;
+      setVaultHandle(handle);
     }
     for (const p of projects) await writeProjectFile(handle, p);
     setVaultReady(true);
@@ -168,28 +123,6 @@ export default function App() {
       reader.readAsText(file);
     };
     input.click();
-  };
-
-  // ── Ring Chart SVG component ──────────────────────────────────────────────
-  const RingChart = ({ progress, size = 160, stroke = 10 }) => {
-    const r = (size - stroke) / 2;
-    const circ = 2 * Math.PI * r;
-    const offset = circ - (progress / 100) * circ;
-    return (
-      <div className="ring-chart">
-        <svg width={size} height={size} className="transform -rotate-90">
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(148,163,184,0.08)" strokeWidth={stroke} />
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="url(#ringGrad)" strokeWidth={stroke}
-            strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1)' }} />
-          <defs><linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#22d3ee" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient></defs>
-        </svg>
-        <div className="ring-chart-label">
-          <span className="font-stat text-3xl font-bold neon-cyan">{progress}%</span>
-          <span className="text-[10px] text-slate-400 mt-0.5">{activeProject.name}</span>
-        </div>
-      </div>
-    );
   };
 
   return (
@@ -307,7 +240,7 @@ export default function App() {
               </button>
               <div className="hidden sm:flex flex-col items-end gap-0.5">
                 <span className="text-[10px] text-slate-500 uppercase tracking-wider">İlerleme</span>
-                <span className="text-xs text-slate-400">{completedTasks.length + completedSubTasks.length}/{totalTasks + totalSubTasks}</span>
+                <span className="text-xs text-slate-400">{completedTasks.length + completedSubTasks.length}/{TOTAL_TASKS + TOTAL_SUBTASKS}</span>
               </div>
               <div className="relative w-14 h-14">
                 <svg width={56} height={56} className="transform -rotate-90">
@@ -331,7 +264,7 @@ export default function App() {
 
             <ErrorBoundary key={activeTab}>
               <Suspense fallback={<TabFallback />}>
-                {activeTab === 'dashboard'        && <DashboardTab RingChart={RingChart} />}
+                {activeTab === 'dashboard'        && <DashboardTab />}
                 {activeTab === 'assumptions'      && <AssumptionsTab />}
                 {activeTab === 'businessrules'    && <BusinessRulesTab />}
                 {activeTab === 'changes'          && <ChangesTab />}
@@ -342,7 +275,7 @@ export default function App() {
                 {activeTab === 'traceability'     && <TraceabilityTab />}
                 {activeTab === 'meetings'         && <MeetingsTab />}
                 {activeTab === 'gantt'            && <GanttTab />}
-                {activeTab === 'knowledge_areas'  && <KnowledgeAreasTab babokData={babokData} />}
+                {activeTab === 'knowledge_areas'  && <KnowledgeAreasTab />}
                 {activeTab === 'templates'        && <TemplatesTab />}
                 {activeTab === 'glossary'         && <GlossaryTab />}
               </Suspense>

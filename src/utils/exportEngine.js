@@ -1,10 +1,7 @@
 // BABOK Export Engine — pure JS, no React
 // generateBABOKReport(project) → Markdown string
 
-const PROB_LABELS  = ['', 'Düşük', 'Orta', 'Yüksek'];
-
-
-const RACI_LABELS  = { R: 'Sorumlu', A: 'Onaylayan', C: 'Danışılan', I: 'Bilgilendirilen' };
+import { PROB_LABELS, RACI_LABELS } from '../constants/index.js';
 
 function riskLevel(probability, impact) {
   const score = (probability || 1) * (impact || 1);
@@ -376,7 +373,6 @@ export function generateBABOKReport(project) {
     ].filter(Boolean);
 
     const report = rawSections.join('\n\n' + hr() + '\n\n');
-    console.log(`[exportEngine] Rapor üretildi: ${report.length} karakter, ${project?.name || '—'}`);
     return report;
   } catch (err) {
     console.error('[exportEngine] Hata:', err);

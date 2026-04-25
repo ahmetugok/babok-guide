@@ -46,7 +46,7 @@ export function AssumptionsTab() {
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <button onClick={() => openModal('assumption', { editingId: a.id })} className="p-1.5 hover:bg-white/10 rounded-md text-slate-400 hover:text-blue-600 transition-colors"><Pencil className="w-4 h-4" /></button>
-                <button onClick={() => deleteAssumption(a.id)} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => { if (window.confirm('Varsayımı silmek istiyor musunuz?')) deleteAssumption(a.id); }} className="p-1.5 hover:bg-rose-500/10 rounded-md text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
           ))}
