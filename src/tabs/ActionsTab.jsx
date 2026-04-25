@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ListChecks, Plus, Pencil, Trash2, Clock, AlignJustify, LayoutGrid, Play, Square as StopSq } from 'lucide-react';
 import { isOverdue } from '../utils.js';
 import { startTimer, stopTimer, getActiveTimer, getAllActiveTimers } from '../utils/timeTracker.js';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveActions, selectActiveRequirements } from '../store/selectors.js';
 import { useUIStore } from '../store/uiStore.js';
 
 const COLUMNS = [
@@ -12,7 +13,8 @@ const COLUMNS = [
 ];
 
 export function ActionsTab() {
-  const activeProject           = useProjectStore(selectActiveProject);
+  const actions                 = useProjectStore(selectActiveActions);
+  const requirements            = useProjectStore(selectActiveRequirements);
   const openModal               = useUIStore((s) => s.openModal);
   const deleteAction            = useProjectStore((s) => s.deleteAction);
   const quickUpdateActionStatus = useProjectStore((s) => s.quickUpdateActionStatus);
@@ -26,7 +28,7 @@ export function ActionsTab() {
   // Mount: localStorage'da aktif aksiyon timer'ı var mı?
   useEffect(() => {
     const active = getAllActiveTimers();
-    const actionIds = (activeProject.actions || []).map(a => a.id);
+    const actionIds = (actions || []).map(a => a.id);
     const found = active.find(id => actionIds.includes(id));
     if (found) setRunningId(found);
   }, []);
@@ -59,12 +61,9 @@ export function ActionsTab() {
   const elapsedSec = runningId ? (getActiveTimer(runningId).elapsedSeconds || 0) : 0;
   const liveDisplay = `⏱ ${pad(Math.floor(elapsedSec / 3600))}:${pad(Math.floor((elapsedSec % 3600) / 60))}:${pad(elapsedSec % 60)}`;
 
-  const actions = activeProject.actions || [];
-  const reqs    = activeProject.requirements || [];
-
   function getReqId(linkedId) {
     if (!linkedId) return null;
-    const r = reqs.find(r => r.id === linkedId);
+    const r = requirements.find(r => r.id === linkedId);
     return r ? r.reqId : linkedId;
   }
 

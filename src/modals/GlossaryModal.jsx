@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { BookText } from 'lucide-react';
 import { EntitySelector } from '../components/EntitySelector.jsx';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveGlossaryTerms } from '../store/selectors.js';
 import { useUIStore, DEFAULT_GLOSSARY_FORM } from '../store/uiStore.js';
 
 export function GlossaryModal() {
-  const activeProject    = useProjectStore(selectActiveProject);
+  const glossaryTerms     = useProjectStore(selectActiveGlossaryTerms);
   const saveGlossaryTerm = useProjectStore((s) => s.saveGlossaryTerm);
   const modalData   = useUIStore((s) => s.modalData);
   const closeModal  = useUIStore((s) => s.closeModal);
 
   const editingTerm = modalData.editingId
-    ? (activeProject?.glossaryTerms || []).find((t) => t.id === modalData.editingId)
+    ? (glossaryTerms || []).find((t) => t.id === modalData.editingId)
     : null;
 
   const [form, setForm] = useState(

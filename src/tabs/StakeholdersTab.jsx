@@ -1,11 +1,12 @@
 import React from 'react';
 import { Users, UserPlus, Plus, Pencil, Trash2, ArrowUpRight } from 'lucide-react';
 import { PROB_LABELS, RACI_LABELS, RACI_COLORS } from '../constants/index.js';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveStakeholders } from '../store/selectors.js';
 import { useUIStore } from '../store/uiStore.js';
 
 export function StakeholdersTab() {
-  const activeProject         = useProjectStore(selectActiveProject);
+  const stakeholders      = useProjectStore(selectActiveStakeholders);
   const openModal         = useUIStore((s) => s.openModal);
   const deleteStakeholder = useProjectStore((s) => s.deleteStakeholder);
   const focusedStakeholderId  = useUIStore((s) => s.focusedStakeholderId);
@@ -15,11 +16,11 @@ export function StakeholdersTab() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><UserPlus className="text-orange-500 w-5 h-5" />Paydaş Yönetimi</h2>
-          <p className="text-sm text-slate-400">{activeProject.stakeholders.length} paydaş kayıtlı</p>
+          <p className="text-sm text-slate-400">{stakeholders.length} paydaş kayıtlı</p>
         </div>
         <button onClick={() => openModal('stakeholder')} className="bg-orange-500/100 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Paydaş Ekle</button>
       </div>
-      {activeProject.stakeholders.length > 0 && (
+      {stakeholders.length > 0 && (
         <div className="bg-white/5 rounded-xl border border-white/10 p-5 shadow-lg shadow-black/20">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold text-slate-300">İlgi / Etki Matrisi</h3>
@@ -32,7 +33,7 @@ export function StakeholdersTab() {
               ))}
             </div>
           </div>
-          <div className="relative border border-white/10 rounded-xl overflow-hidden" onClick={() => setFocusedStakeholderId(null)} style={{ height: Math.max(260, activeProject.stakeholders.length > 6 ? 340 : 280) }}>
+          <div className="relative border border-white/10 rounded-xl overflow-hidden" onClick={() => setFocusedStakeholderId(null)} style={{ height: Math.max(260, stakeholders.length > 6 ? 340 : 280) }}>
             {/* Quadrant backgrounds */}
             <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
               <div className="bg-amber-500/15 border-r border-b border-dashed border-white/15" />
@@ -51,7 +52,7 @@ export function StakeholdersTab() {
             {(() => {
               const ITEM_W = 52, ITEM_H = 34;
               const placed = [];
-              return activeProject.stakeholders.map(s => {
+              return stakeholders.map(s => {
                 const baseX = ((s.interest - 1) / 2) * 85 + 5;
                 const baseY = 100 - ((s.influence - 1) / 2) * 85 - 10;
                 let finalX = baseX, finalY = baseY;
@@ -111,11 +112,11 @@ export function StakeholdersTab() {
           </div>
         </div>
       )}
-      {activeProject.stakeholders.length === 0 ? (
+      {stakeholders.length === 0 ? (
         <div className="text-center py-16 text-slate-400"><Users className="w-10 h-10 mx-auto mb-3 opacity-30" /><p>Henüz paydaş eklenmemiş.</p></div>
       ) : (
         <div className="space-y-3">
-          {activeProject.stakeholders.map(s => (
+          {stakeholders.map(s => (
             <div key={s.id} className="bg-white/5 rounded-xl border border-white/10 p-4 shadow-lg shadow-black/20 flex items-center gap-4">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0`} style={{ background: s.raci === 'R' ? '#3b82f6' : s.raci === 'A' ? '#8b5cf6' : s.raci === 'C' ? '#f59e0b' : '#94a3b8' }}>{s.name.charAt(0)}</div>
               <div className="flex-1 min-w-0">

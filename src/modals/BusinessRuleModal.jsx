@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { BookOpen, AlertTriangle } from 'lucide-react';
 import { EntitySelector } from '../components/EntitySelector.jsx';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveBusinessRules } from '../store/selectors.js';
 import { useUIStore, DEFAULT_BR_FORM } from '../store/uiStore.js';
 
 export function BusinessRuleModal() {
-  const activeProject = useProjectStore(selectActiveProject);
+  const businessRules     = useProjectStore(selectActiveBusinessRules);
   const saveBR        = useProjectStore((s) => s.saveBR);
   const modalData  = useUIStore((s) => s.modalData);
   const closeModal = useUIStore((s) => s.closeModal);
 
   const editingBR = modalData.editingId
-    ? (activeProject?.businessRules || []).find((r) => r.id === modalData.editingId)
+    ? (businessRules || []).find((r) => r.id === modalData.editingId)
     : null;
 
   const [form, setForm] = useState(

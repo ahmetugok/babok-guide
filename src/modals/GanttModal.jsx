@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { CalendarDays } from 'lucide-react';
 import { GANTT_COLORS } from '../constants/index.js';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveGanttTasks } from '../store/selectors.js';
 import { useUIStore, DEFAULT_GANTT_FORM } from '../store/uiStore.js';
 
 export function GanttModal() {
-  const activeProject  = useProjectStore(selectActiveProject);
+  const ganttTasks     = useProjectStore(selectActiveGanttTasks);
   const saveGanttTask  = useProjectStore((s) => s.saveGanttTask);
   const modalData  = useUIStore((s) => s.modalData);
   const closeModal = useUIStore((s) => s.closeModal);
 
   const editingGanttTask = modalData.editingId
-    ? (activeProject?.ganttTasks || []).find((t) => t.id === modalData.editingId)
+    ? (ganttTasks).find((t) => t.id === modalData.editingId)
     : null;
 
   const [form, setForm] = useState(

@@ -1,10 +1,11 @@
 import React from 'react';
 import { Lightbulb, Plus, Pencil, Trash2 } from 'lucide-react';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveAssumptions } from '../store/selectors.js';
 import { useUIStore } from '../store/uiStore.js';
 
 export function AssumptionsTab() {
-  const activeProject     = useProjectStore(selectActiveProject);
+  const assumptions      = useProjectStore(selectActiveAssumptions);
   const openModal        = useUIStore((s) => s.openModal);
   const deleteAssumption = useProjectStore((s) => s.deleteAssumption);
   return (
@@ -12,11 +13,11 @@ export function AssumptionsTab() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><Lightbulb className="text-amber-400 w-5 h-5" />Varsayimlar ve Kisitlar</h2>
-          <p className="text-sm text-slate-400">{(activeProject.assumptions || []).length} kayit · {(activeProject.assumptions || []).filter(a => a.validationStatus === 'Dogrulanmadi').length} dogrulanmamis</p>
+          <p className="text-sm text-slate-400">{(assumptions || []).length} kayit · {(assumptions || []).filter(a => a.validationStatus === 'Dogrulanmadi').length} dogrulanmamis</p>
         </div>
         <button onClick={() => openModal('assumption')} className="bg-amber-600/80 hover:bg-amber-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Varsayim Ekle</button>
       </div>
-      {(activeProject.assumptions || []).length === 0 ? (
+      {(assumptions || []).length === 0 ? (
         <div className="text-center py-20 glass-card p-8">
           <Lightbulb className="w-14 h-14 mx-auto mb-4 text-amber-400/20 empty-state-icon" />
           <p className="text-slate-300 font-medium">Henuz varsayim veya kisit eklenmemis.</p>
@@ -25,7 +26,7 @@ export function AssumptionsTab() {
         </div>
       ) : (
         <div className="space-y-3">
-          {(activeProject.assumptions || []).map(a => (
+          {(assumptions || []).map(a => (
             <div key={a.id} className={`bg-white/5 rounded-xl border p-4 shadow-lg shadow-black/20 flex items-start gap-4 ${a.validationStatus === 'Curutuldu' ? 'border-l-4 border-l-rose-400' : 'border-l-4 border-l-amber-400/40'}`}>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">

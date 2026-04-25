@@ -7,7 +7,13 @@ import { getRiskLevel, isOverdue } from '../utils.js';
 import { REQ_STATUS_COLORS } from '../constants/index.js';
 import { formatDuration } from '../utils/timeTracker.js';
 import { babokData } from '../data/babokData.jsx';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import {
+  selectActiveCompletedTasks, selectActiveCompletedSubTasks, selectActiveCompletedTaskDurs,
+  selectActiveMeetings, selectActiveActions, selectActiveRisks, selectActiveRequirements,
+  selectActiveStakeholders, selectActiveAssumptions, selectActiveChangeRequests,
+  selectActiveGanttTasks, selectActiveName,
+} from '../store/selectors.js';
 import { useUIStore } from '../store/uiStore.js';
 
 const KA_COLORS = {
@@ -20,40 +26,47 @@ const KA_COLORS = {
 };
 
 export function DashboardTab({ RingChart }) {
-  const activeProject   = useProjectStore(selectActiveProject);
+  const completedTasks        = useProjectStore(selectActiveCompletedTasks);
+  const completedSubTasks     = useProjectStore(selectActiveCompletedSubTasks);
+  const completedTaskDurations = useProjectStore(selectActiveCompletedTaskDurs);
+  const meetings              = useProjectStore(selectActiveMeetings);
+  const actions               = useProjectStore(selectActiveActions);
+  const risks                 = useProjectStore(selectActiveRisks);
+  const requirements          = useProjectStore(selectActiveRequirements);
+  const stakeholders          = useProjectStore(selectActiveStakeholders);
+  const assumptions           = useProjectStore(selectActiveAssumptions);
+  const changeRequests        = useProjectStore(selectActiveChangeRequests);
+  const ganttTasks            = useProjectStore(selectActiveGanttTasks);
+  const projectName           = useProjectStore(selectActiveName);
   const setActiveTab    = useUIStore((s) => s.setActiveTab);
   const setExpandedKA   = useUIStore((s) => s.setExpandedKA);
   const openModal = useUIStore((s) => s.openModal);
 
-  const completedTasks    = activeProject?.completedTasks || [];
-  const completedSubTasks = activeProject?.completedSubTasks || [];
   const totalTasks        = babokData.reduce((acc, ka) => acc + ka.tasks.length, 0);
   const totalSubTasks     = babokData.reduce((acc, ka) => acc + ka.tasks.reduce((a, t) => a + t.checklist.length, 0), 0);
   const overallProgress   = Math.round(((completedTasks.length + completedSubTasks.length) / (totalTasks + totalSubTasks)) * 100) || 0;
   // ── Zaman analizi hesaplamaları ──────────────────────────────────────────
-  const totalMeetingMinutes  = (activeProject.meetings  || []).reduce((s, m) => s + (m.duration  || 0), 0);
-  const totalActionMinutes   = (activeProject.actions   || []).reduce((s, a) => s + (a.duration  || 0), 0);
-  const totalChecklistMinutes = Object.values(activeProject.completedTaskDurations || {}).reduce((s, d) => s + d, 0);
+  const totalMeetingMinutes  = (meetings  || []).reduce((s, m) => s + (m.duration  || 0), 0);
+  const totalActionMinutes   = (actions   || []).reduce((s, a) => s + (a.duration  || 0), 0);
+  const totalChecklistMinutes = Object.values(completedTaskDurations || {}).reduce((s, d) => s + d, 0);
   const totalMinutes = totalMeetingMinutes + totalActionMinutes + totalChecklistMinutes;
 
   const babokEforData = babokData.map(ka => {
     const taskIds = ka.tasks.map(t => t.id);
-    const minutes = taskIds.reduce((s, id) => s + (activeProject.completedTaskDurations?.[id] || 0), 0);
+    const minutes = taskIds.reduce((s, id) => s + (completedTaskDurations?.[id] || 0), 0);
     return { id: ka.id, title: ka.title, minutes };
   }).filter(ka => ka.minutes > 0);
   const totalBabokMinutes = babokEforData.reduce((s, ka) => s + ka.minutes, 0);
 
   const [zamanExpanded, setZamanExpanded] = useState(false);
 
-  const openRisks = activeProject.risks.filter(r => r.status === 'Açık');
+  const openRisks = risks.filter(r => r.status === 'Açık');
   const highRisks = openRisks.filter(r => getRiskLevel(r.probability, r.impact).label === 'Yüksek' || getRiskLevel(r.probability, r.impact).label === 'Kritik');
-  const pendingActions = activeProject.actions.filter(a => a.status !== 'Tamamlandı');
+  const pendingActions = actions.filter(a => a.status !== 'Tamamlandı');
   const overdueActions = pendingActions.filter(isOverdue);
-  const reqs = activeProject.requirements;
-  const ganttTasks = activeProject.ganttTasks || [];
   const overdueTasks = ganttTasks.filter(gt => gt.progress < 100 && gt.endDate && new Date(gt.endDate) < new Date());
-  const stakeholderCount = activeProject.stakeholders?.length || 0;
-  const meetingCount = activeProject.meetings?.length || 0;
+  const stakeholderCount = stakeholders?.length || 0;
+  const meetingCount = meetings?.length || 0;
 
   return (
     <div className="space-y-3">
@@ -78,7 +91,7 @@ export function DashboardTab({ RingChart }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5">
               <h2 className="text-lg font-bold text-white">Proje Özeti</h2>
-              <span className="text-sm text-slate-500">· {activeProject.name}</span>
+              <span className="text-sm text-slate-500">· {projectName}</span>
             </div>
             <div className="grid grid-cols-4 gap-2.5">
               <div className="bg-white/5 rounded-lg p-2.5 border border-white/5">
@@ -159,10 +172,10 @@ export function DashboardTab({ RingChart }) {
       {(() => {
         const today = new Date();
         const weekLater = new Date(today.getTime() + 7 * 86400000);
-        const allReqs = activeProject.requirements || [];
-        const allAss = activeProject.assumptions || [];
-        const allCRs = activeProject.changeRequests || [];
-        const allGantt = activeProject.ganttTasks || [];
+        const allReqs = requirements || [];
+        const allAss = assumptions || [];
+        const allCRs = changeRequests || [];
+        const allGantt = ganttTasks || [];
 
         const noAC = allReqs.filter(r => !r.acceptanceCriteria);
         const refutedAss = allAss.filter(a => a.validationStatus === 'Curutuldu');
@@ -238,9 +251,9 @@ export function DashboardTab({ RingChart }) {
               <Lightbulb className="w-5 h-5 text-amber-400" />
             </div>
           </div>
-          <span className="font-stat text-3xl font-black text-amber-400">{(activeProject.assumptions || []).filter(a => a.validationStatus === 'Dogrulanmadi').length}</span>
+          <span className="font-stat text-3xl font-black text-amber-400">{(assumptions || []).filter(a => a.validationStatus === 'Dogrulanmadi').length}</span>
           <span className="text-sm text-slate-400 block mt-0.5">Dogrulanmamis Varsayim</span>
-          <span className="text-xs text-slate-500 block">{(activeProject.assumptions || []).length} toplam</span>
+          <span className="text-xs text-slate-500 block">{(assumptions || []).length} toplam</span>
         </div>
         {/* Open Risks */}
         <div onClick={() => setActiveTab('risks')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform neon-border-crimson group">
@@ -252,7 +265,7 @@ export function DashboardTab({ RingChart }) {
           </div>
           <span className="font-stat text-3xl font-black neon-crimson">{openRisks.length}</span>
           <span className="text-sm text-slate-400 block mt-0.5">Açık Risk</span>
-          <span className="text-xs text-slate-500 block">{activeProject.risks.length} toplam</span>
+          <span className="text-xs text-slate-500 block">{risks.length} toplam</span>
         </div>
         {/* Pending Actions */}
         <div onClick={() => setActiveTab('actions')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform neon-border-amethyst group">
@@ -264,7 +277,7 @@ export function DashboardTab({ RingChart }) {
           </div>
           <span className="font-stat text-3xl font-black neon-amethyst">{pendingActions.length}</span>
           <span className="text-sm text-slate-400 block mt-0.5">Bekleyen Aksiyon</span>
-          <span className="text-xs text-slate-500 block">{activeProject.actions.length} toplam</span>
+          <span className="text-xs text-slate-500 block">{actions.length} toplam</span>
         </div>
         {/* Requirements */}
         <div onClick={() => setActiveTab('requirements')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform neon-border-cyan group">
@@ -272,11 +285,11 @@ export function DashboardTab({ RingChart }) {
             <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/10">
               <BookMarked className="w-5 h-5 text-cyan-400" />
             </div>
-            {reqs.filter(r => r.status === 'Canlıda').length > 0 && <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-medium">{reqs.filter(r => r.status === 'Canlıda').length} canlıda</span>}
+            {requirements.filter(r => r.status === 'Canlıda').length > 0 && <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-medium">{requirements.filter(r => r.status === 'Canlıda').length} canlıda</span>}
           </div>
-          <span className="font-stat text-3xl font-black neon-cyan">{reqs.length}</span>
+          <span className="font-stat text-3xl font-black neon-cyan">{requirements.length}</span>
           <span className="text-sm text-slate-400 block mt-0.5">Gereksinim</span>
-          <span className="text-xs text-slate-500 block">{Object.entries(REQ_STATUS_COLORS).map(([st]) => reqs.filter(r => r.status === st).length > 0 ? st.slice(0,3) + ':' + reqs.filter(r => r.status === st).length : null).filter(Boolean).join(' · ')}</span>
+          <span className="text-xs text-slate-500 block">{Object.entries(REQ_STATUS_COLORS).map(([st]) => requirements.filter(r => r.status === st).length > 0 ? st.slice(0,3) + ':' + requirements.filter(r => r.status === st).length : null).filter(Boolean).join(' · ')}</span>
         </div>
         {/* Gantt */}
         <div onClick={() => setActiveTab('gantt')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform group" style={{ borderLeft: '2px solid rgba(251,191,36,0.3)' }}>
@@ -293,7 +306,7 @@ export function DashboardTab({ RingChart }) {
       </div>
 
       {/* ── ROW 2b: CR Banner ── */}
-      {(() => { const pendingCRs = (activeProject.changeRequests || []).filter(cr => cr.status === 'Bekliyor'); return pendingCRs.length > 0 ? (
+      {(() => { const pendingCRs = (changeRequests || []).filter(cr => cr.status === 'Bekliyor'); return pendingCRs.length > 0 ? (
         <div onClick={() => setActiveTab('changes')} className="glass-card px-4 py-3 cursor-pointer hover:scale-[1.01] transition-transform flex items-center justify-between" style={{ borderLeft: '3px solid rgba(251,191,36,0.6)' }}>
           <div className="flex items-center gap-3">
             <RefreshCw className="w-5 h-5 text-amber-400 shrink-0" />
@@ -339,27 +352,27 @@ export function DashboardTab({ RingChart }) {
             <h3 className="font-bold text-sm text-white flex items-center gap-2"><BookMarked className="w-4 h-4 text-cyan-400" />Gereksinimler</h3>
             <button onClick={() => setActiveTab('requirements')} className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors">Tümünü gör →</button>
           </div>
-          {reqs.length === 0 ? (
+          {requirements.length === 0 ? (
             <div className="text-center py-4 text-slate-500"><BookMarked className="w-7 h-7 mx-auto mb-1.5 opacity-30" /><p className="text-xs">Henüz gereksinim eklenmemiş</p></div>
           ) : (
             <>
               {/* Status pills */}
               <div className="flex flex-wrap gap-1.5 mb-3">
                 {Object.keys(REQ_STATUS_COLORS).map(st => {
-                  const cnt = reqs.filter(r => r.status === st).length;
+                  const cnt = requirements.filter(r => r.status === st).length;
                   return cnt > 0 ? <span key={st} className={`text-xs px-2.5 py-1 rounded-full font-medium ${REQ_STATUS_COLORS[st]}`}>{st}: {cnt}</span> : null;
                 })}
               </div>
               {/* Requirement list */}
               <div className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
-                {reqs.slice(0, 6).map(r => (
+                {requirements.slice(0, 6).map(r => (
                   <div key={r.id} className="flex items-center gap-2 p-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
                     <span className="text-xs font-mono text-slate-500 w-14">{r.reqId}</span>
                     <span className="text-sm text-slate-300 flex-1 truncate">{r.name}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${REQ_STATUS_COLORS[r.status] || 'bg-white/10 text-slate-400'}`}>{r.status}</span>
                   </div>
                 ))}
-                {reqs.length > 6 && <button onClick={() => setActiveTab('requirements')} className="text-[10px] text-cyan-400 hover:text-cyan-300 text-center pt-1 w-full cursor-pointer hover:underline transition-colors">+{reqs.length - 6} daha →</button>}
+                {requirements.length > 6 && <button onClick={() => setActiveTab('requirements')} className="text-[10px] text-cyan-400 hover:text-cyan-300 text-center pt-1 w-full cursor-pointer hover:underline transition-colors">+{requirements.length - 6} daha →</button>}
               </div>
             </>
           )}

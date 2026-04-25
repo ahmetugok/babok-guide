@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { UserPlus } from 'lucide-react';
 import { PROB_LABELS, RACI_LABELS, RACI_COLORS } from '../constants/index.js';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveStakeholders } from '../store/selectors.js';
 import { useUIStore, DEFAULT_STAKEHOLDER_FORM } from '../store/uiStore.js';
 
 export function StakeholderModal() {
-  const activeProject       = useProjectStore(selectActiveProject);
+  const stakeholders     = useProjectStore(selectActiveStakeholders);
   const saveStakeholder     = useProjectStore((s) => s.saveStakeholder);
   const modalData  = useUIStore((s) => s.modalData);
   const closeModal = useUIStore((s) => s.closeModal);
 
   const editingStakeholder = modalData.editingId
-    ? (activeProject?.stakeholders || []).find((s) => s.id === modalData.editingId)
+    ? (stakeholders || []).find((s) => s.id === modalData.editingId)
     : null;
 
   const [form, setForm] = useState(

@@ -2,11 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { MessageSquare, Plus, Trash2, StickyNote, ClipboardCopy, X, Play, Square } from 'lucide-react';
 import { NOTE_TYPE_COLORS } from '../constants/index.js';
 import { startTimer, stopTimer, getActiveTimer, getAllActiveTimers } from '../utils/timeTracker.js';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveMeetings, selectActiveActions, selectActiveAssumptions, selectActiveRequirements } from '../store/selectors.js';
 import { useUIStore } from '../store/uiStore.js';
 
 export function MeetingsTab() {
-  const activeProject       = useProjectStore(selectActiveProject);
+  const meetings            = useProjectStore(selectActiveMeetings);
+  const actions             = useProjectStore(selectActiveActions);
+  const assumptions         = useProjectStore(selectActiveAssumptions);
+  const requirements        = useProjectStore(selectActiveRequirements);
   const addNote             = useProjectStore((s) => s.addNote);
   const deleteNote          = useProjectStore((s) => s.deleteNote);
   const deleteMeeting       = useProjectStore((s) => s.deleteMeeting);
@@ -21,14 +25,14 @@ export function MeetingsTab() {
   const setActiveTab        = useUIStore((s) => s.setActiveTab);
 
   // Aktif toplantıyı ID'den hesapla
-  const selectedMeeting = (activeProject.meetings || []).find((m) => m.id === selectedMeetingId) || null;
+  const selectedMeeting = (meetings || []).find((m) => m.id === selectedMeetingId) || null;
 
   const [runningId, setRunningId] = useState(null);
   const [tick, setTick]           = useState(0);
 
   useEffect(() => {
     const active = getAllActiveTimers();
-    const meetingIds = (activeProject.meetings || []).map((m) => m.id);
+    const meetingIds = (meetings || []).map((m) => m.id);
     const found = active.find((id) => meetingIds.includes(id));
     if (found) setRunningId(found);
   }, []);
@@ -100,14 +104,14 @@ export function MeetingsTab() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><MessageSquare className="text-violet-500 w-5 h-5" />Toplantı Notları</h2>
-          <p className="text-sm text-slate-400">{activeProject.meetings.length} toplantı kaydı</p>
+          <p className="text-sm text-slate-400">{meetings.length} toplantı kaydı</p>
         </div>
         <button onClick={() => openModal('meeting')} className="bg-violet-600 hover:bg-violet-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Yeni Toplantı</button>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="space-y-2">
-          {activeProject.meetings.length === 0 && <div className="text-center py-12 text-slate-400"><MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-30" /><p className="text-sm">Henüz toplantı yok.</p></div>}
-          {activeProject.meetings.map((m) => (
+          {meetings.length === 0 && <div className="text-center py-12 text-slate-400"><MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-30" /><p className="text-sm">Henüz toplantı yok.</p></div>}
+          {meetings.map((m) => (
             <div key={m.id} onClick={() => setSelectedMeetingId(m.id)} className={`p-3 rounded-xl border cursor-pointer transition-all ${runningId === m.id ? 'border-l-4 border-l-rose-400 bg-rose-500/5' : selectedMeeting?.id === m.id ? 'border-violet-400 bg-violet-500/10 shadow-lg shadow-black/20' : 'border-white/10 bg-white/5 hover:border-violet-500/20 hover:shadow-lg shadow-black/20'}`}>
               <div className="flex items-start justify-between gap-1">
                 <p className="font-semibold text-sm text-slate-100 truncate flex-1">{m.topic}</p>
@@ -165,9 +169,9 @@ export function MeetingsTab() {
                 <button onClick={handleAddNote} className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-lg text-sm transition-colors self-end"><Plus className="w-4 h-4" /></button>
               </div>
               {(() => {
-                const mReqs    = (activeProject.requirements || []).filter((r) => r.sourceMeetingId === selectedMeeting.id);
-                const mActions = (activeProject.actions || []).filter((a) => a.source === selectedMeeting.topic);
-                const mAss     = (activeProject.assumptions || []).filter((a) => a.sourceMeetingId === selectedMeeting.id);
+                const mReqs    = (requirements || []).filter((r) => r.sourceMeetingId === selectedMeeting.id);
+                const mActions = (actions || []).filter((a) => a.source === selectedMeeting.topic);
+                const mAss     = (assumptions || []).filter((a) => a.sourceMeetingId === selectedMeeting.id);
                 if (mReqs.length + mActions.length + mAss.length === 0) return null;
                 return (
                   <div className="flex items-center gap-2 flex-wrap text-xs">

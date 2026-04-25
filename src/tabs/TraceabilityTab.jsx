@@ -1,16 +1,16 @@
 import React from 'react';
 import { ArrowUpRight, CheckCircle2 } from 'lucide-react';
 import { REQ_STATUS_COLORS } from '../constants/index.js';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveRequirements, selectActiveBusinessRules, selectActiveChangeRequests, selectActiveAssumptions } from '../store/selectors.js';
 import { useUIStore } from '../store/uiStore.js';
 
 export function TraceabilityTab() {
-  const activeProject = useProjectStore(selectActiveProject);
+  const reqs        = useProjectStore(selectActiveRequirements);
+  const brs         = useProjectStore(selectActiveBusinessRules);
+  const crs         = useProjectStore(selectActiveChangeRequests);
+  const assumptions = useProjectStore(selectActiveAssumptions);
   const setActiveTab  = useUIStore((s) => s.setActiveTab);
-  const reqs = activeProject.requirements || [];
-  const brs = activeProject.businessRules || [];
-  const crs = activeProject.changeRequests || [];
-  const assumptions = activeProject.assumptions || [];
   const noAC = reqs.filter(r => !r.acceptanceCriteria);
   const noObjective = reqs.filter(r => !r.objective);
   const noFunctionalType = reqs.filter(r => !r.functionalType);

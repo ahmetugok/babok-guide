@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import {
   Layers,
   LayoutGrid, FileText,
@@ -14,22 +14,24 @@ import { babokData } from './data/babokData.jsx';
 import { useProjectStore, selectActiveProject } from './store/projectStore.js';
 import { useUIStore } from './store/uiStore.js';
 
-import { DashboardTab } from './tabs/DashboardTab.jsx';
-import { KnowledgeAreasTab } from './tabs/KnowledgeAreasTab.jsx';
-import { AssumptionsTab } from './tabs/AssumptionsTab.jsx';
-import { BusinessRulesTab } from './tabs/BusinessRulesTab.jsx';
-import { ChangesTab } from './tabs/ChangesTab.jsx';
-import { RisksTab } from './tabs/RisksTab.jsx';
-import { ActionsTab } from './tabs/ActionsTab.jsx';
-import { StakeholdersTab } from './tabs/StakeholdersTab.jsx';
-import { RequirementsTab } from './tabs/RequirementsTab.jsx';
-import { TraceabilityTab } from './tabs/TraceabilityTab.jsx';
-import { MeetingsTab } from './tabs/MeetingsTab.jsx';
-import { GanttTab } from './tabs/GanttTab.jsx';
-import { TemplatesTab } from './tabs/TemplatesTab.jsx';
-import { GlossaryTab } from './tabs/GlossaryTab.jsx';
+const DashboardTab     = lazy(() => import('./tabs/DashboardTab.jsx').then(m => ({ default: m.DashboardTab })));
+const KnowledgeAreasTab= lazy(() => import('./tabs/KnowledgeAreasTab.jsx').then(m => ({ default: m.KnowledgeAreasTab })));
+const AssumptionsTab   = lazy(() => import('./tabs/AssumptionsTab.jsx').then(m => ({ default: m.AssumptionsTab })));
+const BusinessRulesTab = lazy(() => import('./tabs/BusinessRulesTab.jsx').then(m => ({ default: m.BusinessRulesTab })));
+const ChangesTab       = lazy(() => import('./tabs/ChangesTab.jsx').then(m => ({ default: m.ChangesTab })));
+const RisksTab         = lazy(() => import('./tabs/RisksTab.jsx').then(m => ({ default: m.RisksTab })));
+const ActionsTab       = lazy(() => import('./tabs/ActionsTab.jsx').then(m => ({ default: m.ActionsTab })));
+const StakeholdersTab  = lazy(() => import('./tabs/StakeholdersTab.jsx').then(m => ({ default: m.StakeholdersTab })));
+const RequirementsTab  = lazy(() => import('./tabs/RequirementsTab.jsx').then(m => ({ default: m.RequirementsTab })));
+const TraceabilityTab  = lazy(() => import('./tabs/TraceabilityTab.jsx').then(m => ({ default: m.TraceabilityTab })));
+const MeetingsTab      = lazy(() => import('./tabs/MeetingsTab.jsx').then(m => ({ default: m.MeetingsTab })));
+const GanttTab         = lazy(() => import('./tabs/GanttTab.jsx').then(m => ({ default: m.GanttTab })));
+const TemplatesTab     = lazy(() => import('./tabs/TemplatesTab.jsx').then(m => ({ default: m.TemplatesTab })));
+const GlossaryTab      = lazy(() => import('./tabs/GlossaryTab.jsx').then(m => ({ default: m.GlossaryTab })));
 
 import { ModalManager } from './components/ModalManager.jsx';
+import { ErrorBoundary } from './components/ErrorBoundary.jsx';
+import { TabFallback } from './components/LoadingFallback.jsx';
 
 export default function App() {
   // ── Store reads ──────────────────────────────────────────────────────────
@@ -327,20 +329,24 @@ export default function App() {
         <main className="px-3 lg:px-5 pb-20 lg:pb-3">
           <div className="flex-1 space-y-3 min-w-0 aura-content-enter">
 
-            {activeTab === 'dashboard'        && <DashboardTab RingChart={RingChart} />}
-            {activeTab === 'assumptions'      && <AssumptionsTab />}
-            {activeTab === 'businessrules'    && <BusinessRulesTab />}
-            {activeTab === 'changes'          && <ChangesTab />}
-            {activeTab === 'risks'            && <RisksTab />}
-            {activeTab === 'actions'          && <ActionsTab />}
-            {activeTab === 'stakeholders'     && <StakeholdersTab />}
-            {activeTab === 'requirements'     && <RequirementsTab />}
-            {activeTab === 'traceability'     && <TraceabilityTab />}
-            {activeTab === 'meetings'         && <MeetingsTab />}
-            {activeTab === 'gantt'            && <GanttTab />}
-            {activeTab === 'knowledge_areas'  && <KnowledgeAreasTab babokData={babokData} />}
-            {activeTab === 'templates'        && <TemplatesTab />}
-            {activeTab === 'glossary'         && <GlossaryTab />}
+            <ErrorBoundary key={activeTab}>
+              <Suspense fallback={<TabFallback />}>
+                {activeTab === 'dashboard'        && <DashboardTab RingChart={RingChart} />}
+                {activeTab === 'assumptions'      && <AssumptionsTab />}
+                {activeTab === 'businessrules'    && <BusinessRulesTab />}
+                {activeTab === 'changes'          && <ChangesTab />}
+                {activeTab === 'risks'            && <RisksTab />}
+                {activeTab === 'actions'          && <ActionsTab />}
+                {activeTab === 'stakeholders'     && <StakeholdersTab />}
+                {activeTab === 'requirements'     && <RequirementsTab />}
+                {activeTab === 'traceability'     && <TraceabilityTab />}
+                {activeTab === 'meetings'         && <MeetingsTab />}
+                {activeTab === 'gantt'            && <GanttTab />}
+                {activeTab === 'knowledge_areas'  && <KnowledgeAreasTab babokData={babokData} />}
+                {activeTab === 'templates'        && <TemplatesTab />}
+                {activeTab === 'glossary'         && <GlossaryTab />}
+              </Suspense>
+            </ErrorBoundary>
 
           </div>
         </main>

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { BookMarked, Plus, Pencil, Trash2, ArrowUpRight, CheckCircle2, X, ChevronRight, ChevronDown, Link } from 'lucide-react';
 import { REQ_STATUS_COLORS } from '../constants/index.js';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveRequirements, selectActiveBusinessRules, selectActiveChangeRequests, selectActiveRisks } from '../store/selectors.js';
 import { useUIStore } from '../store/uiStore.js';
 
 function HierarchyBadge({ type }) {
@@ -11,7 +12,10 @@ function HierarchyBadge({ type }) {
 }
 
 export function RequirementsTab() {
-  const activeProject = useProjectStore(selectActiveProject);
+  const requirements  = useProjectStore(selectActiveRequirements);
+  const businessRules = useProjectStore(selectActiveBusinessRules);
+  const changeRequests = useProjectStore(selectActiveChangeRequests);
+  const risks         = useProjectStore(selectActiveRisks);
   const openModal     = useUIStore((s) => s.openModal);
   const deleteReq     = useProjectStore((s) => s.deleteReq);
   const reqFilter     = useUIStore((s) => s.reqFilter);
@@ -23,7 +27,7 @@ export function RequirementsTab() {
   const toggleCollapse = (id) =>
     setCollapsed((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  const reqs = activeProject.requirements || [];
+  const reqs = requirements || [];
   const filtered = reqFilter === 'all' ? reqs : reqs.filter((r) => r.status === reqFilter);
 
   // Build hierarchy: epics → stories under epics → requirements under stories,
@@ -154,9 +158,9 @@ export function RequirementsTab() {
               <tbody className="divide-y divide-slate-100">
                 {rows.map(({ req: r, depth }) => {
                   const linkedCount = [
-                    (activeProject.risks          || []).filter(x => x.linkedRequirementId === r.id).length,
-                    (activeProject.changeRequests  || []).filter(x => x.affectedEntityId   === r.id).length,
-                    (activeProject.businessRules   || []).filter(x => x.linkedRequirements  === r.id).length,
+                    (risks          || []).filter(x => x.linkedRequirementId === r.id).length,
+                    (changeRequests  || []).filter(x => x.affectedEntityId   === r.id).length,
+                    (businessRules   || []).filter(x => x.linkedRequirements  === r.id).length,
                   ].reduce((a, b) => a + b, 0);
 
                   const canCollapse = hasChildren(r.id);

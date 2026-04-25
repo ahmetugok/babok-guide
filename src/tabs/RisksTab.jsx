@@ -2,11 +2,12 @@ import React from 'react';
 import { AlertTriangle, Plus, Pencil, Trash2, ArrowUpRight } from 'lucide-react';
 import { getRiskLevel } from '../utils.js';
 import { PROB_LABELS, IMPACT_LABELS } from '../constants/index.js';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveRisks } from '../store/selectors.js';
 import { useUIStore } from '../store/uiStore.js';
 
 export function RisksTab() {
-  const activeProject = useProjectStore(selectActiveProject);
+  const risks      = useProjectStore(selectActiveRisks);
   const openModal  = useUIStore((s) => s.openModal);
   const deleteRisk = useProjectStore((s) => s.deleteRisk);
   return (
@@ -14,11 +15,11 @@ export function RisksTab() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><AlertTriangle className="text-rose-500 w-5 h-5" />Risk Kayıt Defteri</h2>
-          <p className="text-sm text-slate-400">{activeProject.risks.length} risk kayıtlı · {activeProject.risks.filter(r => getRiskLevel(r.probability, r.impact).label === 'Kritik').length} kritik</p>
+          <p className="text-sm text-slate-400">{risks.length} risk kayıtlı · {risks.filter(r => getRiskLevel(r.probability, r.impact).label === 'Kritik').length} kritik</p>
         </div>
         <button onClick={() => openModal('risk')} className="bg-rose-600/80 hover:bg-rose-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Risk Ekle</button>
       </div>
-      {activeProject.risks.length === 0 ? (
+      {risks.length === 0 ? (
         <div className="text-center py-20 glass-card p-8">
           <AlertTriangle className="w-14 h-14 mx-auto mb-4 text-rose-500/20 empty-state-icon" />
           <p className="text-slate-300 font-medium">Risk radarı temiz görünüyor.</p>
@@ -27,7 +28,7 @@ export function RisksTab() {
         </div>
       ) : (
         <div className="space-y-3">
-          {activeProject.risks.map(r => {
+          {risks.map(r => {
             const lvl = getRiskLevel(r.probability, r.impact);
             return (
               <div key={r.id} className={`bg-white/5 rounded-xl border p-4 shadow-lg shadow-black/20 flex items-start gap-4 ${lvl.cls.includes('rose') ? 'border-l-4 border-l-rose-400' : lvl.cls.includes('amber') ? 'border-l-4 border-l-amber-400' : 'border-l-4 border-l-emerald-400'}`}>

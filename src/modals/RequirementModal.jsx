@@ -2,16 +2,15 @@ import React, { useState } from 'react';
 import { BookMarked, Link, Plus, X } from 'lucide-react';
 import { REQ_STATUS_COLORS } from '../constants/index.js';
 import { babokData } from '../data/babokData.jsx';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveRequirements } from '../store/selectors.js';
 import { useUIStore, DEFAULT_REQ_FORM } from '../store/uiStore.js';
 
 export function RequirementModal() {
-  const activeProject = useProjectStore(selectActiveProject);
+  const requirements     = useProjectStore(selectActiveRequirements);
   const saveReq       = useProjectStore((s) => s.saveReq);
   const modalData  = useUIStore((s) => s.modalData);
   const closeModal = useUIStore((s) => s.closeModal);
-
-  const requirements = activeProject?.requirements || [];
 
   const editingReq = modalData.editingId
     ? requirements.find((r) => r.id === modalData.editingId)

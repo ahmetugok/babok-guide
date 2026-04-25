@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import { BookText, Plus, Pencil, Trash2, Search } from 'lucide-react';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveGlossaryTerms, selectActiveRequirements } from '../store/selectors.js';
 import { useUIStore } from '../store/uiStore.js';
 
 export function GlossaryTab() {
-  const activeProject    = useProjectStore(selectActiveProject);
+  const terms            = useProjectStore(selectActiveGlossaryTerms);
+  const requirements     = useProjectStore(selectActiveRequirements);
   const deleteGlossaryTerm = useProjectStore((s) => s.deleteGlossaryTerm);
   const openModal        = useUIStore((s) => s.openModal);
 
   const [search, setSearch] = useState('');
-
-  const terms       = activeProject?.glossaryTerms || [];
-  const requirements = activeProject?.requirements || [];
 
   const filtered = terms.filter(
     (t) =>

@@ -1,22 +1,23 @@
 import React from 'react';
 import { BookOpen, Plus, Pencil, Trash2 } from 'lucide-react';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveBusinessRules } from '../store/selectors.js';
 import { useUIStore } from '../store/uiStore.js';
 
 export function BusinessRulesTab() {
-  const activeProject = useProjectStore(selectActiveProject);
-  const openModal  = useUIStore((s) => s.openModal);
+  const businessRules = useProjectStore(selectActiveBusinessRules);
+  const openModal     = useUIStore((s) => s.openModal);
   const deleteBR      = useProjectStore((s) => s.deleteBR);
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><BookOpen className="text-blue-400 w-5 h-5" />Is Kurallari</h2>
-          <p className="text-sm text-slate-400">{(activeProject.businessRules || []).length} kural · {(activeProject.businessRules || []).filter(r => r.status === 'Aktif').length} aktif</p>
+          <p className="text-sm text-slate-400">{(businessRules || []).length} kural · {(businessRules || []).filter(r => r.status === 'Aktif').length} aktif</p>
         </div>
         <button onClick={() => openModal('businessRule')} className="bg-blue-600/80 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Kural Ekle</button>
       </div>
-      {(activeProject.businessRules || []).length === 0 ? (
+      {(businessRules || []).length === 0 ? (
         <div className="text-center py-16 text-slate-400"><BookOpen className="w-10 h-10 mx-auto mb-3 opacity-30" /><p>Henuz is kurali eklenmemis.</p><button onClick={() => openModal('businessRule')} className="mt-3 text-xs text-blue-400 hover:text-blue-300 transition-colors">+ Kural Ekle</button></div>
       ) : (
         <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 overflow-hidden" style={{ maxHeight: 'calc(100vh - 220px)' }}>
@@ -26,7 +27,7 @@ export function BusinessRulesTab() {
                 <tr>{['BR ID', 'Kural Basligi', 'Kategori', 'Kaynak', 'Versiyon', 'Durum', ''].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase">{h}</th>)}</tr>
               </thead>
               <tbody className="divide-y divide-slate-100/5">
-                {(activeProject.businessRules || []).map(r => (
+                {(businessRules || []).map(r => (
                   <tr key={r.id} className={`hover:bg-white/5 transition-colors ${r.status === 'Gecersiz' ? 'opacity-50' : ''}`}>
                     <td className="px-4 py-3 text-xs font-mono text-slate-400 whitespace-nowrap">{r.brId}</td>
                     <td className={`px-4 py-3 font-medium text-slate-100 ${r.status === 'Gecersiz' ? 'line-through' : ''}`}>{r.title}</td>

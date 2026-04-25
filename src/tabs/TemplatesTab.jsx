@@ -1,15 +1,16 @@
 import React from 'react';
 import { FileStack, FileText, ClipboardCopy, RefreshCw } from 'lucide-react';
 import { templatesData, PROB_LABELS, RACI_LABELS } from '../constants/index.js';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveRequirements, selectActiveStakeholders, selectActiveMeetings } from '../store/selectors.js';
 
 export function TemplatesTab() {
-  const activeProject = useProjectStore(selectActiveProject);
+  const requirements  = useProjectStore(selectActiveRequirements);
+  const stakeholders  = useProjectStore(selectActiveStakeholders);
+  const meetings      = useProjectStore(selectActiveMeetings);
 
   const generateLiveTemplate = (templateId) => {
-    const reqs         = activeProject.requirements || [];
-    const stakeholders = activeProject.stakeholders || [];
-    const meetings     = activeProject.meetings || [];
+    const reqs         = requirements || [];
     let text = '';
 
     if (templateId === 'tpl_raci') {

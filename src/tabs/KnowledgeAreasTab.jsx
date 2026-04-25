@@ -4,11 +4,15 @@ import {
   CheckSquare, Square, Sparkles, Bot, Lightbulb, Play, Square as StopIcon, Clock
 } from 'lucide-react';
 import { formatDuration, startTimer, stopTimer, getActiveTimer, getAllActiveTimers } from '../utils/timeTracker.js';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveCompletedTasks, selectActiveCompletedSubTasks, selectActiveProjectContext, selectActiveCompletedTaskDurs } from '../store/selectors.js';
 import { useUIStore } from '../store/uiStore.js';
 
 export function KnowledgeAreasTab({ babokData }) {
-  const activeProject     = useProjectStore(selectActiveProject);
+  const completedTasks    = useProjectStore(selectActiveCompletedTasks);
+  const completedSubTasks = useProjectStore(selectActiveCompletedSubTasks);
+  const projectContext    = useProjectStore(selectActiveProjectContext);
+  const completedTaskDurations = useProjectStore(selectActiveCompletedTaskDurs);
   const updateActive      = useProjectStore((s) => s.updateActive);
   const toggleTask        = useProjectStore((s) => s.toggleTask);
   const toggleSubTask     = useProjectStore((s) => s.toggleSubTask);
@@ -21,9 +25,6 @@ export function KnowledgeAreasTab({ babokData }) {
   const isContextSaved    = useUIStore((s) => s.isContextSaved);
   const handleOpenAIModal = useUIStore((s) => s.handleOpenAIModal);
 
-  const completedTasks    = activeProject?.completedTasks || [];
-  const completedSubTasks = activeProject?.completedSubTasks || [];
-  const projectContext    = activeProject?.projectContext || '';
   const setProjectContext = (v) => updateActive((p) => ({ ...p, projectContext: typeof v === 'function' ? v(p.projectContext) : v }));
 
   const handleTaskClick = (task) => {
@@ -175,7 +176,7 @@ export function KnowledgeAreasTab({ babokData }) {
                 )}
                 <input
                   type="number" min="0"
-                  value={(activeProject?.completedTaskDurations || {})['area_' + ka.id] || 0}
+                  value={(completedTaskDurations || {})['area_' + ka.id] || 0}
                   onClick={e => e.stopPropagation()}
                   onChange={e => { e.stopPropagation(); const v = Math.max(0, parseInt(e.target.value) || 0); updateActive && updateActive(p => ({ ...p, completedTaskDurations: { ...(p.completedTaskDurations || {}), ['area_' + ka.id]: v } })); }}
                   className="w-14 text-center text-xs bg-white/5 border border-white/10 rounded-lg px-1 py-1.5 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 shrink-0"
@@ -314,7 +315,7 @@ export function KnowledgeAreasTab({ babokData }) {
             )}
             {/* Toplam alan süresi */}
             {(() => {
-              const areaTotal = (activeProject?.completedTaskDurations || {})['area_' + ka.id] || 0;
+              const areaTotal = (completedTaskDurations || {})['area_' + ka.id] || 0;
               if (areaTotal === 0) return null;
               return (
                 <div className="px-4 py-2 border-t border-white/5 flex items-center gap-2">

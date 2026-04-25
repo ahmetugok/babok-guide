@@ -2,7 +2,12 @@ import React from 'react';
 import { ArrowUpRight, X } from 'lucide-react';
 import { PROB_LABELS, RACI_LABELS } from '../constants/index.js';
 import { getRiskLevel } from '../utils.js';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import {
+  selectActiveRequirements, selectActiveBusinessRules, selectActiveChangeRequests,
+  selectActiveRisks, selectActiveMeetings, selectActiveActions, selectActiveAssumptions,
+  selectActiveStakeholders,
+} from '../store/selectors.js';
 import { useUIStore } from '../store/uiStore.js';
 
 /* ── shared helpers ──────────────────────────────────── */
@@ -99,11 +104,15 @@ function RiskChip({ risk }) {
 }
 
 /* ── REQUIREMENT view ────────────────────────────────── */
-function RequirementCard({ entity: req, activeProject, onClose }) {
-  const linkedBRs      = (activeProject.businessRules  || []).filter(br => br.linkedRequirements === req.id);
-  const linkedCRs      = (activeProject.changeRequests || []).filter(cr => cr.affectedEntityId === req.id);
-  const linkedRisks    = (activeProject.risks          || []).filter(r  => r.linkedRequirementId === req.id);
-  const sourceMeeting  = (activeProject.meetings       || []).find(m   => m.id === req.sourceMeetingId);
+function RequirementCard({ entity: req, onClose }) {
+  const businessRules  = useProjectStore(selectActiveBusinessRules);
+  const changeRequests = useProjectStore(selectActiveChangeRequests);
+  const risks          = useProjectStore(selectActiveRisks);
+  const meetings       = useProjectStore(selectActiveMeetings);
+  const linkedBRs      = businessRules.filter(br => br.linkedRequirements === req.id);
+  const linkedCRs      = changeRequests.filter(cr => cr.affectedEntityId === req.id);
+  const linkedRisks    = risks.filter(r  => r.linkedRequirementId === req.id);
+  const sourceMeeting  = meetings.find(m   => m.id === req.sourceMeetingId);
 
   return (
     <Overlay onClose={onClose}>
@@ -148,11 +157,15 @@ function RequirementCard({ entity: req, activeProject, onClose }) {
 }
 
 /* ── STAKEHOLDER view ────────────────────────────────── */
-function StakeholderCard({ entity: s, activeProject, onClose }) {
-  const requests  = (activeProject.requirements || []).filter(r => r.requestingStakeholderId === s.id);
-  const meetings  = (activeProject.meetings     || []).filter(m => m.attendees && m.attendees.toLowerCase().includes(s.name.toLowerCase()));
-  const actions   = (activeProject.actions      || []).filter(a => a.owner && a.owner.toLowerCase() === s.name.toLowerCase());
-  const risks     = (activeProject.risks        || []).filter(r => r.affectedStakeholderId === s.id);
+function StakeholderCard({ entity: s, onClose }) {
+  const allRequirements = useProjectStore(selectActiveRequirements);
+  const allMeetings     = useProjectStore(selectActiveMeetings);
+  const allActions      = useProjectStore(selectActiveActions);
+  const allRisks        = useProjectStore(selectActiveRisks);
+  const requests  = allRequirements.filter(r => r.requestingStakeholderId === s.id);
+  const meetings  = allMeetings.filter(m => m.attendees && m.attendees.toLowerCase().includes(s.name.toLowerCase()));
+  const actions   = allActions.filter(a => a.owner && a.owner.toLowerCase() === s.name.toLowerCase());
+  const risks     = allRisks.filter(r => r.affectedStakeholderId === s.id);
 
   return (
     <Overlay onClose={onClose}>
@@ -193,12 +206,16 @@ function StakeholderCard({ entity: s, activeProject, onClose }) {
 }
 
 /* ── RISK view ───────────────────────────────────────── */
-function RiskCard({ entity: risk, activeProject, onClose }) {
-  const lvl         = getRiskLevel(risk.probability, risk.impact);
-  const linkedReq   = (activeProject.requirements || []).find(r => r.id === risk.linkedRequirementId);
-  const linkedAss   = (activeProject.assumptions  || []).find(a => a.id === risk.linkedAssumptionId);
-  const linkedSH    = (activeProject.stakeholders || []).find(s => s.id === risk.affectedStakeholderId);
-  const mitigActs   = (activeProject.actions      || []).filter(a => a.linkedRequirementId === risk.linkedRequirementId && risk.linkedRequirementId);
+function RiskCard({ entity: risk, onClose }) {
+  const requirements = useProjectStore(selectActiveRequirements);
+  const assumptions  = useProjectStore(selectActiveAssumptions);
+  const stakeholders = useProjectStore(selectActiveStakeholders);
+  const actions      = useProjectStore(selectActiveActions);
+  const lvl          = getRiskLevel(risk.probability, risk.impact);
+  const linkedReq   = requirements.find(r => r.id === risk.linkedRequirementId);
+  const linkedAss   = assumptions.find(a => a.id === risk.linkedAssumptionId);
+  const linkedSH    = stakeholders.find(s => s.id === risk.affectedStakeholderId);
+  const mitigActs   = actions.filter(a => a.linkedRequirementId === risk.linkedRequirementId && risk.linkedRequirementId);
 
   return (
     <Overlay onClose={onClose}>
@@ -241,9 +258,11 @@ function RiskCard({ entity: risk, activeProject, onClose }) {
 }
 
 /* ── ASSUMPTION view ─────────────────────────────────── */
-function AssumptionCard({ entity: ass, activeProject, onClose }) {
-  const linkedReq     = (activeProject.requirements || []).find(r => r.id === ass.linkedRequirements);
-  const triggeredRisks = (activeProject.risks       || []).filter(r => r.linkedAssumptionId === ass.id);
+function AssumptionCard({ entity: ass, onClose }) {
+  const requirements   = useProjectStore(selectActiveRequirements);
+  const risks          = useProjectStore(selectActiveRisks);
+  const linkedReq      = requirements.find(r => r.id === ass.linkedRequirements);
+  const triggeredRisks = risks.filter(r => r.linkedAssumptionId === ass.id);
 
   const validationBanner = {
     'Curutuldu':     'bg-rose-500/10 border border-rose-500/20 text-rose-300',
@@ -281,34 +300,41 @@ function AssumptionCard({ entity: ass, activeProject, onClose }) {
 
 /* ── MAIN export ─────────────────────────────────────── */
 export function LinkCardModal() {
-  const activeProject = useProjectStore(selectActiveProject);
+  const businessRules  = useProjectStore(selectActiveBusinessRules);
+  const changeRequests = useProjectStore(selectActiveChangeRequests);
+  const risks          = useProjectStore(selectActiveRisks);
+  const meetings       = useProjectStore(selectActiveMeetings);
+  const requirements   = useProjectStore(selectActiveRequirements);
+  const actions        = useProjectStore(selectActiveActions);
+  const assumptions    = useProjectStore(selectActiveAssumptions);
+  const stakeholders   = useProjectStore(selectActiveStakeholders);
   const modalData  = useUIStore((s) => s.modalData);
   const closeModal = useUIStore((s) => s.closeModal);
 
   const { entityType, entityId } = modalData;
 
   if (entityType === 'requirement') {
-    const entity = (activeProject.requirements || []).find(r => r.id === entityId);
+    const entity = (requirements).find(r => r.id === entityId);
     if (!entity) return null;
-    return <RequirementCard entity={entity} activeProject={activeProject} onClose={closeModal} />;
+    return <RequirementCard entity={entity} onClose={closeModal} />;
   }
 
   if (entityType === 'stakeholder') {
-    const entity = (activeProject.stakeholders || []).find(s => s.id === entityId);
+    const entity = (stakeholders).find(s => s.id === entityId);
     if (!entity) return null;
-    return <StakeholderCard entity={entity} activeProject={activeProject} onClose={closeModal} />;
+    return <StakeholderCard entity={entity} onClose={closeModal} />;
   }
 
   if (entityType === 'risk') {
-    const entity = (activeProject.risks || []).find(r => r.id === entityId);
+    const entity = (risks || []).find(r => r.id === entityId);
     if (!entity) return null;
-    return <RiskCard entity={entity} activeProject={activeProject} onClose={closeModal} />;
+    return <RiskCard entity={entity} onClose={closeModal} />;
   }
 
   if (entityType === 'assumption') {
-    const entity = (activeProject.assumptions || []).find(a => a.id === entityId);
+    const entity = (assumptions || []).find(a => a.id === entityId);
     if (!entity) return null;
-    return <AssumptionCard entity={entity} activeProject={activeProject} onClose={closeModal} />;
+    return <AssumptionCard entity={entity} onClose={closeModal} />;
   }
 
   return null;

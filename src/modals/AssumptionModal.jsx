@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { Lightbulb } from 'lucide-react';
 import { EntitySelector } from '../components/EntitySelector.jsx';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveAssumptions } from '../store/selectors.js';
 import { useUIStore, DEFAULT_ASSUMPTION_FORM } from '../store/uiStore.js';
 
 export function AssumptionModal() {
-  const activeProject      = useProjectStore(selectActiveProject);
+  const assumptions     = useProjectStore(selectActiveAssumptions);
   const saveAssumption     = useProjectStore((s) => s.saveAssumption);
   const modalData  = useUIStore((s) => s.modalData);
   const closeModal = useUIStore((s) => s.closeModal);
 
   const editingAssumption = modalData.editingId
-    ? (activeProject?.assumptions || []).find((a) => a.id === modalData.editingId)
+    ? (assumptions || []).find((a) => a.id === modalData.editingId)
     : null;
 
   const [form, setForm] = useState(

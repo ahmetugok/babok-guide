@@ -3,17 +3,18 @@ import { AlertTriangle } from 'lucide-react';
 import { PROB_LABELS, IMPACT_LABELS } from '../constants/index.js';
 import { getRiskLevel } from '../utils.js';
 import { EntitySelector } from '../components/EntitySelector.jsx';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveRisks } from '../store/selectors.js';
 import { useUIStore, DEFAULT_RISK_FORM } from '../store/uiStore.js';
 
 export function RiskModal() {
-  const activeProject = useProjectStore(selectActiveProject);
+  const risks     = useProjectStore(selectActiveRisks);
   const saveRisk      = useProjectStore((s) => s.saveRisk);
   const modalData  = useUIStore((s) => s.modalData);
   const closeModal = useUIStore((s) => s.closeModal);
 
   const editingRisk = modalData.editingId
-    ? (activeProject?.risks || []).find((r) => r.id === modalData.editingId)
+    ? (risks || []).find((r) => r.id === modalData.editingId)
     : null;
 
   const [form, setForm] = useState(

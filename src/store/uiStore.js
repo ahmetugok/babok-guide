@@ -4,8 +4,11 @@ import { formatMarkdown } from '../utils.js';
 
 // ── Gemini API yardımcısı (sadece uiStore içinde kullanılır) ─────────────────
 const generateWithGemini = async (promptText) => {
-  const apiKey = ''; // API key will be provided by execution environment
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+  const apiKey = localStorage.getItem('gemini_api_key') || '';
+  if (!apiKey.trim()) {
+    return 'Gemini API key girilmemiş. Lütfen Ayarlar menüsünden Gemini API Key\'inizi ekleyin.';
+  }
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey.trim()}`;
 
   let retries = 0;
   const maxRetries = 5;

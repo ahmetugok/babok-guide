@@ -1,15 +1,15 @@
 import React from 'react';
 import { CalendarDays, Plus, Pencil, Trash2, AlertTriangle } from 'lucide-react';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveGanttTasks } from '../store/selectors.js';
 import { useUIStore } from '../store/uiStore.js';
 
 export function GanttTab() {
-  const activeProject   = useProjectStore(selectActiveProject);
+  const tasks           = useProjectStore(selectActiveGanttTasks);
   const openModal       = useUIStore((s) => s.openModal);
   const deleteGanttTask = useProjectStore((s) => s.deleteGanttTask);
   const ganttZoom       = useUIStore((s) => s.ganttZoom);
   const setGanttZoom    = useUIStore((s) => s.setGanttZoom);
-  const tasks = activeProject.ganttTasks || [];
   const DAY_WIDTHS = { week: 40, month: 16, quarter: 6 };
   const dayWidth = DAY_WIDTHS[ganttZoom];
 

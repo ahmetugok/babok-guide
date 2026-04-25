@@ -4,12 +4,15 @@ import { useUIStore } from '../store/uiStore.js';
 
 export function SettingsModal() {
   const closeModal = useUIStore((s) => s.closeModal);
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('groq_api_key') || '');
-  const [showKey, setShowKey] = useState(false);
+  const [groqKey, setGroqKey] = useState(() => localStorage.getItem('groq_api_key') || '');
+  const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
+  const [showGroqKey, setShowGroqKey] = useState(false);
+  const [showGeminiKey, setShowGeminiKey] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const handleSave = () => {
-    localStorage.setItem('groq_api_key', apiKey.trim());
+    localStorage.setItem('groq_api_key', groqKey.trim());
+    localStorage.setItem('gemini_api_key', geminiKey.trim());
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -31,22 +34,44 @@ export function SettingsModal() {
             <label className="text-xs font-bold text-slate-400 block mb-1.5">Groq API Key</label>
             <div className="relative">
               <input
-                type={showKey ? 'text' : 'password'}
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
+                type={showGroqKey ? 'text' : 'password'}
+                value={groqKey}
+                onChange={(e) => setGroqKey(e.target.value)}
                 placeholder="gsk_..."
                 className="w-full border border-white/10 rounded-lg px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
               />
               <button
                 type="button"
-                onClick={() => setShowKey(!showKey)}
+                onClick={() => setShowGroqKey(!showGroqKey)}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
               >
-                {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showGroqKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
             <p className="text-xs text-slate-500 mt-1">
               console.groq.com adresinden ücretsiz alabilirsiniz. Tarayıcınızda saklanır, sunucuya gönderilmez.
+            </p>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-slate-400 block mb-1.5">Gemini API Key</label>
+            <div className="relative">
+              <input
+                type={showGeminiKey ? 'text' : 'password'}
+                value={geminiKey}
+                onChange={(e) => setGeminiKey(e.target.value)}
+                placeholder="AIza..."
+                className="w-full border border-white/10 rounded-lg px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+              />
+              <button
+                type="button"
+                onClick={() => setShowGeminiKey(!showGeminiKey)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
+              >
+                {showGeminiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              aistudio.google.com adresinden ücretsiz alabilirsiniz. AI Taslak özelliği için gereklidir.
             </p>
           </div>
         </div>

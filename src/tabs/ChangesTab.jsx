@@ -1,18 +1,19 @@
 import React from 'react';
 import { RefreshCw, Plus, Pencil, Trash2 } from 'lucide-react';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveChangeRequests } from '../store/selectors.js';
 import { useUIStore } from '../store/uiStore.js';
 
 export function ChangesTab() {
-  const activeProject = useProjectStore(selectActiveProject);
-  const openModal  = useUIStore((s) => s.openModal);
-  const deleteCR      = useProjectStore((s) => s.deleteCR);
+  const changeRequests = useProjectStore(selectActiveChangeRequests);
+  const openModal      = useUIStore((s) => s.openModal);
+  const deleteCR       = useProjectStore((s) => s.deleteCR);
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><RefreshCw className="text-amber-400 w-5 h-5" />Degisiklik Yonetimi</h2>
-          <p className="text-sm text-slate-400">{(activeProject.changeRequests || []).length} talep kayıtlı</p>
+          <p className="text-sm text-slate-400">{(changeRequests || []).length} talep kayıtlı</p>
         </div>
         <button onClick={() => openModal('changeRequest')} className="bg-amber-600/80 hover:bg-amber-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />CR Ekle</button>
       </div>
@@ -25,16 +26,16 @@ export function ChangesTab() {
           { label: 'Ertelendi', color: 'text-slate-400 bg-white/5 border-white/10' },
         ].map(({ label, color }) => (
           <div key={label} className={`glass-card p-3 text-center border ${color}`}>
-            <span className="font-stat text-2xl font-bold block">{(activeProject.changeRequests || []).filter(cr => cr.status === label).length}</span>
+            <span className="font-stat text-2xl font-bold block">{(changeRequests || []).filter(cr => cr.status === label).length}</span>
             <span className="text-xs">{label}</span>
           </div>
         ))}
       </div>
-      {(activeProject.changeRequests || []).length === 0 ? (
+      {(changeRequests || []).length === 0 ? (
         <div className="text-center py-16 text-slate-400"><RefreshCw className="w-10 h-10 mx-auto mb-3 opacity-30" /><p>Henuz degisiklik talebi eklenmemis.</p></div>
       ) : (
         <div className="space-y-3">
-          {(activeProject.changeRequests || []).map(cr => (
+          {(changeRequests || []).map(cr => (
             <div key={cr.id} className={`bg-white/5 rounded-xl border p-4 shadow-lg shadow-black/20 ${cr.status === 'Bekliyor' ? 'border-l-4 border-l-amber-400' : cr.status === 'Onaylandi' ? 'border-l-4 border-l-emerald-400' : cr.status === 'Reddedildi' ? 'border-l-4 border-l-rose-400' : 'border-white/10'}`}>
               <div className="flex items-start gap-4">
                 <div className="flex-1 min-w-0">

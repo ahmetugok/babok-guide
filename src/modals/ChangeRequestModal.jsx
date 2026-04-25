@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { EntitySelector } from '../components/EntitySelector.jsx';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveChangeRequests } from '../store/selectors.js';
 import { useUIStore, DEFAULT_CR_FORM } from '../store/uiStore.js';
 
 const ENTITY_TYPE_MAP = {
@@ -12,13 +13,13 @@ const ENTITY_TYPE_MAP = {
 };
 
 export function ChangeRequestModal() {
-  const activeProject = useProjectStore(selectActiveProject);
+  const changeRequests     = useProjectStore(selectActiveChangeRequests);
   const saveCR        = useProjectStore((s) => s.saveCR);
   const modalData  = useUIStore((s) => s.modalData);
   const closeModal = useUIStore((s) => s.closeModal);
 
   const editingCR = modalData.editingId
-    ? (activeProject?.changeRequests || []).find((cr) => cr.id === modalData.editingId)
+    ? (changeRequests || []).find((cr) => cr.id === modalData.editingId)
     : null;
 
   const [form, setForm] = useState(

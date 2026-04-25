@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { ListChecks, Play, Square, Clock, Link } from 'lucide-react';
 import { EntitySelector } from '../components/EntitySelector.jsx';
-import { useProjectStore, selectActiveProject } from '../store/projectStore.js';
+import { useProjectStore } from '../store/projectStore.js';
+import { selectActiveActions } from '../store/selectors.js';
 import { useUIStore, DEFAULT_ACTION_FORM } from '../store/uiStore.js';
 
 export function ActionModal() {
-  const activeProject  = useProjectStore(selectActiveProject);
+  const actions     = useProjectStore(selectActiveActions);
   const saveAction     = useProjectStore((s) => s.saveAction);
   const modalData  = useUIStore((s) => s.modalData);
   const closeModal = useUIStore((s) => s.closeModal);
 
-  const actions = activeProject?.actions || [];
 
   const editingAction = modalData.editingId
     ? actions.find((a) => a.id === modalData.editingId)

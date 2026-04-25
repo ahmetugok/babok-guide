@@ -1,45 +1,52 @@
+import { lazy, Suspense } from 'react';
 import { useUIStore } from '../store/uiStore.js';
+import { ErrorBoundary } from './ErrorBoundary.jsx';
+import { ModalFallback } from './LoadingFallback.jsx';
 
-import { BusinessRuleModal }     from '../modals/BusinessRuleModal.jsx';
-import { ChangeRequestModal }    from '../modals/ChangeRequestModal.jsx';
-import { RiskModal }             from '../modals/RiskModal.jsx';
-import { AssumptionModal }       from '../modals/AssumptionModal.jsx';
-import { ActionModal }           from '../modals/ActionModal.jsx';
-import { StakeholderModal }      from '../modals/StakeholderModal.jsx';
-import { RequirementModal }      from '../modals/RequirementModal.jsx';
-import { LinkCardModal }         from '../modals/LinkCardModal.jsx';
-import { MeetingModal }          from '../modals/MeetingModal.jsx';
-import { GanttModal }            from '../modals/GanttModal.jsx';
-import { ExportModal }           from '../modals/ExportModal.jsx';
-import { DocumentAnalysisModal } from '../modals/DocumentAnalysisModal.jsx';
-import { SettingsModal }         from '../modals/SettingsModal.jsx';
-import { AiGenerationModal }     from '../modals/AiGenerationModal.jsx';
-import { ProjectCreateModal }    from '../modals/ProjectCreateModal.jsx';
-import { ResetConfirmModal }     from '../modals/ResetConfirmModal.jsx';
-import { GlossaryModal }         from '../modals/GlossaryModal.jsx';
+const BusinessRuleModal     = lazy(() => import('../modals/BusinessRuleModal.jsx').then(m => ({ default: m.BusinessRuleModal })));
+const ChangeRequestModal    = lazy(() => import('../modals/ChangeRequestModal.jsx').then(m => ({ default: m.ChangeRequestModal })));
+const RiskModal             = lazy(() => import('../modals/RiskModal.jsx').then(m => ({ default: m.RiskModal })));
+const AssumptionModal       = lazy(() => import('../modals/AssumptionModal.jsx').then(m => ({ default: m.AssumptionModal })));
+const ActionModal           = lazy(() => import('../modals/ActionModal.jsx').then(m => ({ default: m.ActionModal })));
+const StakeholderModal      = lazy(() => import('../modals/StakeholderModal.jsx').then(m => ({ default: m.StakeholderModal })));
+const RequirementModal      = lazy(() => import('../modals/RequirementModal.jsx').then(m => ({ default: m.RequirementModal })));
+const LinkCardModal         = lazy(() => import('../modals/LinkCardModal.jsx').then(m => ({ default: m.LinkCardModal })));
+const MeetingModal          = lazy(() => import('../modals/MeetingModal.jsx').then(m => ({ default: m.MeetingModal })));
+const GanttModal            = lazy(() => import('../modals/GanttModal.jsx').then(m => ({ default: m.GanttModal })));
+const ExportModal           = lazy(() => import('../modals/ExportModal.jsx').then(m => ({ default: m.ExportModal })));
+const DocumentAnalysisModal = lazy(() => import('../modals/DocumentAnalysisModal.jsx').then(m => ({ default: m.DocumentAnalysisModal })));
+const SettingsModal         = lazy(() => import('../modals/SettingsModal.jsx').then(m => ({ default: m.SettingsModal })));
+const AiGenerationModal     = lazy(() => import('../modals/AiGenerationModal.jsx').then(m => ({ default: m.AiGenerationModal })));
+const ProjectCreateModal    = lazy(() => import('../modals/ProjectCreateModal.jsx').then(m => ({ default: m.ProjectCreateModal })));
+const ResetConfirmModal     = lazy(() => import('../modals/ResetConfirmModal.jsx').then(m => ({ default: m.ResetConfirmModal })));
+const GlossaryModal         = lazy(() => import('../modals/GlossaryModal.jsx').then(m => ({ default: m.GlossaryModal })));
 
 export function ModalManager() {
   const activeModal = useUIStore((s) => s.activeModal);
 
+  if (!activeModal) return null;
+
   return (
-    <>
-      {activeModal === 'businessRule'     && <BusinessRuleModal />}
-      {activeModal === 'changeRequest'    && <ChangeRequestModal />}
-      {activeModal === 'risk'             && <RiskModal />}
-      {activeModal === 'assumption'       && <AssumptionModal />}
-      {activeModal === 'action'           && <ActionModal />}
-      {activeModal === 'stakeholder'      && <StakeholderModal />}
-      {activeModal === 'requirement'      && <RequirementModal />}
-      {activeModal === 'linkCard'         && <LinkCardModal />}
-      {activeModal === 'meeting'          && <MeetingModal />}
-      {activeModal === 'gantt'            && <GanttModal />}
-      {activeModal === 'export'           && <ExportModal />}
-      {activeModal === 'documentAnalysis' && <DocumentAnalysisModal />}
-      {activeModal === 'settings'         && <SettingsModal />}
-      {activeModal === 'aiGeneration'     && <AiGenerationModal />}
-      {activeModal === 'projectCreate'    && <ProjectCreateModal />}
-      {activeModal === 'resetConfirm'     && <ResetConfirmModal />}
-      {activeModal === 'glossary'         && <GlossaryModal />}
-    </>
+    <ErrorBoundary key={activeModal}>
+      <Suspense fallback={<ModalFallback />}>
+        {activeModal === 'businessRule'     && <BusinessRuleModal />}
+        {activeModal === 'changeRequest'    && <ChangeRequestModal />}
+        {activeModal === 'risk'             && <RiskModal />}
+        {activeModal === 'assumption'       && <AssumptionModal />}
+        {activeModal === 'action'           && <ActionModal />}
+        {activeModal === 'stakeholder'      && <StakeholderModal />}
+        {activeModal === 'requirement'      && <RequirementModal />}
+        {activeModal === 'linkCard'         && <LinkCardModal />}
+        {activeModal === 'meeting'          && <MeetingModal />}
+        {activeModal === 'gantt'            && <GanttModal />}
+        {activeModal === 'export'           && <ExportModal />}
+        {activeModal === 'documentAnalysis' && <DocumentAnalysisModal />}
+        {activeModal === 'settings'         && <SettingsModal />}
+        {activeModal === 'aiGeneration'     && <AiGenerationModal />}
+        {activeModal === 'projectCreate'    && <ProjectCreateModal />}
+        {activeModal === 'resetConfirm'     && <ResetConfirmModal />}
+        {activeModal === 'glossary'         && <GlossaryModal />}
+      </Suspense>
+    </ErrorBoundary>
   );
 }
