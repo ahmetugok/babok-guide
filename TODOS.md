@@ -1,6 +1,7 @@
 # TODOS — Teknik Borç
 
 > Gstack `/review` denetiminden çıkan teknik borç listesi. 25 Nisan 2026.
+> **Tüm maddeler tamamlandı — 25 Nisan 2026.**
 
 ---
 
