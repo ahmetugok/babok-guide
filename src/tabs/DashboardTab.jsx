@@ -95,11 +95,11 @@ export function DashboardTab() {
             <div className="grid grid-cols-4 gap-2.5">
               <div className="bg-white/5 rounded-lg p-2.5 border border-white/5">
                 <span className="text-xs text-slate-500 uppercase tracking-wider block mb-0.5">Ana Görev</span>
-                <span className="font-stat text-xl font-bold text-white">{completedTasks.length}<span className="text-sm text-slate-500">/{totalTasks}</span></span>
+                <span className="font-stat text-xl font-bold text-white">{completedTasks.length}<span className="text-sm text-slate-500">/{TOTAL_TASKS}</span></span>
               </div>
               <div className="bg-white/5 rounded-lg p-2.5 border border-white/5">
                 <span className="text-xs text-slate-500 uppercase tracking-wider block mb-0.5">Alt Görev</span>
-                <span className="font-stat text-xl font-bold text-white">{completedSubTasks.length}<span className="text-sm text-slate-500">/{totalSubTasks}</span></span>
+                <span className="font-stat text-xl font-bold text-white">{completedSubTasks.length}<span className="text-sm text-slate-500">/{TOTAL_SUBTASKS}</span></span>
               </div>
               <div className="bg-white/5 rounded-lg p-2.5 border border-white/5">
                 <span className="text-xs text-slate-500 uppercase tracking-wider block mb-0.5">Paydaş</span>
