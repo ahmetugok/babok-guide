@@ -263,7 +263,7 @@ export default function App() {
           <div className="flex-1 space-y-3 min-w-0 aura-content-enter">
 
             <ErrorBoundary key={activeTab}>
-              <Suspense fallback={<TabFallback />}>
+              <Suspense fallback={<TabFallback activeTab={activeTab} />}>
                 {activeTab === 'dashboard'        && <DashboardTab />}
                 {activeTab === 'assumptions'      && <AssumptionsTab />}
                 {activeTab === 'businessrules'    && <BusinessRulesTab />}

@@ -1,5 +1,5 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { X, Upload, FileText, Loader2, AlertTriangle } from 'lucide-react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { X, Upload, FileText, Loader2, AlertTriangle, CheckCircle2, Cpu, Sparkles } from 'lucide-react';
 import { readFileAsText } from '../utils/documentParser.js';
 import { analyzeDocument } from '../utils/groqClient.js';
 import { AnalysisResultsModal } from './AnalysisResultsModal.jsx';
@@ -7,9 +7,9 @@ import { useProjectStore } from '../store/projectStore.js';
 import { useUIStore } from '../store/uiStore.js';
 
 const LOADING_STEPS = [
-  'Döküman okunuyor...',
-  'Groq\'a gönderiliyor...',
-  'Sonuçlar hazırlanıyor...',
+  { label: 'Döküman okunuyor...', Icon: FileText },
+  { label: 'Groq\'a gönderiliyor...', Icon: Cpu },
+  { label: 'Sonuçlar hazırlanıyor...', Icon: Sparkles },
 ];
 
 const ACCEPTED = '.pdf,.txt,.md';
@@ -22,9 +22,16 @@ export function DocumentAnalysisModal() {
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [loadingStep, setLoadingStep] = useState(null);
+  const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState('');
   const [results, setResults] = useState(null);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (loadingStep === null) { setElapsed(0); return; }
+    const t = setInterval(() => setElapsed(s => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [loadingStep]);
 
   const onClose = closeModal;
 
@@ -160,20 +167,58 @@ export function DocumentAnalysisModal() {
 
           {/* Loading */}
           {isLoading && (
-            <div className="flex items-center gap-3 bg-violet-500/10 border border-violet-500/20 rounded-lg p-3">
-              <Loader2 className="w-4 h-4 text-violet-400 animate-spin shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm text-violet-300">{LOADING_STEPS[loadingStep]}</p>
-                <div className="flex gap-1 mt-2">
-                  {LOADING_STEPS.map((_, i) => (
+            <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-3.5 h-3.5 text-violet-400 animate-spin shrink-0" />
+                  <span className="text-xs font-medium text-violet-300">
+                    {LOADING_STEPS[loadingStep].label}
+                  </span>
+                </div>
+                <span className="text-xs font-mono text-violet-400/60 tabular-nums">
+                  {String(Math.floor(elapsed / 60)).padStart(2, '0')}:{String(elapsed % 60).padStart(2, '0')}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {LOADING_STEPS.map(({ label, Icon }, i) => {
+                  const done = i < loadingStep;
+                  const active = i === loadingStep;
+                  return (
                     <div
                       key={i}
-                      className={`h-1 flex-1 rounded-full transition-colors ${
-                        i <= loadingStep ? 'bg-violet-400' : 'bg-white/10'
+                      className={`flex items-center gap-2.5 transition-opacity duration-300 ${
+                        i > loadingStep ? 'opacity-25' : 'opacity-100'
                       }`}
-                    />
-                  ))}
-                </div>
+                    >
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                        done   ? 'bg-emerald-500/20'  :
+                        active ? 'bg-violet-500/20'   : 'bg-white/5'
+                      }`}>
+                        {done
+                          ? <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                          : active
+                            ? <Loader2 className="w-3 h-3 text-violet-400 animate-spin" />
+                            : <Icon className="w-3 h-3 text-slate-500" />
+                        }
+                      </div>
+                      <span className={`text-xs transition-colors ${
+                        done   ? 'text-emerald-400/70 line-through' :
+                        active ? 'text-violet-300 font-medium'      : 'text-slate-500'
+                      }`}>{label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex gap-1 pt-1">
+                {LOADING_STEPS.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-0.5 flex-1 rounded-full transition-all duration-500 ${
+                      i < loadingStep  ? 'bg-emerald-400' :
+                      i === loadingStep ? 'bg-violet-400'  : 'bg-white/10'
+                    }`}
+                  />
+                ))}
               </div>
             </div>
           )}
