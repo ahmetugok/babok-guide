@@ -71,8 +71,8 @@ export function AnalysisResultsModal({ results, onClose, onApprove }) {
   const sc = scoreColor(results.quality_score ?? 0);
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeModal}>
-      <div className="glass-card rounded-2xl shadow-2xl border border-white/10 w-full max-w-2xl flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} className="glass-card rounded-2xl shadow-2xl border border-white/10 w-full max-w-2xl flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-white/10 shrink-0">
           <h2 className="text-base font-bold text-slate-100">Analiz Sonuçları</h2>
