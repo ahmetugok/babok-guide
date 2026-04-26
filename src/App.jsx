@@ -200,7 +200,7 @@ export default function App() {
                   <Layers className="w-5 h-5 text-cyan-400" />
                 </div>
                 <div className="min-w-0">
-                  <h1 className="text-base font-bold text-white flex items-center gap-2">
+                  <h1 className="text-lg font-bold text-white flex items-center gap-2">
                     <span>BABOK v3</span>
                     <span className="text-slate-400">·</span>
                     <span className="neon-cyan truncate max-w-[200px]">{activeProject.name}</span>

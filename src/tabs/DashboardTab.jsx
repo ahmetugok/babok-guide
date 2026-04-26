@@ -204,7 +204,7 @@ export function DashboardTab() {
 
         return (
           <div className="glass-card p-4">
-            <h3 className="font-bold text-sm text-slate-200 flex items-center gap-2 mb-3">
+            <h3 className="font-bold text-base text-slate-200 flex items-center gap-2 mb-3">
               <Sparkles className="w-4 h-4 text-amber-400" />
               Bugun Ne Yapmaliyim?
             </h3>
@@ -323,7 +323,7 @@ export function DashboardTab() {
         {/* Open Risks List */}
         <div className="glass-card p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold text-sm text-white flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-rose-400" />Açık Riskler</h3>
+            <h3 className="font-bold text-base text-white flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-rose-400" />Açık Riskler</h3>
             <button onClick={() => setActiveTab('risks')} className="text-xs text-rose-400 hover:text-rose-300 transition-colors">Tümünü gör →</button>
           </div>
           {openRisks.length === 0 ? (
@@ -348,7 +348,7 @@ export function DashboardTab() {
         {/* Requirements Summary */}
         <div className="glass-card p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold text-sm text-white flex items-center gap-2"><BookMarked className="w-4 h-4 text-cyan-400" />Gereksinimler</h3>
+            <h3 className="font-bold text-base text-white flex items-center gap-2"><BookMarked className="w-4 h-4 text-cyan-400" />Gereksinimler</h3>
             <button onClick={() => setActiveTab('requirements')} className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors">Tümünü gör →</button>
           </div>
           {requirements.length === 0 ? (
@@ -383,7 +383,7 @@ export function DashboardTab() {
         {/* Pending Actions List */}
         <div className="glass-card p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold text-sm text-white flex items-center gap-2"><ListChecks className="w-4 h-4 text-violet-400" />Bekleyen Aksiyonlar</h3>
+            <h3 className="font-bold text-base text-white flex items-center gap-2"><ListChecks className="w-4 h-4 text-violet-400" />Bekleyen Aksiyonlar</h3>
             <button onClick={() => setActiveTab('actions')} className="text-xs text-violet-400 hover:text-violet-300 transition-colors">Tümünü gör →</button>
           </div>
           {pendingActions.length === 0 ? (
@@ -406,7 +406,7 @@ export function DashboardTab() {
         {/* Gantt Mini Chart */}
         <div className="glass-card p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold text-sm text-white flex items-center gap-2"><CalendarDays className="w-4 h-4 text-amber-400" />Timeline</h3>
+            <h3 className="font-bold text-base text-white flex items-center gap-2"><CalendarDays className="w-4 h-4 text-amber-400" />Timeline</h3>
             <button onClick={() => setActiveTab('gantt')} className="text-xs text-amber-400 hover:text-amber-300 transition-colors">Tam ekran →</button>
           </div>
           {ganttTasks.length === 0 ? (

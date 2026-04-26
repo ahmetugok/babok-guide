@@ -23,7 +23,7 @@ export function StakeholdersTab() {
       {stakeholders.length > 0 && (
         <div className="bg-white/5 rounded-xl border border-white/10 p-5 shadow-lg shadow-black/20">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-slate-300">İlgi / Etki Matrisi</h3>
+            <h3 className="text-base font-bold text-slate-300">İlgi / Etki Matrisi</h3>
             <div className="flex gap-3">
               {Object.entries(RACI_LABELS).map(([k, v]) => (
                 <div key={k} className="flex items-center gap-1.5">

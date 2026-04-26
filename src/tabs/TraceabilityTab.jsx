@@ -29,7 +29,7 @@ export function TraceabilityTab() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Panel A: Kalite Uyarıları */}
         <div className="glass-card p-4 space-y-2">
-          <h3 className="font-bold text-sm text-slate-300 mb-3">Kalite Kontrol</h3>
+          <h3 className="font-bold text-base text-slate-300 mb-3">Kalite Kontrol</h3>
           {warnings.map(({ count, text, tab }) => (
             <div key={text} className={`flex items-center justify-between p-2.5 rounded-lg ${count === 0 ? 'bg-emerald-500/5 border border-emerald-500/10' : 'bg-amber-500/5 border border-amber-500/20'}`}>
               <div className="flex items-center gap-2">
@@ -45,7 +45,7 @@ export function TraceabilityTab() {
         </div>
         {/* Panel B: Ozet */}
         <div className="glass-card p-4">
-          <h3 className="font-bold text-sm text-slate-300 mb-3">Ozet</h3>
+          <h3 className="font-bold text-base text-slate-300 mb-3">Ozet</h3>
           <div className="space-y-1.5 text-xs text-slate-400">
             <p>Toplam gereksinim: <span className="text-slate-200 font-medium">{reqs.length}</span></p>
             <p>Is kurali: <span className="text-slate-200 font-medium">{brs.length}</span></p>
