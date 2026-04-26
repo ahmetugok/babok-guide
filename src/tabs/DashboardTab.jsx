@@ -527,39 +527,6 @@ export function DashboardTab() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-          {babokData.map(ka => {
-            const done = ka.tasks.filter(t => completedTasks.includes(t.id)).length;
-            const subDone = ka.tasks.flatMap(t => t.checklist).filter(c => completedSubTasks.includes(c.id)).length;
-            const subTotal = ka.tasks.reduce((a, t) => a + t.checklist.length, 0);
-            const totalItems = ka.tasks.length + subTotal;
-            const doneItems = done + subDone;
-            const pct = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
-            const isComplete = totalItems > 0 && doneItems === totalItems;
-            return (
-              <div key={ka.id} onClick={() => { setActiveTab('knowledge_areas'); setExpandedKA(ka.id); }}
-                className={`glass-card p-4 cursor-pointer hover:scale-[1.02] transition-all group ${isComplete ? 'neon-border-cyan' : 'hover:border-white/20'}`}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${isComplete ? 'bg-emerald-500/15 border border-emerald-500/20' : ka.color}`}>
-                    {isComplete ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : React.cloneElement(ka.icon, { className: 'w-5 h-5' })}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className={`font-bold text-sm truncate ${isComplete ? 'text-emerald-400' : 'text-white'}`}>{ka.title}</h4>
-                    <span className="text-xs text-slate-500">{doneItems}/{totalItems} görev</span>
-                  </div>
-                  {isComplete && <span className="text-[9px] bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full font-bold">✓</span>}
-                </div>
-                <div className="liquid-bar w-full h-2 mb-1.5">
-                  <div className={`liquid-bar-fill ${isComplete ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-cyan-500 to-blue-500'}`} style={{ width: `${pct}%` }} />
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="font-stat font-bold text-base text-slate-300">{pct}%</span>
-                  <span className="text-xs text-slate-500">{done}/{ka.tasks.length} ana · {subDone}/{subTotal} alt</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
       </div>
 
     </div>
