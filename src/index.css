@@ -30,7 +30,7 @@ input[type="range"]::-webkit-slider-thumb { width: 16px; height: 16px; }
 
 /* Dock (shared structure) */
 .aura-dock { position: fixed; left: 14px; top: 50%; transform: translateY(-50%); width: 56px; padding: 10px 6px; flex-direction: column; align-items: center; gap: 2px; z-index: 50; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-radius: 28px; transition: background 0.35s ease, border-color 0.35s ease; }
-.aura-dock-item { position: relative; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink: 0; }
+.aura-dock-item { position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink: 0; }
 .aura-dock-item:hover { transform: scale(1.12); }
 .aura-dock-item.active::before { content: ''; position: absolute; left: -6px; top: 50%; transform: translateY(-50%); width: 3px; height: 20px; background: linear-gradient(to bottom, #22d3ee, #06b6d4); border-radius: 0 3px 3px 0; }
 .dock-label { position: absolute; left: 54px; white-space: nowrap; padding: 6px 14px; border-radius: 10px; font-size: 12px; font-weight: 500; opacity: 0; transform: translateX(-8px); pointer-events: none; transition: all 0.2s ease; z-index: 100; }
@@ -179,9 +179,9 @@ input[type="range"]::-webkit-slider-thumb { width: 16px; height: 16px; }
 /* Dark form elements */
 .theme-dark input:not([type="range"]):not([type="color"]),
 .theme-dark textarea,
-.theme-dark select { background-color: rgba(14, 22, 48, 0.55) !important; border-color: rgba(90, 120, 190, 0.14) !important; color: #e2e8f0 !important; }
-.theme-dark input::placeholder, .theme-dark textarea::placeholder { color: #4a5878 !important; }
-.theme-dark input:focus, .theme-dark textarea:focus, .theme-dark select:focus { border-color: rgba(34, 211, 238, 0.4) !important; box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.08) !important; }
+.theme-dark select { background-color: rgba(14, 22, 48, 0.7) !important; border-color: rgba(110, 140, 210, 0.28) !important; color: #e2e8f0 !important; }
+.theme-dark input::placeholder, .theme-dark textarea::placeholder { color: #7a8fb0 !important; }
+.theme-dark input:focus, .theme-dark textarea:focus, .theme-dark select:focus { border-color: rgba(34, 211, 238, 0.5) !important; box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.10) !important; }
 .theme-dark option { background-color: #0f1a34 !important; color: #e2e8f0 !important; }
 
 /* Dark shadows */
