@@ -13,7 +13,7 @@ import { useUIStore } from '../store/uiStore.js';
 /* ── shared helpers ──────────────────────────────────── */
 function Overlay({ onClose, children }) {
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeModal}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div onClick={e => e.stopPropagation()} className="glass-panel p-6 shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
         {children}
         <div className="flex justify-end mt-4">
