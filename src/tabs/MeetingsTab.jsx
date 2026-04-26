@@ -109,9 +109,15 @@ export function MeetingsTab() {
         </div>
         <button onClick={() => openModal('meeting')} className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Yeni Toplantı</button>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {meetings.length === 0 && (
+        <div className="text-center py-20 text-slate-400">
+          <MessageSquare className="w-10 h-10 mx-auto mb-3 opacity-30" />
+          <p className="mb-1">Henüz toplantı kaydedilmemiş. İlk toplantını ekle, notlar ve aksiyonlar otomatik izlensin.</p>
+          <button onClick={() => openModal('meeting')} className="mt-3 text-sm text-cyan-400 hover:text-cyan-300 transition-colors">+ Yeni Toplantı</button>
+        </div>
+      )}
+      <div className={`grid grid-cols-1 lg:grid-cols-3 gap-4 ${meetings.length === 0 ? 'hidden' : ''}`}>
         <div className="space-y-2">
-          {meetings.length === 0 && <div className="text-center py-12 text-slate-400"><MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-30" /><p className="text-sm">Henüz toplantı yok.</p></div>}
           {meetings.map((m) => (
             <div key={m.id} onClick={() => setSelectedMeetingId(m.id)} className={`p-3 rounded-xl border cursor-pointer transition-all ${runningId === m.id ? 'border-l-4 border-l-rose-400 bg-rose-500/5' : selectedMeeting?.id === m.id ? 'border-violet-400 bg-violet-500/10 shadow-lg shadow-black/20' : 'border-white/10 bg-white/5 hover:border-violet-500/20 hover:shadow-lg shadow-black/20'}`}>
               <div className="flex items-start justify-between gap-1">
@@ -148,7 +154,7 @@ export function MeetingsTab() {
         </div>
         <div className="lg:col-span-2">
           {!selectedMeeting ? (
-            <div className="text-center py-16 text-slate-400 border border-dashed border-white/10 rounded-xl"><StickyNote className="w-8 h-8 mx-auto mb-2 opacity-30" /><p className="text-sm">Sol taraftan bir toplantı seçin.</p></div>
+            <div className="text-center py-16 text-slate-400 border border-dashed border-white/10 rounded-xl"><StickyNote className="w-8 h-8 mx-auto mb-2 opacity-30" /><p className="text-sm">Notları görmek için bir toplantı seç.</p></div>
           ) : (
             <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 p-5 space-y-4">
               <div className="flex items-start justify-between">

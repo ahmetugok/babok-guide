@@ -142,7 +142,8 @@ export function RequirementsTab() {
       {reqs.length === 0 ? (
         <div className="text-center py-16 text-slate-400">
           <BookMarked className="w-10 h-10 mx-auto mb-3 opacity-30" />
-          <p>Henüz gereksinim eklenmemiş.</p>
+          <p className="mb-1">Gereksinim tabanı boş. İlk gereksinimi ekle, izlenebilirlik otomatik kurulur.</p>
+          <button onClick={() => openModal('requirement')} className="mt-3 text-sm text-cyan-400 hover:text-cyan-300 transition-colors">+ Gereksinim Ekle</button>
         </div>
       ) : (
         <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 overflow-hidden" style={{ maxHeight: 'calc(100vh - 220px)' }}>

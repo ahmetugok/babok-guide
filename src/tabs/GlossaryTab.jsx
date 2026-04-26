@@ -50,7 +50,8 @@ export function GlossaryTab() {
       {terms.length === 0 ? (
         <div className="text-center py-16 text-slate-400">
           <BookText className="w-10 h-10 mx-auto mb-3 opacity-30" />
-          <p>Henüz terim eklenmemiş.</p>
+          <p className="mb-1">Sözlük henüz boş. Terim ekleyerek projenin ortak dilini oluştur.</p>
+          <button onClick={() => openModal('glossary')} className="mt-3 text-sm text-cyan-400 hover:text-cyan-300 transition-colors">+ Terim Ekle</button>
         </div>
       ) : (
         <div className="bg-white/5 rounded-xl border border-white/10 shadow-lg shadow-black/20 overflow-hidden">

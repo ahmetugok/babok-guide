@@ -113,7 +113,7 @@ export function StakeholdersTab() {
         </div>
       )}
       {stakeholders.length === 0 ? (
-        <div className="text-center py-16 text-slate-400"><Users className="w-10 h-10 mx-auto mb-3 opacity-30" /><p>Henüz paydaş eklenmemiş.</p></div>
+        <div className="text-center py-16 text-slate-400"><Users className="w-10 h-10 mx-auto mb-3 opacity-30" /><p className="mb-1">Paydaş haritası boş. İlk paydaşı ekleyerek RACI analizine başla.</p><button onClick={() => openModal('stakeholder')} className="mt-3 text-sm text-cyan-400 hover:text-cyan-300 transition-colors">+ Paydaş Ekle</button></div>
       ) : (
         <div className="space-y-3">
           {stakeholders.map(s => (
