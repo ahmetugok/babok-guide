@@ -238,11 +238,7 @@ export default function App() {
               <button onClick={toggleDarkMode} className="theme-toggle" title={darkMode ? 'Açık Tema' : 'Koyu Tema'}>
                 {darkMode ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
               </button>
-              <div className="hidden sm:flex flex-col items-end gap-0.5">
-                <span className="text-[10px] text-slate-500 uppercase tracking-wider">İlerleme</span>
-                <span className="text-xs text-slate-400">{completedTasks.length + completedSubTasks.length}/{TOTAL_TASKS + TOTAL_SUBTASKS}</span>
-              </div>
-              <div className="relative w-14 h-14">
+              <div className="relative w-14 h-14" title={`İlerleme: ${completedTasks.length + completedSubTasks.length}/${TOTAL_TASKS + TOTAL_SUBTASKS} görev`}>
                 <svg width={56} height={56} className="transform -rotate-90">
                   <circle cx={28} cy={28} r={22} fill="none" stroke="rgba(148,163,184,0.08)" strokeWidth={5} />
                   <circle cx={28} cy={28} r={22} fill="none" stroke="url(#headerRingGrad)" strokeWidth={5}
@@ -250,8 +246,9 @@ export default function App() {
                     style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1)' }} />
                   <defs><linearGradient id="headerRingGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#22d3ee" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient></defs>
                 </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
                   <span className="font-stat text-sm font-bold neon-cyan">{overallProgress}%</span>
+                  <span className="text-[8px] text-slate-500 mt-0.5">{completedTasks.length + completedSubTasks.length}/{TOTAL_TASKS + TOTAL_SUBTASKS}</span>
                 </div>
               </div>
             </div>
