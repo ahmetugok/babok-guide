@@ -48,8 +48,8 @@ export function RequirementModal() {
   const selectCls = 'w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none bg-transparent';
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="glass-panel p-6 shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeModal}>
+      <div onClick={e => e.stopPropagation()} className="glass-panel p-6 shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
         <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2">
           <BookMarked className="text-teal-500 w-5 h-5" />
           {editingReq ? 'Gereksinimi Düzenle' : 'Yeni Gereksinim'}

@@ -66,7 +66,7 @@ export function ExportModal() {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3">
-      <div className="glass-panel shadow-2xl w-full max-w-4xl flex flex-col" style={{ maxHeight: '92vh' }}>
+      <div onClick={e => e.stopPropagation()} className="glass-panel shadow-2xl w-full max-w-4xl flex flex-col" style={{ maxHeight: '92vh' }}>
 
         {/* Header */}
         <div className="flex items-start justify-between p-5 border-b border-white/10 shrink-0">

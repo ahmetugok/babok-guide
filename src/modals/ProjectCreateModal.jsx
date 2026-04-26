@@ -29,8 +29,8 @@ export function ProjectCreateModal() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="glass-panel p-6 shadow-2xl max-w-sm w-full">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeModal}>
+      <div onClick={e => e.stopPropagation()} className="glass-panel p-6 shadow-2xl max-w-sm w-full">
         <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2">
           <FolderPlus className="text-cyan-400 w-5 h-5" />Yeni Proje Oluştur
         </h3>

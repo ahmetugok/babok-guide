@@ -10,8 +10,8 @@ export function AiGenerationModal() {
   const { loading, result, activeTask } = modalData;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="glass-panel w-full shadow-2xl max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeModal}>
+      <div onClick={e => e.stopPropagation()} className="glass-panel w-full shadow-2xl max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
         <div className="bg-indigo-600/80 p-4 flex justify-between items-center">
           <div className="flex items-center gap-2 text-white">
             <Sparkles className="w-5 h-5" />

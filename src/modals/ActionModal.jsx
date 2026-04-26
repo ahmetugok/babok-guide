@@ -52,8 +52,8 @@ export function ActionModal() {
   const elapsedDisplay = `${pad(Math.floor(elapsed / 60))}:${pad(elapsed % 60)}`;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="glass-panel p-6 shadow-2xl max-w-md w-full">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeModal}>
+      <div onClick={e => e.stopPropagation()} className="glass-panel p-6 shadow-2xl max-w-md w-full">
         <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><ListChecks className="text-indigo-500 w-5 h-5" />{editingAction ? 'Aksiyonu Düzenle' : 'Yeni Aksiyon'}</h3>
         <div className="space-y-3">
           <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Aksiyon başlığı*" className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />

@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { useUIStore } from '../store/uiStore.js';
 import { ErrorBoundary } from './ErrorBoundary.jsx';
 import { ModalFallback } from './LoadingFallback.jsx';
@@ -23,6 +23,14 @@ const GlossaryModal         = lazy(() => import('../modals/GlossaryModal.jsx').t
 
 export function ModalManager() {
   const activeModal = useUIStore((s) => s.activeModal);
+  const closeModal  = useUIStore((s) => s.closeModal);
+
+  useEffect(() => {
+    if (!activeModal) return;
+    const onKey = (e) => { if (e.key === 'Escape') closeModal(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [activeModal, closeModal]);
 
   if (!activeModal) return null;
 

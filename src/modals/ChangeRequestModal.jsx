@@ -37,8 +37,8 @@ export function ChangeRequestModal() {
   const entityType = ENTITY_TYPE_MAP[form.affectedEntityType] || null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="glass-panel p-6 shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeModal}>
+      <div onClick={e => e.stopPropagation()} className="glass-panel p-6 shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
         <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><RefreshCw className="text-amber-400 w-5 h-5" />{editingCR ? 'CR Duzenle' : 'Yeni Degisiklik Talebi'}</h3>
         <div className="space-y-3">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Bolum 1 — Talep Bilgileri</p>

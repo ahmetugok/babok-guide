@@ -6,8 +6,8 @@ export function ResetConfirmModal() {
   const resetProgress = useProjectStore((s) => s.resetProgress);
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="glass-panel p-6 shadow-2xl max-w-sm w-full">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeModal}>
+      <div onClick={e => e.stopPropagation()} className="glass-panel p-6 shadow-2xl max-w-sm w-full">
         <h3 className="font-bold text-lg text-slate-100 mb-2">İlerlemeyi Sıfırla</h3>
         <p className="text-sm text-slate-400 mb-5">Bu proje için tüm checklist ilerlemesi silinecek. Bu işlem geri alınamaz.</p>
         <div className="flex justify-end gap-3">

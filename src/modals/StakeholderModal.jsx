@@ -28,8 +28,8 @@ export function StakeholderModal() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="glass-panel p-6 shadow-2xl max-w-md w-full">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeModal}>
+      <div onClick={e => e.stopPropagation()} className="glass-panel p-6 shadow-2xl max-w-md w-full">
         <h3 className="font-bold text-lg text-slate-100 mb-4 flex items-center gap-2"><UserPlus className="text-orange-500 w-5 h-5" />{editingStakeholder ? 'Paydaşı Düzenle' : 'Yeni Paydaş'}</h3>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
