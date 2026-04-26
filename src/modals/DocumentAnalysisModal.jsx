@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { X, Upload, FileText, Loader2, AlertTriangle, CheckCircle2, Cpu, Sparkles } from 'lucide-react';
 import { readFileAsText } from '../utils/documentParser.js';
-import { analyzeDocument } from '../utils/groqClient.js';
+import { analyzeDocumentStream } from '../utils/groqClient.js';
 import { AnalysisResultsModal } from './AnalysisResultsModal.jsx';
 import { useProjectStore } from '../store/projectStore.js';
 import { useUIStore } from '../store/uiStore.js';
@@ -23,6 +23,7 @@ export function DocumentAnalysisModal() {
   const [dragging, setDragging] = useState(false);
   const [loadingStep, setLoadingStep] = useState(null);
   const [elapsed, setElapsed] = useState(0);
+  const [streamText, setStreamText] = useState('');
   const [error, setError] = useState('');
   const [results, setResults] = useState(null);
   const fileInputRef = useRef(null);
@@ -65,12 +66,15 @@ export function DocumentAnalysisModal() {
     }
 
     setError('');
+    setStreamText('');
     try {
       setLoadingStep(0);
       const text = await readFileAsText(file);
 
       setLoadingStep(1);
-      const data = await analyzeDocument(text, key.trim());
+      const data = await analyzeDocumentStream(text, key.trim(), (chunk) => {
+        setStreamText(chunk);
+      });
 
       setLoadingStep(2);
       await new Promise((r) => setTimeout(r, 400));
@@ -220,6 +224,16 @@ export function DocumentAnalysisModal() {
                   />
                 ))}
               </div>
+
+              {streamText && (
+                <div className="mt-3 bg-black/30 rounded-lg p-3 border border-white/5 overflow-hidden">
+                  <p className="text-[10px] text-violet-400/60 uppercase tracking-widest font-mono mb-1.5">Yanıt akışı</p>
+                  <pre className="text-[10px] font-mono text-slate-400 leading-relaxed whitespace-pre-wrap break-all line-clamp-5">
+                    {streamText.slice(-400)}
+                    <span className="inline-block w-1.5 h-3 bg-violet-400 ml-0.5 animate-pulse align-middle" />
+                  </pre>
+                </div>
+              )}
             </div>
           )}
         </div>

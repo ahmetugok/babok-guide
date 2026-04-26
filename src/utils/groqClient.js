@@ -38,6 +38,10 @@ ${content}
 `;
 
 export async function analyzeDocument(content, apiKey) {
+  return analyzeDocumentStream(content, apiKey, null);
+}
+
+export async function analyzeDocumentStream(content, apiKey, onChunk) {
   if (content.length > MAX_CONTENT_CHARS) {
     throw new Error(`Doküman çok büyük (${(content.length / 1000).toFixed(0)}k karakter). Lütfen daha küçük bir bölüm yapıştırın (max ${MAX_CONTENT_CHARS / 1000}k karakter).`);
   }
@@ -55,6 +59,7 @@ export async function analyzeDocument(content, apiKey) {
         { role: 'user', content: buildUserPrompt(content) },
       ],
       temperature: 0.2,
+      stream: true,
     }),
   });
 
@@ -63,15 +68,42 @@ export async function analyzeDocument(content, apiKey) {
     throw new Error(err?.error?.message || `Groq API hatası: ${response.status}`);
   }
 
-  const data = await response.json();
-  const raw = data.choices?.[0]?.message?.content ?? '';
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let accumulated = '';
+  let buffer = '';
 
-  // JSON bloğu varsa çıkar (```json ... ``` gibi)
-  const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed === 'data: [DONE]') continue;
+      if (!trimmed.startsWith('data: ')) continue;
+
+      try {
+        const json = JSON.parse(trimmed.slice(6));
+        const delta = json.choices?.[0]?.delta?.content ?? '';
+        if (delta) {
+          accumulated += delta;
+          onChunk?.(accumulated);
+        }
+      } catch {
+        // partial chunk — ignore
+      }
+    }
+  }
+
+  const cleaned = accumulated.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
 
   try {
     return JSON.parse(cleaned);
   } catch {
-    throw new Error(`Groq geçersiz JSON döndürdü. Ham yanıt:\n${raw.slice(0, 300)}`);
+    throw new Error(`Groq geçersiz JSON döndürdü. Ham yanıt:\n${accumulated.slice(0, 300)}`);
   }
 }
