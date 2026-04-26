@@ -4,9 +4,9 @@ export const generateId = () => `id_${Date.now()}_${Math.random().toString(36).s
 
 export const getRiskLevel = (prob, impact) => {
   const s = prob * impact;
-  if (s >= 7) return { label: 'Kritik', cls: 'text-rose-700 bg-rose-100 border-rose-500/30', dot: 'bg-rose-500/100' };
-  if (s >= 4) return { label: 'Orta', cls: 'text-amber-700 bg-amber-100 border-amber-500/30', dot: 'bg-amber-500/100' };
-  return { label: 'Düşük', cls: 'text-emerald-700 bg-emerald-100 border-emerald-500/30', dot: 'bg-emerald-500/100' };
+  if (s >= 7) return { label: 'Kritik', cls: 'text-rose-500 bg-rose-500/15 border-rose-500/30', dot: 'bg-rose-500' };
+  if (s >= 4) return { label: 'Orta', cls: 'text-amber-500 bg-amber-500/15 border-amber-500/30', dot: 'bg-amber-500' };
+  return { label: 'Düşük', cls: 'text-emerald-500 bg-emerald-500/15 border-emerald-500/30', dot: 'bg-emerald-500' };
 };
 
 export const isOverdue = (a) => a.status !== 'Tamamlandı' && a.dueDate && new Date(a.dueDate) < new Date();
