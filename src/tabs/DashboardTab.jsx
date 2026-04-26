@@ -493,6 +493,40 @@ export function DashboardTab() {
       {/* ── ROW 5: 6 BABOK Döngü Kartları ── */}
       <div>
         <h3 className="text-base font-bold text-white mb-2.5 flex items-center gap-2"><LayoutGrid className="w-5 h-5 text-cyan-400" />BABOK Bilgi Alanları</h3>
+
+        {/* KA Progress Bar Chart */}
+        <div className="glass-card p-4 mb-3">
+          <div className="space-y-2.5">
+            {babokData.map(ka => {
+              const done = ka.tasks.filter(t => completedTasks.includes(t.id)).length;
+              const subDone = ka.tasks.flatMap(t => t.checklist).filter(c => completedSubTasks.includes(c.id)).length;
+              const subTotal = ka.tasks.reduce((a, t) => a + t.checklist.length, 0);
+              const totalItems = ka.tasks.length + subTotal;
+              const doneItems = done + subDone;
+              const pct = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
+              const color = KA_COLORS[ka.id]?.bar || '#22d3ee';
+              return (
+                <div key={ka.id}
+                  onClick={() => { setActiveTab('knowledge_areas'); setExpandedKA(ka.id); }}
+                  className="flex items-center gap-3 group cursor-pointer"
+                >
+                  <span className="text-xs text-slate-400 w-36 truncate flex-shrink-0 group-hover:text-slate-200 transition-colors" title={ka.title}>{ka.title}</span>
+                  <div className="flex-1 h-5 bg-white/5 rounded-full overflow-hidden relative">
+                    <div
+                      className="h-full rounded-full transition-all duration-700"
+                      style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}cc, ${color})` }}
+                    />
+                    {pct > 8 && (
+                      <span className="absolute inset-0 flex items-center pl-2.5 text-[10px] font-bold text-white/80">{pct}%</span>
+                    )}
+                  </div>
+                  <span className="font-stat text-xs text-slate-500 w-14 text-right flex-shrink-0">{doneItems}/{totalItems}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
           {babokData.map(ka => {
             const done = ka.tasks.filter(t => completedTasks.includes(t.id)).length;
