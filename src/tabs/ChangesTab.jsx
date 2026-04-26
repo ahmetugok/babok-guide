@@ -15,7 +15,7 @@ export function ChangesTab() {
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><RefreshCw className="text-amber-400 w-5 h-5" />Degisiklik Yonetimi</h2>
           <p className="text-sm text-slate-400">{(changeRequests || []).length} talep kayıtlı</p>
         </div>
-        <button onClick={() => openModal('changeRequest')} className="bg-amber-600/80 hover:bg-amber-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />CR Ekle</button>
+        <button onClick={() => openModal('changeRequest')} className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />CR Ekle</button>
       </div>
       {/* Summary counters */}
       <div className="grid grid-cols-4 gap-2">

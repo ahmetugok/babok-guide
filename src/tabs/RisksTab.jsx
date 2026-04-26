@@ -17,7 +17,7 @@ export function RisksTab() {
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><AlertTriangle className="text-rose-500 w-5 h-5" />Risk Kayıt Defteri</h2>
           <p className="text-sm text-slate-400">{risks.length} risk kayıtlı · {risks.filter(r => getRiskLevel(r.probability, r.impact).label === 'Kritik').length} kritik</p>
         </div>
-        <button onClick={() => openModal('risk')} className="bg-rose-600/80 hover:bg-rose-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Risk Ekle</button>
+        <button onClick={() => openModal('risk')} className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Risk Ekle</button>
       </div>
       {risks.length === 0 ? (
         <div className="text-center py-20 glass-card p-8">

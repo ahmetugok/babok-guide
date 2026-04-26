@@ -18,7 +18,7 @@ export function StakeholdersTab() {
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><UserPlus className="text-orange-500 w-5 h-5" />Paydaş Yönetimi</h2>
           <p className="text-sm text-slate-400">{stakeholders.length} paydaş kayıtlı</p>
         </div>
-        <button onClick={() => openModal('stakeholder')} className="bg-orange-500/100 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Paydaş Ekle</button>
+        <button onClick={() => openModal('stakeholder')} className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Paydaş Ekle</button>
       </div>
       {stakeholders.length > 0 && (
         <div className="bg-white/5 rounded-xl border border-white/10 p-5 shadow-lg shadow-black/20">

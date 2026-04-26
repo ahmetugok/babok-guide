@@ -191,7 +191,7 @@ export function ActionsTab() {
               <LayoutGrid className="w-3.5 h-3.5" />Kanban
             </button>
           </div>
-          <button onClick={() => openModal('action')} className="bg-indigo-600/80 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20">
+          <button onClick={() => openModal('action')} className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20">
             <Plus className="w-4 h-4" />Aksiyon Ekle
           </button>
         </div>

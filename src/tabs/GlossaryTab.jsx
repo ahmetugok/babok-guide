@@ -40,7 +40,7 @@ export function GlossaryTab() {
           </div>
           <button
             onClick={() => openModal('glossary')}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"
+            className="bg-emerald-600 hover:bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"
           >
             <Plus className="w-4 h-4" />Terim Ekle
           </button>

@@ -15,7 +15,7 @@ export function BusinessRulesTab() {
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><BookOpen className="text-blue-400 w-5 h-5" />Is Kurallari</h2>
           <p className="text-sm text-slate-400">{(businessRules || []).length} kural · {(businessRules || []).filter(r => r.status === 'Aktif').length} aktif</p>
         </div>
-        <button onClick={() => openModal('businessRule')} className="bg-blue-600/80 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Kural Ekle</button>
+        <button onClick={() => openModal('businessRule')} className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Kural Ekle</button>
       </div>
       {(businessRules || []).length === 0 ? (
         <div className="text-center py-16 text-slate-400"><BookOpen className="w-10 h-10 mx-auto mb-3 opacity-30" /><p>Henuz is kurali eklenmemis.</p><button onClick={() => openModal('businessRule')} className="mt-3 text-xs text-blue-400 hover:text-blue-300 transition-colors">+ Kural Ekle</button></div>

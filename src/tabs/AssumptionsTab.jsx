@@ -15,7 +15,7 @@ export function AssumptionsTab() {
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><Lightbulb className="text-amber-400 w-5 h-5" />Varsayimlar ve Kisitlar</h2>
           <p className="text-sm text-slate-400">{(assumptions || []).length} kayit · {(assumptions || []).filter(a => a.validationStatus === 'Dogrulanmadi').length} dogrulanmamis</p>
         </div>
-        <button onClick={() => openModal('assumption')} className="bg-amber-600/80 hover:bg-amber-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Varsayim Ekle</button>
+        <button onClick={() => openModal('assumption')} className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-lg shadow-black/20"><Plus className="w-4 h-4" />Varsayim Ekle</button>
       </div>
       {(assumptions || []).length === 0 ? (
         <div className="text-center py-20 glass-card p-8">
