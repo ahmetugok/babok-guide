@@ -2,6 +2,29 @@ import { create } from 'zustand';
 import { useProjectStore, selectActiveProject } from './projectStore.js';
 import { formatMarkdown } from '../utils.js';
 
+// ── Groq API yardımcısı ───────────────────────────────────────────────────────
+const generateWithGroq = async (promptText) => {
+  const apiKey = (localStorage.getItem('groq_api_key') || '').trim();
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: 'Sen 15 yıllık deneyimli, CBAP sertifikalı Kıdemli bir IT İş Analistisin. Kullanıcının verdiği proje bağlamına %100 sadık kalarak eksiksiz, profesyonel, gerçeğe yakın ve doğrudan kullanılabilecek BABOK dokümanları hazırlarsın. Asla tavsiye vermezsin, doğrudan istenen çıktıyı (rapor, taslak vb.) sunarsın.' },
+        { role: 'user', content: promptText },
+      ],
+      temperature: 0.4,
+    }),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `Groq API hatası: ${response.status}`);
+  }
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || 'Maalesef geçerli bir yanıt oluşturulamadı.';
+};
+
 // ── Gemini API yardımcısı (sadece uiStore içinde kullanılır) ─────────────────
 const generateWithGemini = async (promptText) => {
   const apiKey = localStorage.getItem('gemini_api_key') || '';
@@ -305,7 +328,19 @@ Başlıklar (##, ###), madde işaretleri (-) ve numaralandırmalar kullanarak ok
 Yanıtın tamamı Türkçe olmalıdır.
 `;
 
-    const generatedText = await generateWithGemini(prompt);
+    const geminiKey = (localStorage.getItem('gemini_api_key') || '').trim();
+    const groqKey   = (localStorage.getItem('groq_api_key')   || '').trim();
+
+    if (!geminiKey && !groqKey) {
+      set((s) => ({
+        modalData: { ...s.modalData, loading: false, result: 'API key girilmemiş. Lütfen Ayarlar menüsünden Groq veya Gemini API Key\'inizi ekleyin.' },
+      }));
+      return;
+    }
+
+    const generatedText = geminiKey
+      ? await generateWithGemini(prompt)
+      : await generateWithGroq(prompt).catch((e) => `Groq hatası: ${e.message}`);
     set((s) => ({
       modalData: { ...s.modalData, loading: false, result: generatedText },
     }));
