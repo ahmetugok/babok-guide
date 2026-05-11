@@ -1,14 +1,15 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { X, Upload, FileText, Loader2, AlertTriangle, CheckCircle2, Cpu, Sparkles } from 'lucide-react';
 import { readFileAsText } from '../utils/documentParser.js';
-import { analyzeDocumentStream } from '../utils/groqClient.js';
+import { analyzeDocumentStream as analyzeGroq } from '../utils/groqClient.js';
+import { analyzeDocumentStream as analyzeGemini } from '../utils/geminiClient.js';
 import { AnalysisResultsModal } from './AnalysisResultsModal.jsx';
 import { useProjectStore } from '../store/projectStore.js';
 import { useUIStore } from '../store/uiStore.js';
 
-const LOADING_STEPS = [
+const getLoadingSteps = (provider) => [
   { label: 'Döküman okunuyor...', Icon: FileText },
-  { label: 'Groq\'a gönderiliyor...', Icon: Cpu },
+  { label: `${provider === 'gemini' ? 'Gemini' : 'Groq'}'a gönderiliyor...`, Icon: Cpu },
   { label: 'Sonuçlar hazırlanıyor...', Icon: Sparkles },
 ];
 
@@ -26,6 +27,7 @@ export function DocumentAnalysisModal() {
   const [streamText, setStreamText] = useState('');
   const [error, setError] = useState('');
   const [results, setResults] = useState(null);
+  const [provider, setProvider] = useState('groq');
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -58,12 +60,18 @@ export function DocumentAnalysisModal() {
 
   const startAnalysis = async () => {
     if (!file) { setError('Lütfen bir dosya seçin.'); return; }
-    const key = localStorage.getItem('groq_api_key') || '';
-    if (!key.trim()) {
+    const groqKey = (localStorage.getItem('groq_api_key') || '').trim();
+    const geminiKey = (localStorage.getItem('gemini_api_key') || '').trim();
+
+    if (!groqKey && !geminiKey) {
       onClose();
       openModal('settings');
       return;
     }
+
+    const activeProvider = groqKey ? 'groq' : 'gemini';
+    const activeKey = groqKey || geminiKey;
+    setProvider(activeProvider);
 
     setError('');
     setStreamText('');
@@ -72,7 +80,8 @@ export function DocumentAnalysisModal() {
       const text = await readFileAsText(file);
 
       setLoadingStep(1);
-      const data = await analyzeDocumentStream(text, key.trim(), (chunk) => {
+      const analyze = activeProvider === 'gemini' ? analyzeGemini : analyzeGroq;
+      const data = await analyze(text, activeKey, (chunk) => {
         setStreamText(chunk);
       });
 
@@ -105,6 +114,7 @@ export function DocumentAnalysisModal() {
   }
 
   const isLoading = loadingStep !== null;
+  const LOADING_STEPS = getLoadingSteps(provider);
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeModal}>
@@ -117,7 +127,7 @@ export function DocumentAnalysisModal() {
             </div>
             <div>
               <h2 className="text-base font-bold text-slate-100">Döküman Analiz Et</h2>
-              <p className="text-xs text-slate-400">BABOK v3 — Groq AI destekli</p>
+              <p className="text-xs text-slate-400">BABOK v3 — {provider === 'gemini' ? 'Gemini' : 'Groq'} AI destekli</p>
             </div>
           </div>
           <button onClick={onClose} disabled={isLoading} className="text-slate-400 hover:text-white transition-colors disabled:opacity-40">
