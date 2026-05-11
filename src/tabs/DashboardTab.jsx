@@ -241,67 +241,81 @@ export function DashboardTab() {
         );
       })()}
 
-      {/* ── ROW 2: 5 Stat Cards ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5">
+      {/* ── ROW 2: Compact Stat Bar ── */}
+      <div className="glass-card p-2 flex flex-wrap gap-1">
         {/* Unvalidated Assumptions */}
-        <div onClick={() => setActiveTab('assumptions')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform group" style={{ borderLeft: '2px solid rgba(251,191,36,0.4)' }}>
-          <div className="flex items-center justify-between mb-2">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/10">
-              <Lightbulb className="w-5 h-5 text-amber-400" />
+        <button
+          onClick={() => setActiveTab('assumptions')}
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 transition-colors flex-1 min-w-[140px] text-left"
+        >
+          <Lightbulb className="w-4 h-4 text-amber-400 shrink-0" />
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-1.5">
+              <span className="font-stat text-2xl font-black text-amber-400 leading-none">{(assumptions || []).filter(a => a.validationStatus === 'Dogrulanmadi').length}</span>
+              <span className="text-[10px] text-slate-500">{(assumptions || []).length} toplam</span>
             </div>
+            <span className="text-xs text-slate-400 block truncate">Doğrulanmamış Varsayım</span>
           </div>
-          <span className="font-stat text-3xl font-black text-amber-400">{(assumptions || []).filter(a => a.validationStatus === 'Dogrulanmadi').length}</span>
-          <span className="text-sm text-slate-400 block mt-0.5">Dogrulanmamis Varsayim</span>
-          <span className="text-xs text-slate-500 block">{(assumptions || []).length} toplam</span>
-        </div>
+        </button>
         {/* Open Risks */}
-        <div onClick={() => setActiveTab('risks')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform neon-border-crimson group">
-          <div className="flex items-center justify-between mb-2">
-            <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center border border-rose-500/10">
-              <AlertTriangle className="w-5 h-5 text-rose-400" />
+        <button
+          onClick={() => setActiveTab('risks')}
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 transition-colors flex-1 min-w-[140px] text-left"
+        >
+          <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-1.5">
+              <span className="font-stat text-2xl font-black text-rose-400 leading-none">{openRisks.length}</span>
+              <span className="text-[10px] text-slate-500">{risks.length} toplam</span>
+              {highRisks.length > 0 && <span className="text-[10px] bg-rose-500/25 text-rose-300 px-1.5 py-0.5 rounded-full font-bold animate-pulse">{highRisks.length} kritik</span>}
             </div>
-            {highRisks.length > 0 && <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold animate-pulse">{highRisks.length} kritik</span>}
+            <span className="text-xs text-slate-400 block truncate">Açık Risk</span>
           </div>
-          <span className="font-stat text-3xl font-black neon-crimson">{openRisks.length}</span>
-          <span className="text-sm text-slate-400 block mt-0.5">Açık Risk</span>
-          <span className="text-xs text-slate-500 block">{risks.length} toplam</span>
-        </div>
+        </button>
         {/* Pending Actions */}
-        <div onClick={() => setActiveTab('actions')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform neon-border-amethyst group">
-          <div className="flex items-center justify-between mb-2">
-            <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center border border-violet-500/10">
-              <ListChecks className="w-5 h-5 text-violet-400" />
+        <button
+          onClick={() => setActiveTab('actions')}
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-violet-500/10 hover:bg-violet-500/20 transition-colors flex-1 min-w-[140px] text-left"
+        >
+          <ListChecks className="w-4 h-4 text-violet-400 shrink-0" />
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-1.5">
+              <span className="font-stat text-2xl font-black text-violet-400 leading-none">{pendingActions.length}</span>
+              <span className="text-[10px] text-slate-500">{actions.length} toplam</span>
+              {overdueActions.length > 0 && <span className="text-[10px] bg-rose-500/25 text-rose-300 px-1.5 py-0.5 rounded-full font-bold animate-pulse">{overdueActions.length} gecikmiş</span>}
             </div>
-            {overdueActions.length > 0 && <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold animate-pulse">{overdueActions.length} gecikmiş</span>}
+            <span className="text-xs text-slate-400 block truncate">Bekleyen Aksiyon</span>
           </div>
-          <span className="font-stat text-3xl font-black neon-amethyst">{pendingActions.length}</span>
-          <span className="text-sm text-slate-400 block mt-0.5">Bekleyen Aksiyon</span>
-          <span className="text-xs text-slate-500 block">{actions.length} toplam</span>
-        </div>
+        </button>
         {/* Requirements */}
-        <div onClick={() => setActiveTab('requirements')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform neon-border-cyan group">
-          <div className="flex items-center justify-between mb-2">
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/10">
-              <BookMarked className="w-5 h-5 text-cyan-400" />
+        <button
+          onClick={() => setActiveTab('requirements')}
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 transition-colors flex-1 min-w-[140px] text-left"
+        >
+          <BookMarked className="w-4 h-4 text-cyan-400 shrink-0" />
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-1.5">
+              <span className="font-stat text-2xl font-black text-cyan-400 leading-none">{requirements.length}</span>
+              {requirements.filter(r => r.status === 'Canlıda').length > 0 && <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded-full font-medium">{requirements.filter(r => r.status === 'Canlıda').length} canlıda</span>}
             </div>
-            {requirements.filter(r => r.status === 'Canlıda').length > 0 && <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-medium">{requirements.filter(r => r.status === 'Canlıda').length} canlıda</span>}
+            <span className="text-xs text-slate-400 block truncate">Gereksinim</span>
           </div>
-          <span className="font-stat text-3xl font-black neon-cyan">{requirements.length}</span>
-          <span className="text-sm text-slate-400 block mt-0.5">Gereksinim</span>
-          <span className="text-xs text-slate-500 block">{Object.entries(REQ_STATUS_COLORS).map(([st]) => requirements.filter(r => r.status === st).length > 0 ? st.slice(0,3) + ':' + requirements.filter(r => r.status === st).length : null).filter(Boolean).join(' · ')}</span>
-        </div>
+        </button>
         {/* Gantt */}
-        <div onClick={() => setActiveTab('gantt')} className="glass-card p-3.5 cursor-pointer hover:scale-[1.02] transition-transform group" style={{ borderLeft: '2px solid rgba(251,191,36,0.3)' }}>
-          <div className="flex items-center justify-between mb-2">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/10">
-              <CalendarDays className="w-5 h-5 text-amber-400" />
+        <button
+          onClick={() => setActiveTab('gantt')}
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 transition-colors flex-1 min-w-[140px] text-left"
+        >
+          <CalendarDays className="w-4 h-4 text-amber-400 shrink-0" />
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-1.5">
+              <span className="font-stat text-2xl font-black text-amber-400 leading-none">{ganttTasks.length}</span>
+              <span className="text-[10px] text-slate-500">{ganttTasks.filter(gt => gt.progress === 100).length} tamamlandı</span>
+              {overdueTasks.length > 0 && <span className="text-[10px] bg-rose-500/25 text-rose-300 px-1.5 py-0.5 rounded-full font-bold animate-pulse">{overdueTasks.length} gecikmiş</span>}
             </div>
-            {overdueTasks.length > 0 && <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold animate-pulse">{overdueTasks.length} gecikmiş</span>}
+            <span className="text-xs text-slate-400 block truncate">Timeline Görevi</span>
           </div>
-          <span className="font-stat text-3xl font-black text-amber-400">{ganttTasks.length}</span>
-          <span className="text-sm text-slate-400 block mt-0.5">Timeline Görevi</span>
-          <span className="text-xs text-slate-500 block">{ganttTasks.filter(gt => gt.progress === 100).length} tamamlandı</span>
-        </div>
+        </button>
       </div>
 
       {/* ── ROW 2b: CR Banner ── */}
@@ -329,8 +343,8 @@ export function DashboardTab() {
           {openRisks.length === 0 ? (
             <div className="text-center py-4 text-slate-500"><Shield className="w-7 h-7 mx-auto mb-1.5 opacity-30" /><p className="text-xs">Açık risk bulunmuyor 🎉</p></div>
           ) : (
-            <div className="space-y-1.5 max-h-[260px] overflow-y-auto pr-1">
-              {openRisks.slice(0, 10).map(r => {
+            <div className="space-y-1.5 max-h-[340px] overflow-y-auto pr-1">
+              {openRisks.slice(0, 15).map(r => {
                 const lvl = getRiskLevel(r.probability, r.impact);
                 return (
                   <div key={r.id} className="flex items-center gap-2.5 p-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group/item">
@@ -340,7 +354,7 @@ export function DashboardTab() {
                   </div>
                 );
               })}
-              {openRisks.length > 10 && <button onClick={() => setActiveTab('risks')} className="text-[10px] text-cyan-400 hover:text-cyan-300 text-center pt-1 w-full cursor-pointer hover:underline transition-colors">+{openRisks.length - 10} daha →</button>}
+              {openRisks.length > 15 && <button onClick={() => setActiveTab('risks')} className="text-[10px] text-cyan-400 hover:text-cyan-300 text-center pt-1 w-full cursor-pointer hover:underline transition-colors">+{openRisks.length - 15} daha →</button>}
             </div>
           )}
         </div>
@@ -363,15 +377,15 @@ export function DashboardTab() {
                 })}
               </div>
               {/* Requirement list */}
-              <div className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
-                {requirements.slice(0, 6).map(r => (
+              <div className="space-y-1.5 max-h-[260px] overflow-y-auto pr-1">
+                {requirements.slice(0, 12).map(r => (
                   <div key={r.id} className="flex items-center gap-2 p-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
                     <span className="text-xs font-mono text-slate-500 w-14">{r.reqId}</span>
                     <span className="text-sm text-slate-300 flex-1 truncate">{r.name}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${REQ_STATUS_COLORS[r.status] || 'bg-white/10 text-slate-400'}`}>{r.status}</span>
                   </div>
                 ))}
-                {requirements.length > 6 && <button onClick={() => setActiveTab('requirements')} className="text-[10px] text-cyan-400 hover:text-cyan-300 text-center pt-1 w-full cursor-pointer hover:underline transition-colors">+{requirements.length - 6} daha →</button>}
+                {requirements.length > 12 && <button onClick={() => setActiveTab('requirements')} className="text-[10px] text-cyan-400 hover:text-cyan-300 text-center pt-1 w-full cursor-pointer hover:underline transition-colors">+{requirements.length - 12} daha →</button>}
               </div>
             </>
           )}
