@@ -117,7 +117,7 @@ export function DocumentAnalysisModal() {
   const LOADING_STEPS = getLoadingSteps(provider);
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeModal}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onMouseDown={(e) => { if (e.target === e.currentTarget) closeModal(); }}>
       <div className="glass-card rounded-2xl shadow-2xl border border-white/10 w-full max-w-lg">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-white/10">
