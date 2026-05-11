@@ -210,12 +210,12 @@ export default function App() {
                       className="text-xs rounded-lg px-2 py-0.5 max-w-[160px] border-none !bg-transparent !text-slate-400 focus:!text-slate-200 cursor-pointer">
                       {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>
-                    <button onClick={() => openModal('projectCreate')} className="text-xs text-cyan-400/70 hover:text-cyan-300 transition-colors" title="Yeni Proje"><FolderPlus className="w-3.5 h-3.5" /></button>
-                    <button onClick={handleImportProject} className="text-xs text-emerald-400/70 hover:text-emerald-300 transition-colors" title="JSON İçe Aktar"><Upload className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => openModal('projectCreate')} className="p-1.5 rounded-md text-cyan-400/70 hover:text-cyan-300 hover:bg-white/10 transition-colors" title="Yeni Proje"><FolderPlus className="w-4 h-4" /></button>
+                    <button onClick={handleImportProject} className="p-1.5 rounded-md text-emerald-400/70 hover:text-emerald-300 hover:bg-white/10 transition-colors" title="JSON İçe Aktar"><Upload className="w-4 h-4" /></button>
                     {vaultHandle ? (
                       <span className="text-[9px] text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full font-medium" title={`Vault: ${vaultHandle.name}`}>📂 Vault</span>
                     ) : (
-                      <button onClick={openVaultAndLoad} className="text-xs text-amber-400/70 hover:text-amber-300 transition-colors" title="Vault Klasörü Bağla"><FolderPlus className="w-3.5 h-3.5" /></button>
+                      <button onClick={openVaultAndLoad} className="p-1.5 rounded-md text-amber-400/70 hover:text-amber-300 hover:bg-white/10 transition-colors" title="Vault Klasörü Bağla"><FolderPlus className="w-4 h-4" /></button>
                     )}
                     {projects.length > 1 && (
                       <button onClick={() => {
@@ -223,9 +223,9 @@ export default function App() {
                           const proj = deleteProject(activeProjectId);
                           if (proj && vaultHandle) deleteProjectFile(vaultHandle, proj);
                         }
-                      }} className="text-xs text-rose-400/60 hover:text-rose-400 transition-colors"><Trash2 className="w-3 h-3" /></button>
+                      }} className="p-1.5 rounded-md text-rose-400/60 hover:text-rose-400 hover:bg-white/10 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
                     )}
-                    <button onClick={() => openModal('resetConfirm')} title="İlerlemeyi sıfırla" className="text-xs text-slate-400 hover:text-rose-400 transition-colors"><RotateCcw className="w-3 h-3" /></button>
+                    <button onClick={() => openModal('resetConfirm')} title="İlerlemeyi sıfırla" className="p-1.5 rounded-md text-slate-400 hover:text-rose-400 hover:bg-white/10 transition-colors"><RotateCcw className="w-3.5 h-3.5" /></button>
                   </div>
                 </div>
               </div>
